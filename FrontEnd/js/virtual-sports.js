@@ -11,21 +11,21 @@ const VirtualSports = (() => {
   function fmt2(n) { return n.toFixed(2); }
 
   const FOOTBALL_TEAMS = [
-    'FC Roma V', 'Milan United V', 'Juventus City V', 'Inter Blue V',
-    'Napoli Stars V', 'Lazio FC V', 'Fiorentina V', 'Torino FC V',
-    'Atalanta V', 'Sampdoria V', 'Genoa Virtual', 'Bologna FC V',
-    'Verona FC V', 'Spezia V', 'Venezia V', 'Empoli V'
+    'FC Roma', 'Milan United', 'Juventus City', 'Inter Blue',
+    'Napoli Stars', 'Lazio FC', 'Fiorentina', 'Torino FC',
+    'Atalanta', 'Sampdoria', 'Genoa', 'Bologna FC',
+    'Verona FC', 'Spezia', 'Venezia', 'Empoli'
   ];
 
   const TENNIS_PLAYERS = [
-    'Djokovic V', 'Federer V', 'Nadal V', 'Murray V',
-    'Alcaraz V', 'Sinner V', 'Medvedev V', 'Zverev V',
-    'Tsitsipas V', 'Rublev V', 'Berrettini V', 'Shapovalov V'
+    'Djokovic', 'Federer', 'Nadal', 'Murray',
+    'Alcaraz', 'Sinner', 'Medvedev', 'Zverev',
+    'Tsitsipas', 'Rublev', 'Berrettini', 'Shapovalov'
   ];
 
   const BASKET_TEAMS = [
-    'Lakers Virtual', 'Celtics Virtual', 'Bulls Virtual', 'Warriors Virtual',
-    'Heat Virtual', 'Nets Virtual', 'Knicks Virtual', 'Bucks Virtual'
+    'Lakers', 'Celtics', 'Bulls', 'Warriors',
+    'Heat', 'Nets', 'Knicks', 'Bucks'
   ];
 
   const HORSE_NAMES = [
@@ -143,10 +143,18 @@ const VirtualSports = (() => {
   function addToBetSlip(event, betLabel, odds) {
     // One bet per event
     betSlip = betSlip.filter(b => b.eventId !== event.id);
+    
+    // Determine sport from event.sport if available, otherwise detect
+    let sport = event.sport || 'calcio';
+    if (!event.sport) {
+      if (event.p1 && event.p2) sport = 'tennis';
+      if (event.total !== undefined) sport = 'basket';
+    }
+    
     betSlip.push({
       eventId: event.id,
       label: `${event.home || event.p1} vs ${event.away || event.p2}`,
-      betLabel, odds,
+      betLabel, odds, sport,
       amount: 0
     });
     renderSlip();
@@ -194,12 +202,15 @@ const VirtualSports = (() => {
     const winChance = 1 / totalOdds;
     const won = Math.random() < (winChance * 0.92); // house edge
 
+    // Show simulation for each bet
+    await simulateBets(betSlip, won);
+
     await delay(1000);
 
     if (won) {
       const win = parseFloat((amount * totalOdds).toFixed(2));
       State.addBalance(win);
-      showToast(`🏆 Scommessa vinta! +${formatCurrency(win)}`, 'win', 4000);
+      showToast(`🏆 Scommessa vinta! +${formatCurrency(win - amount)}`, 'win', 4000);
       State.recordHistory({ game: 'Virtual Sports', bet: amount, result: 'win', gain: win - amount });
     } else {
       showToast(`❌ Scommessa persa — ${formatCurrency(amount)}`, 'lose');
@@ -208,6 +219,114 @@ const VirtualSports = (() => {
 
     betSlip = [];
     renderSlip();
+  }
+
+  async function simulateBets(bets, won) {
+    const simulationHTML = `
+      <div class="simulation-overlay">
+        <div class="simulation-container">
+          <div class="simulation-header">📊 SIMULAZIONE PARTITE</div>
+          <div class="simulation-list" id="simulation-list"></div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', simulationHTML);
+    const overlay = document.querySelector('.simulation-overlay');
+    overlay.style.opacity = '0';
+    await delay(100);
+    overlay.style.transition = 'opacity 0.5s ease-in-out';
+    overlay.style.opacity = '1';
+
+    const listEl = document.getElementById('simulation-list');
+
+    for (let i = 0; i < bets.length; i++) {
+      const bet = bets[i];
+      const sport = bet.sport || 'calcio';
+      
+      const simHTML = `
+        <div class="simulation-item" id="sim-${i}">
+          <div class="sim-match">${bet.label}</div>
+          <div class="sim-bet">${bet.betLabel}</div>
+          <div class="sim-progress" id="sim-progress-${i}"></div>
+          <div class="sim-result" id="sim-result-${i}"></div>
+        </div>
+      `;
+      
+      listEl.insertAdjacentHTML('beforeend', simHTML);
+      const isLastBet = i === bets.length - 1;
+      await simulateMatch(sport, i, won && isLastBet);
+      await delay(800);
+    }
+
+    await delay(2000);
+    overlay.remove();
+  }
+
+  async function simulateMatch(sport, index, shouldWin) {
+    const progressEl = document.getElementById(`sim-progress-${index}`);
+    const resultEl = document.getElementById(`sim-result-${index}`);
+
+    if (sport === 'calcio') {
+      // Football simulation - goals
+      let homeGoals = 0, awayGoals = 0;
+      
+      for (let i = 0; i < 5; i++) {
+        if (shouldWin) {
+          homeGoals += Math.random() > 0.5 ? 1 : 0;
+        } else {
+          awayGoals += Math.random() > 0.5 ? 1 : 0;
+        }
+        
+        progressEl.innerHTML = `⚽ ${homeGoals} - ${awayGoals}`;
+        await delay(300);
+      }
+      
+      resultEl.innerHTML = `<span class="${shouldWin ? 'sim-win' : 'sim-lose'}">Risultato: ${homeGoals} - ${awayGoals}</span>`;
+    } 
+    else if (sport === 'tennis') {
+      // Tennis simulation - sets (best of 5, winner gets 3 sets first)
+      let p1Sets = 0, p2Sets = 0;
+      
+      while (p1Sets < 3 && p2Sets < 3) {
+        if (shouldWin) {
+          p1Sets++;
+        } else {
+          p2Sets++;
+        }
+        progressEl.innerHTML = `🏆 Set: ${p1Sets}-${p2Sets}`;
+        await delay(500);
+      }
+      
+      const winner = shouldWin ? 'Giocatore 1' : 'Giocatore 2';
+      resultEl.innerHTML = `<span class="${shouldWin ? 'sim-win' : 'sim-lose'}">Vincitore: ${winner} (${p1Sets}-${p2Sets})</span>`;
+    }
+    else if (sport === 'basket') {
+      // Basketball simulation - 4 quarters with realistic scores
+      let homeScore = 0, awayScore = 0;
+      const quarters = shouldWin ? 
+        [
+          { home: 28, away: 22 },
+          { home: 55, away: 48 },
+          { home: 82, away: 75 },
+          { home: 110, away: 98 }
+        ] :
+        [
+          { home: 22, away: 28 },
+          { home: 48, away: 55 },
+          { home: 75, away: 82 },
+          { home: 98, away: 110 }
+        ];
+      
+      for (let q of quarters) {
+        homeScore = q.home;
+        awayScore = q.away;
+        progressEl.innerHTML = `🏀 ${homeScore} - ${awayScore}`;
+        await delay(350);
+      }
+      
+      resultEl.innerHTML = `<span class="${shouldWin ? 'sim-win' : 'sim-lose'}">Finale: ${homeScore} - ${awayScore}</span>`;
+    }
   }
 
   // ============ RACE SIMULATION ============
@@ -234,7 +353,7 @@ const VirtualSports = (() => {
     const runners = parseInt(document.getElementById(`race-count-${sport}`)?.value || 8);
     raceProgress = Array(runners).fill(0);
 
-    let ticker = setInterval(() => {
+    let ticker = setInterval(async () => {
       let done = false;
       for (let i = 0; i < raceProgress.length; i++) {
         raceProgress[i] += Math.random() * 3.5 + 0.5;
@@ -246,12 +365,12 @@ const VirtualSports = (() => {
       if (done && !raceFinished) {
         raceFinished = true;
         clearInterval(ticker);
-        finishRace(sport);
+        await finishRace(sport);
       }
     }, 80);
   }
 
-  function finishRace(sport) {
+  async function finishRace(sport) {
     const finishOrder = raceProgress
       .map((p, i) => ({ idx: i, progress: p }))
       .sort((a, b) => b.progress - a.progress);
@@ -265,19 +384,31 @@ const VirtualSports = (() => {
     if (nameEl) nameEl.innerHTML += ' 🏆';
 
     let totalWin = 0;
+    let hasWinningBet = false;
+    
     for (const [idxStr, amount] of Object.entries(raceBets)) {
       const idx = parseInt(idxStr);
       if (idx === winner.idx) {
         totalWin += amount * winnerOdds;
+        hasWinningBet = true;
       }
     }
     totalWin = parseFloat(totalWin.toFixed(2));
 
     const totalBet = Object.values(raceBets).reduce((s, a) => s + a, 0);
+    const won = hasWinningBet && totalWin > totalBet;
 
-    if (totalWin > 0) {
+    // Show podium for dog races
+    if (sport === 'cani') {
+      await showPodium(finishOrder, sport);
+    }
+
+    // Simulate result reveal with animation
+    await simulateResultReveal(won, winnerName, totalWin, totalBet, sport);
+
+    if (won) {
       State.addBalance(totalWin);
-      showToast(`🏆 ${winnerName} vince! +${formatCurrency(totalWin)}`, 'win', 4000);
+      showToast(`🏆 ${winnerName} vince! +${formatCurrency(totalWin - totalBet)}`, 'win', 4000);
       State.recordHistory({ game: sport === 'cavalli' ? 'Corse Cavalli' : 'Corse Cani', bet: totalBet, result: 'win', gain: totalWin - totalBet });
     } else {
       showToast(`❌ Vince ${winnerName} — Scommessa persa`, 'lose');
@@ -288,6 +419,129 @@ const VirtualSports = (() => {
     raceRunning = false;
     const btn = document.getElementById(`race-btn-${sport}`);
     if (btn) btn.disabled = false;
+  }
+
+  async function showPodium(finishOrder, sport) {
+    const top3 = finishOrder.slice(0, 3);
+    const first = top3[0] ? document.getElementById(`runner-name-${sport}-${top3[0].idx}`)?.textContent || 'N/A' : 'N/A';
+    const second = top3[1] ? document.getElementById(`runner-name-${sport}-${top3[1].idx}`)?.textContent || 'N/A' : 'N/A';
+    const third = top3[2] ? document.getElementById(`runner-name-${sport}-${top3[2].idx}`)?.textContent || 'N/A' : 'N/A';
+    
+    const podiumHTML = `
+      <div class="podium-overlay">
+        <div class="podium-container">
+          <div class="podium-title">🏆 PODIO 🏆</div>
+          <div class="podium-stand">
+            <div class="podium-position second">
+              <div class="podium-medal">🥈</div>
+              <div class="podium-name">${second}</div>
+              <div class="podium-rank">2°</div>
+            </div>
+            <div class="podium-position first">
+              <div class="podium-medal">🥇</div>
+              <div class="podium-name">${first}</div>
+              <div class="podium-rank">1°</div>
+            </div>
+            <div class="podium-position third">
+              <div class="podium-medal">🥉</div>
+              <div class="podium-name">${third}</div>
+              <div class="podium-rank">3°</div>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="document.querySelector('.podium-overlay').remove()">Continua</button>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', podiumHTML);
+    
+    // Animate podium entrance
+    const overlay = document.querySelector('.podium-overlay');
+    overlay.style.opacity = '0';
+    await delay(100);
+    overlay.style.transition = 'opacity 0.5s ease-in-out';
+    overlay.style.opacity = '1';
+
+    // Wait for user to close
+    await new Promise(resolve => {
+      const btn = overlay.querySelector('.btn-primary');
+      btn.addEventListener('click', resolve, { once: true });
+    });
+
+    // Show full standings
+    await showFullStandings(finishOrder, sport);
+  }
+
+  async function showFullStandings(finishOrder, sport) {
+    const standingsHTML = `
+      <div class="standings-overlay">
+        <div class="standings-container">
+          <div class="standings-title">📊 CLASSIFICA COMPLETA</div>
+          <div class="standings-list">
+            ${finishOrder.map((item, idx) => {
+              const name = document.getElementById(`runner-name-${sport}-${item.idx}`)?.textContent || 'N/A';
+              return `
+              <div class="standings-row" style="animation-delay: ${idx * 0.1}s">
+                <span class="standings-pos">${idx + 1}°</span>
+                <span class="standings-name">${name}</span>
+                <span class="standings-progress">${Math.round(item.progress)}%</span>
+              </div>
+            `;
+            }).join('')}
+          </div>
+          <button class="btn-primary" onclick="document.querySelector('.standings-overlay').remove()">Chiudi</button>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', standingsHTML);
+    
+    const overlay = document.querySelector('.standings-overlay');
+    overlay.style.opacity = '0';
+    await delay(100);
+    overlay.style.transition = 'opacity 0.5s ease-in-out';
+    overlay.style.opacity = '1';
+
+    await new Promise(resolve => {
+      const btn = overlay.querySelector('.btn-primary');
+      btn.addEventListener('click', resolve, { once: true });
+    });
+  }
+
+  async function simulateResultReveal(won, winnerName, totalWin, totalBet, sport) {
+    // Create result simulation overlay
+    const resultHTML = `
+      <div class="result-simulation">
+        <div class="result-container">
+          <div class="result-spinner">⏳</div>
+          <div class="result-text">Elaborazione risultati...</div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', resultHTML);
+    const overlay = document.querySelector('.result-simulation');
+    
+    await delay(1500);
+
+    // Reveal result
+    overlay.innerHTML = `
+      <div class="result-container">
+        <div class="result-reveal ${won ? 'win' : 'lose'}">
+          ${won ? '🎉' : '😢'}
+        </div>
+        <div class="result-text">${won ? 'VINTO!' : 'PERSO!'}</div>
+        ${won ? `<div class="result-amount">+${formatCurrency(totalWin)}</div>` : ''}
+      </div>
+    `;
+
+    overlay.style.opacity = '1';
+    await delay(2000);
+    overlay.remove();
+  }
+
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   function setRaceBet(sport, idx, odds) {
@@ -406,11 +660,11 @@ const VirtualSports = (() => {
                   <span class="team-name away">${e.away}</span>
                 </div>
                 <div class="event-odds two-way">
-                  <button class="odd-btn" onclick="VirtualSports.addToBetSlip({id:'${e.id}',home:'${e.home}',away:'${e.away}',p1:'',p2:''},'${e.home} Vince',${e.homeOdd})">
+                  <button class="odd-btn" onclick="VirtualSports.addToBetSlip({id:'${e.id}',home:'${e.home}',away:'${e.away}',p1:'',p2:'',sport:'basket'},'${e.home} Vince',${e.homeOdd})">
                     <span class="odd-label">Home</span>
                     <span class="odd-value">${e.homeOdd}</span>
                   </button>
-                  <button class="odd-btn" onclick="VirtualSports.addToBetSlip({id:'${e.id}',home:'${e.home}',away:'${e.away}',p1:'',p2:''},'${e.away} Vince',${e.awayOdd})">
+                  <button class="odd-btn" onclick="VirtualSports.addToBetSlip({id:'${e.id}',home:'${e.home}',away:'${e.away}',p1:'',p2:'',sport:'basket'},'${e.away} Vince',${e.awayOdd})">
                     <span class="odd-label">Away</span>
                     <span class="odd-value">${e.awayOdd}</span>
                   </button>

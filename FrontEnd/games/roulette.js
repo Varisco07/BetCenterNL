@@ -36,9 +36,10 @@ const RouletteGame = (() => {
         </div>
         <div class="roulette-container">
           <div class="roulette-wheel-area">
-            <div style="position:relative; display:inline-block">
-              <div class="roulette-wheel" id="rl-wheel">
-                <div class="roulette-ball" id="rl-ball"></div>
+            <div class="roulette-strip-wrapper">
+              <div class="roulette-pointer-h"></div>
+              <div class="roulette-strip" id="rl-wheel">
+                ${generateWheelStrip()}
               </div>
             </div>
             <div class="roulette-result-num" id="rl-result-num">—</div>
@@ -68,6 +69,18 @@ const RouletteGame = (() => {
           </div>
         </div>
       </div>`;
+  }
+
+  function generateWheelStrip() {
+    const numbers = [0,26,3,35,12,28,7,29,18,22,9,31,14,20,1,33,16,24,5,34,17,6,27,13,36,11,30,8,23,10,32,15,19,4,21,2,25];
+    let html = '';
+    for (let i = 0; i < numbers.length; i++) {
+      const num = numbers[i];
+      const color = getColor(num);
+      const bgColor = color === 'red' ? '#e74c3c' : color === 'black' ? '#000' : '#1abc9c';
+      html += `<div class="strip-number" style="background:${bgColor}">${num}</div>`;
+    }
+    return html;
   }
 
   function updateBetList() {
@@ -130,13 +143,19 @@ const RouletteGame = (() => {
     document.getElementById('rl-spin').disabled = true;
     AudioEngine.play('rouletteSpin');
 
-    // Animate wheel
+    // Animate wheel with acceleration and deceleration
     const wheel = document.getElementById('rl-wheel');
     const result = Math.floor(Math.random() * 37); // 0-36
-    const rotation = 1440 + (result * (360 / 37));
-    if (wheel) wheel.style.transform = `rotate(${rotation}deg)`;
+    const numbers = [0,26,3,35,12,28,7,29,18,22,9,31,14,20,1,33,16,24,5,34,17,6,27,13,36,11,30,8,23,10,32,15,19,4,21,2,25];
+    const resultIndex = numbers.indexOf(result);
+    const offset = -(resultIndex * 60) + 300; // 60px per numero, centered
+    
+    if (wheel) {
+      wheel.style.transition = 'transform 5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      wheel.style.transform = `translateX(${offset}px)`;
+    }
 
-    await delay(3200);
+    await delay(5200);
 
     // Calculate wins
     let totalWin = 0;
@@ -149,19 +168,25 @@ const RouletteGame = (() => {
       }
     }
 
-    // Update result
+    // Update result with animation
     const color = getColor(result);
     const colorEmoji = { red: '🔴', black: '⚫', green: '🟢' }[color];
-    document.getElementById('rl-result-num').textContent = `${colorEmoji} ${result}`;
+    const resultNumEl = document.getElementById('rl-result-num');
+    
+    resultNumEl.innerHTML = `<span class="result-number-animate">${colorEmoji} ${result}</span>`;
+    resultNumEl.classList.add('result-pop');
 
+    await delay(500);
+
+    const resultEl = document.getElementById('rl-result');
     if (totalWin > 0) {
       State.addBalance(totalWin);
-      document.getElementById('rl-result').innerHTML = `<div class="result-banner result-win">✅ VINCI ${formatCurrency(totalWin)}!</div>`;
+      resultEl.innerHTML = `<div class="result-banner result-win">✅ VINCI ${formatCurrency(totalWin)}!</div>`;
       showToast(`🎯 Numero ${result} — Vinto ${formatCurrency(totalWin)}!`, 'win');
       if (totalWin > 50) VFX.celebrate();
       State.recordHistory({ game: 'Roulette', bet: totalBet, result: 'win', gain: totalWin - totalBet });
     } else {
-      document.getElementById('rl-result').innerHTML = `<div class="result-banner result-lose">Numero ${result} — Nessuna vincita</div>`;
+      resultEl.innerHTML = `<div class="result-banner result-lose">❌ Numero ${result} — Nessuna vincita</div>`;
       showToast(`⭕ Numero ${result} — Perso`, 'lose');
       VFX.screenShake();
       State.recordHistory({ game: 'Roulette', bet: totalBet, result: 'lose', gain: -totalBet });
@@ -173,8 +198,14 @@ const RouletteGame = (() => {
     spinning = false;
     clearBets();
     document.getElementById('rl-spin').disabled = false;
-    // Reset wheel
-    setTimeout(() => { if (wheel) wheel.style.transition = 'none'; wheel.style.transform = 'none'; setTimeout(() => { if(wheel) wheel.style.transition = ''; }, 50); }, 3500);
+    
+    // Reset wheel smoothly
+    await delay(2000);
+    if (wheel) {
+      wheel.style.transition = 'transform 1s ease-out';
+      wheel.style.transform = 'translateX(0)';
+    }
+    resultNumEl.classList.remove('result-pop');
   }
 
   function checkBetWin(bet, result) {
