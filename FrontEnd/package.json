@@ -1,0 +1,16 @@
+{
+  "name": "velox-bet",
+  "version": "1.0.0",
+  "description": "Centro scommesse virtuale — Casino & Virtual Sports",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["casino", "virtual-sports", "betting"],
+  "author": "Velox Bet",
+  "license": "ISC",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

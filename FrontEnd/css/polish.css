@@ -1,0 +1,355 @@
+/* =============================================
+   BetCenterNL — POLISH FINALE
+   Rifinitura tipografia, spaziatura, componenti
+   ============================================= */
+
+/* ── ROOT IMPROVEMENTS ── */
+:root {
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.25);
+  --shadow-xl: 0 16px 64px rgba(0,0,0,0.7);
+  --accent-glow: 0 0 24px rgba(200,169,110,0.3);
+}
+
+/* ── SMOOTH PAGE TRANSITIONS ── */
+.content-area > div {
+  animation: page-enter 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── ENHANCED BRAND LOGO ── */
+.brand-logo {
+  box-shadow: 0 0 32px rgba(200,169,110,0.4), 0 0 0 1px rgba(200,169,110,0.2);
+  letter-spacing: 0.05em;
+}
+
+.brand-logo-sm {
+  box-shadow: 0 0 12px rgba(200,169,110,0.25);
+}
+
+/* ── AUTH CONTAINER REFINEMENTS ── */
+.auth-container {
+  border: 1px solid rgba(200,169,110,0.15);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.03),
+    0 24px 80px rgba(0,0,0,0.6),
+    0 0 64px rgba(200,169,110,0.06);
+}
+
+/* ── ENHANCED GAME CARDS ── */
+.game-card {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.game-card:hover {
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.4),
+    0 0 0 1px var(--accent),
+    0 0 20px rgba(200,169,110,0.1);
+}
+
+/* ── SIDEBAR POLISH ── */
+.sidebar {
+  background: linear-gradient(180deg, #0f0f12 0%, #0a0a0d 100%);
+}
+
+.sidebar-header {
+  background: rgba(200,169,110,0.03);
+}
+
+.nav-item.active {
+  background: linear-gradient(90deg, var(--accent-bg), rgba(200,169,110,0.04));
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+/* ── TOPBAR POLISH ── */
+.topbar {
+  background: linear-gradient(90deg, #0f0f12, #111115);
+  box-shadow: 0 1px 0 var(--border), 0 4px 16px rgba(0,0,0,0.2);
+}
+
+/* ── ENHANCED BUTTONS ── */
+.btn-primary {
+  box-shadow: 0 4px 16px rgba(200,169,110,0.2);
+  text-shadow: none;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 24px rgba(200,169,110,0.4);
+}
+
+.btn-game.btn-deal {
+  box-shadow: 0 4px 16px rgba(200,169,110,0.2);
+}
+
+/* ── PLAYING CARDS REFINEMENTS ── */
+.playing-card {
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(0,0,0,0.1);
+  font-family: 'Georgia', serif;
+}
+
+.playing-card.red  { color: #c0392b; }
+.playing-card.black { color: #1a1a2e; }
+
+/* ── STAT CARDS ── */
+.stat-card {
+  transition: var(--transition);
+}
+.stat-card:hover {
+  border-color: var(--border-light);
+  transform: translateY(-1px);
+}
+
+/* ── ENHANCED TOASTS ── */
+.toast {
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(8px);
+  background: rgba(24,24,28,0.95);
+}
+
+.toast-win  { border-left: 3px solid var(--green); }
+.toast-lose { border-left: 3px solid var(--red); }
+.toast-info { border-left: 3px solid var(--accent); }
+
+/* ── MODAL REFINEMENTS ── */
+.modal-box {
+  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+/* ── SECTION HEADERS ── */
+.page-title {
+  background: linear-gradient(135deg, var(--text-0) 40%, var(--text-1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── ODDS BUTTONS REFINEMENTS ── */
+.odd-btn:hover .odd-value { color: var(--accent); }
+
+/* ── ROULETTE TABLE ── */
+.roulette-wheel {
+  box-shadow:
+    0 0 0 4px #5a3a1a,
+    0 0 0 8px #3a2008,
+    0 4px 32px rgba(0,0,0,0.6),
+    inset 0 0 32px rgba(0,0,0,0.3);
+}
+
+/* ── SLOT MACHINE ── */
+.slot-machine {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%),
+              var(--bg-2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.slot-reel {
+  box-shadow:
+    0 2px 12px rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+/* ── CRASH CANVAS CONTAINER ── */
+#crash-canvas {
+  opacity: 0.95;
+}
+
+/* ── CHIPS HOVER ── */
+.chip:hover {
+  filter: brightness(1.2);
+  transform: scale(1.12) translateY(-2px);
+  box-shadow: 0 4px 12px currentColor;
+}
+
+/* ── LEVEL WIDGET ── */
+.level-widget {
+  background: linear-gradient(135deg, rgba(200,169,110,0.04), var(--bg-2));
+}
+
+/* ── LIVE FEED PANEL ── */
+.live-feed-panel {
+  background: linear-gradient(180deg, #0f0f12, #0a0a0d);
+}
+
+/* ── ACHIEVEMENT CARDS ── */
+.achievement-card.unlocked:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(200,169,110,0.15);
+}
+
+/* ── INPUT REFINEMENTS ── */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="number"],
+select {
+  transition: all 0.2s ease;
+}
+
+input:focus, select:focus {
+  background: rgba(200,169,110,0.03);
+}
+
+/* ── HOTKEY HINTS ── */
+.key-badge {
+  font-size: 0.68rem;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.3);
+}
+
+/* ── USER CARD ── */
+.user-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ── LOBBY HERO REFINEMENTS ── */
+.lobby-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.lobby-hero::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,169,110,0.3), transparent);
+}
+
+/* ── BALANCE DISPLAY GLOW ── */
+.balance-amount {
+  transition: all 0.3s ease;
+}
+
+/* ── RESPONSIVE TEXT ── */
+@media (max-width: 480px) {
+  .brand-name { font-size: 1.6rem; }
+  .page-title { font-size: 1.8rem; }
+  .game-title { font-size: 1.6rem; }
+  .hero-text h2 { font-size: 2rem; }
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+  .sidebar, .topbar, .toast-container,
+  #audio-toggle, .mobile-bottom-nav { display: none !important; }
+  .main-content { margin: 0; }
+  .content-area { overflow: visible; }
+}
+
+/* ── FOCUS MANAGEMENT ── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ── SMOOTH SCROLL ── */
+.content-area { scroll-behavior: smooth; }
+
+/* ── TABLE IMPROVEMENTS ── */
+.history-table {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.history-table thead {
+  background: var(--bg-2);
+}
+
+/* ── SPORT EVENT HOVER ── */
+.sport-event:hover {
+  background: linear-gradient(135deg, rgba(255,255,255,0.01), var(--bg-2));
+}
+
+/* ── MINES GRID REFINEMENTS ── */
+#mines-grid {
+  padding: 1rem;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+/* ── KENO GRID ── */
+.keno-grid {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+}
+
+/* ── BACCARAT TABLE ── */
+.baccarat-table {
+  box-shadow: inset 0 0 32px rgba(0,0,0,0.2);
+}
+
+/* ── POKER TABLE ── */
+.poker-table {
+  box-shadow: inset 0 0 24px rgba(0,0,0,0.15);
+}
+
+/* ── CARD AREA (BJ table) ── */
+.card-area {
+  box-shadow: inset 0 0 24px rgba(0,0,0,0.2);
+}
+
+/* ── FILTER PILLS ── */
+.filter-bar::-webkit-scrollbar { display: none; }
+
+/* ── BADGE IMPROVEMENTS ── */
+.badge {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+/* ── PROMO BANNER ── */
+.promo-banner {
+  box-shadow: inset 0 1px 0 rgba(200,169,110,0.1);
+}
+
+/* ── DEPOSIT CHIPS ── */
+.deposit-chip:active {
+  transform: scale(0.97);
+}
+
+/* ── RESPONSIBLE GAMBLING FOOTER ── */
+.resp-gambling-footer {
+  text-align: center;
+  padding: 1.5rem;
+  border-top: 1px solid var(--border);
+  margin-top: 3rem;
+  font-size: 0.75rem;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+
+.resp-gambling-footer a {
+  color: var(--text-2);
+}
+
+.resp-gambling-footer strong {
+  color: var(--text-1);
+}
+
+/* ── LEADERBOARD REFINEMENTS ── */
+.leaderboard {
+  box-shadow: var(--shadow-sm);
+}
+
+.leaderboard-row:first-child { border-top: none; }
+
+/* ── TOPBAR BUTTON ACTIVE ── */
+.topbar-btn:active { transform: scale(0.95); }
+
+/* ── GAME BALANCE DISPLAY ── */
+.game-balance {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}

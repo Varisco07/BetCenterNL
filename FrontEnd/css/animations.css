@@ -1,0 +1,645 @@
+/* =============================================
+   BetCenterNL — ANIMATIONS & EFFECTS
+   ============================================= */
+
+/* ── PARTICLE RAIN on WIN ── */
+.win-particles {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  top: -20px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  animation: particle-fall linear forwards;
+}
+
+@keyframes particle-fall {
+  0%   { transform: translateX(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateX(var(--tx)) rotate(720deg) translateY(110vh); opacity: 0; }
+}
+
+/* ── GLOW PULSE on active game ── */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0px transparent; }
+  50% { box-shadow: 0 0 24px rgba(200, 169, 110, 0.4); }
+}
+
+.glow-active { animation: glow-pulse 2s ease-in-out infinite; }
+
+/* ── SLIDE IN from right ── */
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.content-area > * { animation: slide-in-right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ── NUMBER COUNTER animation ── */
+@keyframes number-tick {
+  from { transform: translateY(-8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.number-animated { animation: number-tick 0.25s ease; }
+
+/* ── SHIMMER loading effect ── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg,
+    var(--bg-3) 25%,
+    var(--bg-4) 50%,
+    var(--bg-3) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ── JACKPOT FLASH ── */
+@keyframes jackpot-flash {
+  0%, 100% { background: var(--bg-2); }
+  20% { background: rgba(200,169,110,0.2); }
+  40% { background: var(--bg-2); }
+  60% { background: rgba(200,169,110,0.15); }
+  80% { background: var(--bg-2); }
+}
+
+.jackpot-flash { animation: jackpot-flash 0.8s ease; }
+
+/* ── CARD FLIP ── */
+.card-flip {
+  perspective: 600px;
+}
+
+.card-flip-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-flip.flipped .card-flip-inner { transform: rotateY(180deg); }
+
+/* ── PROGRESS XP BAR FILL ── */
+@keyframes xp-fill {
+  from { width: 0%; }
+  to   { width: var(--xp-target); }
+}
+
+.xp-fill { animation: xp-fill 1s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+/* ── BADGE UNLOCK POPUP ── */
+@keyframes badge-unlock {
+  0%   { opacity: 0; transform: scale(0.5) translateY(20px); }
+  60%  { transform: scale(1.1) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.badge-unlock { animation: badge-unlock 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* ── FLOATING NUMBERS (win/lose indicators) ── */
+.floating-number {
+  position: fixed;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 9990;
+  animation: float-up 1.5s ease forwards;
+}
+
+@keyframes float-up {
+  0%   { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-80px); }
+}
+
+.floating-number.win { color: var(--green); }
+.floating-number.lose { color: var(--red); }
+
+/* ── WHEEL SPIN INDICATOR ── */
+.spin-indicator {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.8rem; color: var(--text-2);
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.spin-dots span {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: dot-bounce 1s ease-in-out infinite;
+  margin: 0 2px;
+}
+
+.spin-dots span:nth-child(2) { animation-delay: 0.15s; }
+.spin-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* ── LEVEL SYSTEM ── */
+.level-widget {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.level-badge {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.level-badge::after {
+  content: '';
+  position: absolute; inset: -3px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: linear-gradient(var(--bg-2), var(--bg-2)) padding-box,
+              linear-gradient(135deg, var(--accent), var(--accent-dark)) border-box;
+}
+
+.level-info { flex: 1; }
+
+.level-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.level-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-2);
+  margin-bottom: 0.5rem;
+}
+
+.level-bar {
+  height: 6px;
+  background: var(--bg-4);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.level-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+  border-radius: 3px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.level-xp-text {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  margin-top: 0.3rem;
+  font-family: var(--font-mono);
+}
+
+/* ── ACHIEVEMENTS ── */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.achievement-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: center;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.achievement-card.unlocked {
+  border-color: var(--accent);
+}
+
+.achievement-card.unlocked::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(200,169,110,0.05), transparent);
+}
+
+.achievement-card.locked {
+  opacity: 0.45;
+  filter: grayscale(80%);
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.achievement-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.achievement-desc {
+  font-size: 0.72rem;
+  color: var(--text-2);
+}
+
+.achievement-checkmark {
+  position: absolute;
+  top: 0.5rem; right: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+/* ── STATS MINI CHARTS ── */
+.mini-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 40px;
+  margin-top: 0.5rem;
+}
+
+.mini-bar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  min-height: 4px;
+  transition: height 0.5s ease;
+}
+
+.mini-bar.win { background: var(--green); }
+.mini-bar.lose { background: var(--red); }
+
+/* ── HOTKEYS HINT ── */
+.hotkey-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--text-3);
+  margin-top: 0.5rem;
+}
+
+.key-badge {
+  background: var(--bg-4);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-2);
+}
+
+/* ── ODDS CHANGE ANIMATION ── */
+@keyframes odds-up {
+  0%   { color: var(--green); }
+  100% { color: var(--text-0); }
+}
+
+@keyframes odds-down {
+  0%   { color: var(--red); }
+  100% { color: var(--text-0); }
+}
+
+.odds-changed-up   { animation: odds-up 1s ease; }
+.odds-changed-down { animation: odds-down 1s ease; }
+
+/* ── LIVE SCORE BADGE ── */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(248,113,113,0.15);
+  border: 1px solid var(--red);
+  border-radius: 4px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: 0.08em;
+}
+
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ── SIDEBAR NOTIFICATION DOT ── */
+.nav-item .notif-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  margin-left: auto;
+}
+
+/* ── GLASS CARD EFFECT ── */
+.glass-card {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+}
+
+/* ── COUNTDOWN TIMER ── */
+.race-countdown {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  color: var(--accent);
+  text-align: center;
+  letter-spacing: 0.1em;
+  display: none;
+}
+
+.race-countdown.active { display: block; }
+
+/* ── SPORT STATS TABLE ── */
+.stats-table {
+  width: 100%;
+  font-size: 0.82rem;
+  border-collapse: collapse;
+}
+
+.stats-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.stats-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: var(--text-1);
+}
+
+/* ── FILTER TABS for sports ── */
+.filter-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.filter-bar::-webkit-scrollbar { display: none; }
+
+.filter-pill {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-1);
+  font-family: var(--font-body);
+}
+
+.filter-pill:hover { border-color: var(--border-light); color: var(--text-0); }
+.filter-pill.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+
+/* ── SCROLLABLE LOBBY HERO ── */
+.lobby-hero {
+  background: linear-gradient(135deg, rgba(200,169,110,0.08) 0%, transparent 60%),
+              var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.lobby-hero::before {
+  content: 'BETCENTER';
+  position: absolute;
+  right: -1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-size: 9rem;
+  color: rgba(200,169,110,0.04);
+  letter-spacing: -0.05em;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.hero-text h2 {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.hero-text p {
+  color: var(--text-2);
+  font-size: 0.9rem;
+  max-width: 400px;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 2rem;
+  flex-shrink: 0;
+}
+
+.hero-stat {
+  text-align: center;
+}
+
+.hero-stat-value {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  display: block;
+}
+
+.hero-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ── QUICK BET MOBILE ── */
+.quick-bet-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0; right: 0;
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  display: none;
+  gap: 0.5rem;
+  z-index: 50;
+}
+
+@media (max-width: 700px) {
+  .quick-bet-bar { display: flex; }
+}
+
+/* ── SCROLLBAR for content areas ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* ── FOCUS VISIBLE ── */
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── DISABLED STATES ── */
+button:disabled {
+  cursor: not-allowed !important;
+  filter: grayscale(40%) !important;
+}
+
+/* ── TABLE STRIPE ── */
+.history-table tbody tr:nth-child(even) td {
+  background: rgba(255,255,255,0.01);
+}
+
+/* ── MATCH SCORE BOARD ── */
+.scoreboard {
+  background: var(--bg-3);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+  margin: 0.75rem 0;
+}
+
+.score-team {
+  font-size: 0.8rem;
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-weight: 500;
+}
+
+.score-sep {
+  font-size: 1rem;
+  color: var(--text-3);
+}
+
+/* ── RACE LIVE ANIMATION ── */
+@keyframes runner-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.runner-leading .runner-name { color: var(--accent); animation: runner-flash 0.8s ease-in-out infinite; }
+
+/* ── PROMO BANNER ── */
+.promo-banner {
+  background: linear-gradient(135deg, #1a1408 0%, #2a1e08 100%);
+  border: 1px solid rgba(200,169,110,0.3);
+  border-radius: var(--radius);
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.promo-icon { font-size: 2rem; flex-shrink: 0; }
+
+.promo-text strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--accent);
+}
+
+.promo-text span {
+  font-size: 0.82rem;
+  color: var(--text-2);
+}
+
+.promo-action {
+  margin-left: auto;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  color: #000;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  font-family: var(--font-body);
+}
+
+.promo-action:hover { filter: brightness(1.1); }
+
+/* ── BACK BUTTON ── */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1rem;
+  font-family: var(--font-body);
+  transition: var(--transition);
+}
+
+.back-btn:hover { color: var(--text-0); }
+
+/* ── RESPONSIVE GAME PANELS ── */
+@media (max-width: 600px) {
+  .lobby-hero { flex-direction: column; padding: 1.5rem; }
+  .lobby-hero::before { display: none; }
+  .hero-stats { gap: 1rem; }
+  .bet-controls { flex-direction: column; }
+  .roulette-outside-bets { grid-template-columns: repeat(2,1fr); }
+  .craps-bets { grid-template-columns: repeat(2,1fr); }
+  .baccarat-bets { grid-template-columns: 1fr; }
+  .game-btn-row { flex-direction: column; }
+  .btn-game { min-width: 100%; }
+  .form-row-2 { grid-template-columns: 1fr; }
+}

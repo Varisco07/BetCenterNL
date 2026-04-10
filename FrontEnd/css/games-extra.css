@@ -1,0 +1,266 @@
+/* =============================================
+   BetCenterNL — GIOCHI AGGIUNTIVI (Crash, Mines)
+   ============================================= */
+
+/* ── MINES GRID ── */
+.mine-cell {
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  cursor: default;
+  transition: var(--transition);
+  border: 1px solid var(--border);
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.mine-cell.hidden {
+  background: var(--bg-3);
+  color: var(--text-3);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.mine-cell.hidden.clickable {
+  cursor: pointer;
+}
+
+.mine-cell.hidden.clickable:hover {
+  background: var(--bg-4);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: scale(1.04);
+}
+
+.mine-cell.safe {
+  background: linear-gradient(135deg, rgba(74,222,128,0.15), rgba(74,222,128,0.05));
+  border-color: var(--green);
+  animation: cell-reveal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mine-cell.mine {
+  background: linear-gradient(135deg, rgba(248,113,113,0.2), rgba(248,113,113,0.05));
+  border-color: var(--red);
+  animation: cell-explode 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cell-reveal {
+  0%  { opacity: 0; transform: scale(0.6) rotate(-10deg); }
+  100%{ opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes cell-explode {
+  0%  { opacity: 0; transform: scale(0.5); }
+  50% { transform: scale(1.15); }
+  100%{ opacity: 1; transform: scale(1); }
+}
+
+/* ── CRASH GAME CANVAS ── */
+#crash-canvas {
+  background: transparent;
+}
+
+.crash-mult-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-display);
+  font-size: 4rem;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+  transition: color 0.3s;
+  text-shadow: 0 0 32px currentColor;
+}
+
+/* ── CRASH HISTORY PILLS ── */
+.crash-pill {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+/* ── PLINKO BOARD (future) ── */
+.plinko-board {
+  display: grid;
+  place-items: center;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* ── HI-LO CARD GAME ── */
+.hilo-card {
+  width: 120px;
+  height: 170px;
+  margin: 0 auto;
+}
+
+/* ── WHEEL OF FORTUNE ── */
+.wheel-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 24px solid var(--accent);
+  z-index: 10;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+
+/* ── KENO GRID ── */
+.keno-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  max-width: 500px;
+  margin: 0 auto 1rem;
+}
+
+.keno-ball {
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  color: var(--text-1);
+  transition: var(--transition);
+  font-family: var(--font-mono);
+}
+
+.keno-ball:hover { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
+.keno-ball.selected { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+.keno-ball.hit { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+.keno-ball.miss { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+.keno-ball.drawn { background: var(--blue-bg); border-color: var(--blue); color: var(--blue); }
+
+/* ── SPORTS COUNTDOWN RACE ── */
+.race-live-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.race-live-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: 0.08em;
+}
+
+.race-live-timer {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+
+/* ── LEADERBOARD ── */
+.leaderboard {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.leaderboard-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  gap: 1rem;
+  transition: var(--transition);
+}
+
+.leaderboard-row:hover { background: var(--bg-3); }
+
+.lb-rank {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  width: 32px;
+  text-align: center;
+  color: var(--text-3);
+}
+
+.lb-rank.gold { color: #ffd700; }
+.lb-rank.silver { color: #c0c0c0; }
+.lb-rank.bronze { color: #cd7f32; }
+
+.lb-name { flex: 1; font-weight: 500; }
+.lb-value { font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent); }
+
+/* ── MOBILE BOTTOM NAV (optional) ── */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 0;
+  z-index: 200;
+}
+
+@media (max-width: 700px) {
+  .mobile-bottom-nav { display: flex; justify-content: space-around; }
+  .main-content { padding-bottom: 60px; }
+}
+
+.mob-nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-size: 0.65rem;
+  cursor: pointer;
+  padding: 0.35rem 0;
+  transition: var(--transition);
+}
+
+.mob-nav-btn .mob-icon { font-size: 1.3rem; }
+.mob-nav-btn.active { color: var(--accent); }
+.mob-nav-btn:hover { color: var(--text-0); }
