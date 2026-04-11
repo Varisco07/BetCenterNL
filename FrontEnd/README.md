@@ -10,7 +10,7 @@ Progetto **standalone** — nessuna dipendenza esterna richiesta (solo Node.js).
 ### Metodo 1 — Node.js (consigliato)
 ```bash
 # 1. Entra nella cartella
-cd velox-bet
+cd BetCenterNL
 
 # 2. Avvia il server
 node server.js
