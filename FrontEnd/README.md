@@ -1,4 +1,4 @@
-# 🎰 VELOX BET — Casino & Scommesse Virtuali
+# 🎰 BETCENTERNL — Casino & Scommesse Virtuali
 
 Centro scommesse virtuale completo con casino e virtual sports.
 Progetto **standalone** — nessuna dipendenza esterna richiesta (solo Node.js).
@@ -72,7 +72,7 @@ Apri semplicemente `index.html` nel browser (doppio click).
 ## 📁 Struttura file
 
 ```
-velox-bet/
+BetCenterNL/
 ├── index.html              # Entry point
 ├── server.js               # Server Node.js locale
 ├── package.json
