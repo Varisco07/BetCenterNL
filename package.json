@@ -1,0 +1,15 @@
+{
+  "name": "betcenternl",
+  "version": "1.0.0",
+  "description": "BetCenterNL - Casino & Virtual Sports Platform",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js",
+    "install-all": "node install.js",
+    "backend": "cd BackEnd && npm start",
+    "frontend": "cd FrontEnd && npm start"
+  },
+  "keywords": ["casino", "betting", "games", "nodejs"],
+  "author": "BetCenterNL Team",
+  "license": "MIT"
+}

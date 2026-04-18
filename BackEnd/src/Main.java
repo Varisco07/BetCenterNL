@@ -1,7 +1,9 @@
 import java.util.Scanner;
-import core.Auth;
-import core.User;
-import core.State;
+import core.*;
+import games.baccarat.BaccaratMain;
+import games.poker.PokerMain;
+import stats.*;
+import chat.*;
 
 public class Main {
 
@@ -17,6 +19,7 @@ public class Main {
             menuPrincipale(user);
             // Aggiorna il saldo dell'utente dopo il gioco
             user.setSaldo(State.getBalance());
+            Database.saveUsers();
         }
     }
 
@@ -43,24 +46,40 @@ public class Main {
                     giocaSlot();
                     break;
                 case "5":
-                    giocaVirtualSports();
+                    giocaBaccarat();
                     break;
                 case "6":
-                    mostraPortafoglioStats(user);
+                    giocaPoker();
                     break;
                 case "7":
-                    mostraStorico(user);
+                    giocaVirtualSports();
                     break;
                 case "8":
-                    mostraBonusGiornaliero(user);
+                    mostraPortafoglioStats(user);
                     break;
                 case "9":
-                    mostraClassifica();
+                    mostraStorico(user);
                     break;
                 case "10":
-                    mostraGiocoResponsabile();
+                    mostraBonusGiornaliero(user);
                     break;
                 case "11":
+                    Leaderboard.displayLeaderboard();
+                    break;
+                case "12":
+                    Achievements.checkAndUnlock(user);
+                    Achievements.displayAchievements(user);
+                    break;
+                case "13":
+                    mostraChat(user, scanner);
+                    break;
+                case "14":
+                    LiveFeed.displayFeed(10);
+                    break;
+                case "15":
+                    mostraGiocoResponsabile();
+                    break;
+                case "16":
                     continua = false;
                     user.setSaldo(State.getBalance());
                     System.out.println("\n╔════════════════════════════════════════╗");
@@ -83,27 +102,33 @@ public class Main {
         System.out.println("\n┌────────────────────────────────────────┐");
         System.out.println("│ Giocatore: " + user.getNome() + " " + user.getCognome());
         System.out.println("│ SALDO: €" + String.format("%.2f", user.getSaldo()) + "                          │");
+        System.out.println("│ LIVELLO: " + user.getCurrentLevel() + " - " + user.getLevelName() + "                    │");
+        System.out.println("│ XP: " + user.getXp() + "                                 │");
         System.out.println("├────────────────────────────────────────┤");
         System.out.println("│ CASINO                                 │");
         System.out.println("│ 1. 🎰 BLACKJACK                        │");
         System.out.println("│ 2. 🎲 DADI                             │");
         System.out.println("│ 3. ⭕ ROULETTE                         │");
         System.out.println("│ 4. 🎯 SLOT MACHINE                     │");
-        System.out.println("│ 5. ⚽ VIRTUAL SPORTS                   │");
+        System.out.println("│ 5. 💎 BACCARAT                         │");
+        System.out.println("│ 6. ♠ VIDEO POKER                       │");
+        System.out.println("│ 7. ⚽ VIRTUAL SPORTS                   │");
         System.out.println("├────────────────────────────────────────┤");
         System.out.println("│ ACCOUNT                                │");
-        System.out.println("│ 6. � PORTAFOGLIO & STATS              │");
-        System.out.println("│ 7. 📋 STORICO                          │");
-        System.out.println("│ 8. 🎁 BONUS GIORNALIERO                │");
-        System.out.println("│ 9. 🏆 CLASSIFICA                       │");
-        System.out.println("│ 10. ⚠️  GIOCO RESPONSABILE             │");
-        System.out.println("│ 11. 🚪 ESCI                            │");
+        System.out.println("│ 8. 💳 PORTAFOGLIO & STATS              │");
+        System.out.println("│ 9. 📋 STORICO                          │");
+        System.out.println("│ 10. 🎁 BONUS GIORNALIERO               │");
+        System.out.println("│ 11. 🏆 CLASSIFICA                      │");
+        System.out.println("│ 12. 🏅 TRAGUARDI                       │");
+        System.out.println("│ 13. 💬 CHAT GLOBALE                    │");
+        System.out.println("│ 14. 📡 LIVE FEED                       │");
+        System.out.println("│ 15. ⚠️  GIOCO RESPONSABILE             │");
+        System.out.println("│ 16. 🚪 ESCI                            │");
         System.out.println("└────────────────────────────────────────┘");
     }
 
     private static void giocaBlackjack(User user) {
         System.out.println("\n🎰 BLACKJACK - Avvio del gioco...\n");
-        
         try {
             games.BlackJack.Main.main(new String[]{});
         } catch (Exception e) {
@@ -113,9 +138,8 @@ public class Main {
 
     private static void giocaDadi() {
         System.out.println("\n🎲 DADI - Avvio del gioco...\n");
-        
         try {
-            games.dice.MainDadi.main(new String[]{});
+            games.dadi.MainDadi.main(new String[]{});
         } catch (Exception e) {
             System.out.println("Errore nel caricamento di Dadi");
         }
@@ -123,7 +147,6 @@ public class Main {
 
     private static void giocaRoulette() {
         System.out.println("\n⭕ ROULETTE - Avvio del gioco...\n");
-        
         try {
             games.roulette.RouletteMain.main(new String[]{});
         } catch (Exception e) {
@@ -133,7 +156,6 @@ public class Main {
 
     private static void giocaSlot() {
         System.out.println("\n🎯 SLOT MACHINE - Avvio del gioco...\n");
-        
         try {
             games.slot.MainSlot.main(new String[]{});
         } catch (Exception e) {
@@ -141,9 +163,26 @@ public class Main {
         }
     }
 
+    private static void giocaBaccarat() {
+        System.out.println("\n💎 BACCARAT - Avvio del gioco...\n");
+        try {
+            BaccaratMain.main(new String[]{});
+        } catch (Exception e) {
+            System.out.println("Errore nel caricamento di Baccarat");
+        }
+    }
+
+    private static void giocaPoker() {
+        System.out.println("\n♠ VIDEO POKER - Avvio del gioco...\n");
+        try {
+            PokerMain.main(new String[]{});
+        } catch (Exception e) {
+            System.out.println("Errore nel caricamento di Video Poker");
+        }
+    }
+
     private static void giocaVirtualSports() {
         System.out.println("\n⚽ VIRTUAL SPORTS - Avvio del gioco...\n");
-        
         try {
             games.virtual.VirtualMain.main(new String[]{});
         } catch (Exception e) {
@@ -167,6 +206,9 @@ public class Main {
         System.out.println("║ Giochi persi: " + user.getGiociPersi());
         System.out.println("║ Tasso di vittoria: " + String.format("%.1f%%", user.getWinRate()));
         System.out.println("║ Guadagno totale: €" + String.format("%.2f", user.getGuadagnoTotale()));
+        System.out.println("║ Livello: " + user.getCurrentLevel() + " - " + user.getLevelName());
+        System.out.println("║ XP: " + user.getXp());
+        System.out.println("║ Traguardi: " + user.getAchievements().size());
         System.out.println("╚════════════════════════════════════════╝\n");
     }
 
@@ -174,9 +216,19 @@ public class Main {
         System.out.println("\n╔════════════════════════════════════════╗");
         System.out.println("║         📋 STORICO SCOMMESSE           ║");
         System.out.println("╠════════════════════════════════════════╣");
-        System.out.println("║ Funzionalità in sviluppo               ║");
-        System.out.println("║ Qui vedrai la cronologia di tutte      ║");
-        System.out.println("║ le tue scommesse e i risultati.        ║");
+        
+        java.util.List<GameRecord> history = Database.getGameHistory(user.getId());
+        if (history.isEmpty()) {
+            System.out.println("║ Nessuna scommessa ancora               ║");
+        } else {
+            int count = 0;
+            for (GameRecord record : history) {
+                if (count >= 10) break;
+                System.out.println("║ " + record);
+                count++;
+            }
+        }
+        
         System.out.println("╚════════════════════════════════════════╝\n");
     }
 
@@ -184,35 +236,45 @@ public class Main {
         System.out.println("\n╔════════════════════════════════════════╗");
         System.out.println("║       🎁 BONUS GIORNALIERO             ║");
         System.out.println("╠════════════════════════════════════════╣");
-        System.out.println("║ Bonus disponibile: €50.00              ║");
-        System.out.println("║ Prossimo bonus tra: 23h 45m             ║");
-        System.out.println("║                                        ║");
-        System.out.println("║ Premi accumulati questa settimana:     ║");
-        System.out.println("║ Lunedì: €50 ✓                          ║");
-        System.out.println("║ Martedì: €50 ✓                         ║");
-        System.out.println("║ Mercoledì: €50 ✓                       ║");
-        System.out.println("║ Giovedì: €50 ✓                         ║");
-        System.out.println("║ Venerdì: €50 ✓                         ║");
-        System.out.println("║ Sabato: €50 ✓                          ║");
-        System.out.println("║ Domenica: €50 (domani)                 ║");
+        
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate lastBonus = user.getLastBonusDate() != null ? 
+            user.getLastBonusDate().toLocalDate() : null;
+        
+        if (lastBonus != null && lastBonus.equals(today)) {
+            System.out.println("║ Hai già ritirato il bonus oggi!        ║");
+            System.out.println("║ Torna domani per il prossimo bonus.    ║");
+        } else {
+            int streak = user.getBonusStreak();
+            int[] bonuses = {50, 75, 100, 150, 200, 300, 500};
+            int bonus = bonuses[Math.min(streak, 6)];
+            
+            System.out.println("║ Bonus disponibile: €" + bonus);
+            System.out.println("║ Serie: " + (streak + 1) + "/7");
+            System.out.println("║                                        ║");
+            System.out.println("║ Premi della serie:                     ║");
+            for (int i = 0; i < bonuses.length; i++) {
+                String check = i < streak ? "✓" : " ";
+                System.out.println("║ Giorno " + (i+1) + ": €" + bonuses[i] + " " + check);
+            }
+        }
+        
         System.out.println("╚════════════════════════════════════════╝\n");
     }
 
-    private static void mostraClassifica() {
+    private static void mostraChat(User user, Scanner scanner) {
         System.out.println("\n╔════════════════════════════════════════╗");
-        System.out.println("║          🏆 CLASSIFICA TOP 10          ║");
+        System.out.println("║           💬 CHAT GLOBALE             ║");
         System.out.println("╠════════════════════════════════════════╣");
-        System.out.println("║ 1. 🥇 LuckyPlayer - €5,250.00          ║");
-        System.out.println("║ 2. 🥈 HighRoller - €4,890.00           ║");
-        System.out.println("║ 3. 🥉 WinnerKing - €4,120.00           ║");
-        System.out.println("║ 4. ⭐ CasinoMaster - €3,890.00         ║");
-        System.out.println("║ 5. ⭐ BetGod - €3,450.00               ║");
-        System.out.println("║ 6. ⭐ LuckyDuck - €3,120.00            ║");
-        System.out.println("║ 7. ⭐ ProPlayer - €2,890.00            ║");
-        System.out.println("║ 8. ⭐ VirtualKing - €2,650.00          ║");
-        System.out.println("║ 9. ⭐ SlotMaster - €2,340.00           ║");
-        System.out.println("║ 10. ⭐ GoldenHand - €2,100.00          ║");
-        System.out.println("╚════════════════════════════════════════╝\n");
+        
+        Chat.displayChat(10);
+        
+        System.out.print("Invia un messaggio (o premi Enter per tornare): ");
+        String msg = scanner.nextLine().trim();
+        if (!msg.isEmpty()) {
+            Chat.sendMessage(user.getUsername(), msg);
+            System.out.println("✅ Messaggio inviato!");
+        }
     }
 
     private static void mostraGiocoResponsabile() {

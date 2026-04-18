@@ -2,143 +2,142 @@ package core;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.HashMap;
 import java.util.Scanner;
 
 public class Auth {
-    private static HashMap<String, User> users = new HashMap<>();
     private static User currentUser = null;
-
-    public static User getCurrentUser() {
-        return currentUser;
-    }
-
-    public static void setCurrentUser(User user) {
-        currentUser = user;
-    }
-
-    public static boolean login(String email, String password) {
-        for (User user : users.values()) {
-            if (user.getEmail().equals(email) && user.getPassword().equals(password)) {
-                currentUser = user;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean register(String nome, String cognome, String username, String email, String password, String dob) {
-        // Controlla se email esiste già
-        for (User user : users.values()) {
-            if (user.getEmail().equals(email)) {
-                return false;
-            }
-        }
-
-        // Controlla età
-        if (!isAtLeast18(dob)) {
-            return false;
-        }
-
-        User newUser = new User(nome, cognome, username, email, password, dob);
-        users.put(email, newUser);
-        currentUser = newUser;
-        return true;
-    }
-
-    private static boolean isAtLeast18(String dob) {
-        try {
-            LocalDate birthDate = LocalDate.parse(dob);
-            LocalDate today = LocalDate.now();
-            int age = Period.between(birthDate, today).getYears();
-            return age >= 18;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
+    
     public static void mostraAuthMenu() {
         Scanner scanner = new Scanner(System.in);
         boolean autenticato = false;
-
-        System.out.println("╔════════════════════════════════════════╗");
-        System.out.println("║     BENVENUTO A BETCENTER NL           ║");
-        System.out.println("╚════════════════════════════════════════╝\n");
-
+        
         while (!autenticato) {
-            System.out.println("┌────────────────────────────────────────┐");
-            System.out.println("│ 1. 🔐 LOGIN                            │");
-            System.out.println("│ 2. 📝 REGISTRAZIONE                    │");
-            System.out.println("│ 3. 🎮 DEMO                             │");
-            System.out.println("│ 4. 🚪 ESCI                             │");
-            System.out.println("└────────────────────────────────────────┘");
+            System.out.println("\n╔════════════════════════════════════════╗");
+            System.out.println("║      BetCenterNL — Autenticazione      ║");
+            System.out.println("╠════════════════════════════════════════╣");
+            System.out.println("║ 1. 📝 Registrati                       ║");
+            System.out.println("║ 2. 🔑 Accedi                           ║");
+            System.out.println("║ 3. 🎮 Demo (senza registrazione)       ║");
+            System.out.println("║ 4. 🚪 Esci                            ║");
+            System.out.println("╚════════════════════════════════════════╝");
             System.out.print("Scegli un'opzione: ");
-
+            
             String scelta = scanner.nextLine().trim();
-
+            
             switch (scelta) {
                 case "1":
-                    autenticato = handleLogin(scanner);
+                    registrati(scanner);
                     break;
                 case "2":
-                    handleRegister(scanner);
+                    if (accedi(scanner)) autenticato = true;
                     break;
                 case "3":
-                    handleDemo();
+                    demoLogin();
                     autenticato = true;
                     break;
                 case "4":
                     System.out.println("\n👋 Arrivederci!");
                     System.exit(0);
-                    break;
                 default:
-                    System.out.println("❌ Opzione non valida!\n");
+                    System.out.println("❌ Opzione non valida!");
             }
         }
     }
-
-    private static boolean handleLogin(Scanner scanner) {
-        System.out.print("\nEmail: ");
-        String email = scanner.nextLine().trim();
-        System.out.print("Password: ");
-        String password = scanner.nextLine().trim();
-
-        if (login(email, password)) {
-            System.out.println("\n✅ Login effettuato con successo!");
-            System.out.println("Benvenuto, " + currentUser.getNome() + "!\n");
-            return true;
-        } else {
-            System.out.println("❌ Email o password errati!\n");
-            return false;
-        }
-    }
-
-    private static void handleRegister(Scanner scanner) {
-        System.out.print("\nNome: ");
+    
+    private static void registrati(Scanner scanner) {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║           📝 REGISTRAZIONE             ║");
+        System.out.println("╚════════════════════════════════════════╝\n");
+        
+        System.out.print("Nome: ");
         String nome = scanner.nextLine().trim();
+        
         System.out.print("Cognome: ");
         String cognome = scanner.nextLine().trim();
+        
         System.out.print("Username: ");
         String username = scanner.nextLine().trim();
+        
         System.out.print("Email: ");
         String email = scanner.nextLine().trim();
-        System.out.print("Password: ");
+        
+        if (Database.userExists(email)) {
+            System.out.println("❌ Email già registrata!");
+            return;
+        }
+        
+        System.out.print("Password (min 8 caratteri): ");
         String password = scanner.nextLine().trim();
+        
+        if (password.length() < 8) {
+            System.out.println("❌ Password troppo corta!");
+            return;
+        }
+        
         System.out.print("Data di nascita (YYYY-MM-DD): ");
         String dob = scanner.nextLine().trim();
-
-        if (register(nome, cognome, username, email, password, dob)) {
-            System.out.println("\n✅ Registrazione effettuata con successo!");
-            System.out.println("Benvenuto, " + nome + "!\n");
-        } else {
-            System.out.println("❌ Errore nella registrazione (email già esistente o minore di 18 anni)\n");
+        
+        // Verifica età
+        try {
+            LocalDate birthDate = LocalDate.parse(dob);
+            int age = Period.between(birthDate, LocalDate.now()).getYears();
+            if (age < 18) {
+                System.out.println("❌ Devi avere almeno 18 anni!");
+                return;
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Data non valida!");
+            return;
         }
+        
+        User newUser = new User(nome, cognome, username, email, password, dob);
+        Database.registerUser(newUser);
+        currentUser = newUser;
+        
+        System.out.println("\n✅ Registrazione completata!");
+        System.out.println("🎉 Benvenuto " + nome + "! Hai ricevuto €1.000 di bonus di benvenuto!");
     }
-
-    private static void handleDemo() {
-        User demoUser = new User("Demo", "Player", "demo", "demo@betcenter.nl", "demo123", "2000-01-01");
+    
+    private static boolean accedi(Scanner scanner) {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║            🔑 ACCEDI                   ║");
+        System.out.println("╚════════════════════════════════════════╝\n");
+        
+        System.out.print("Email: ");
+        String email = scanner.nextLine().trim();
+        
+        System.out.print("Password: ");
+        String password = scanner.nextLine().trim();
+        
+        User user = Database.getUserByEmail(email);
+        if (user == null || !user.getPassword().equals(password)) {
+            System.out.println("❌ Email o password non corretti!");
+            return false;
+        }
+        
+        currentUser = user;
+        System.out.println("\n✅ Accesso effettuato!");
+        System.out.println("👋 Bentornato, " + user.getNome() + "!");
+        return true;
+    }
+    
+    private static void demoLogin() {
+        User demoUser = new User("Demo", "Player", "demo", "demo@betcenter.nl", "demo123", "1990-01-01");
+        Database.registerUser(demoUser);
         currentUser = demoUser;
         System.out.println("\n🎮 Modalità demo attivata!");
-        System.out.println("Benvenuto, Demo Player!\n");
+        System.out.println("Saldo: €1.000");
+    }
+    
+    public static User getCurrentUser() {
+        return currentUser;
+    }
+    
+    public static void logout() {
+        if (currentUser != null) {
+            Database.saveUsers();
+            System.out.println("\n👋 Logout effettuato!");
+            currentUser = null;
+        }
     }
 }
