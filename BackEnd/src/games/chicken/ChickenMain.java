@@ -31,13 +31,14 @@ public class ChickenMain {
             return;
         }
         
-        if (bet <= 0 || bet > State.getBalance()) {
+        if (bet <= 0) {
             System.out.println("❌ Puntata non valida o saldo insufficiente!");
             return;
         }
-        
-        // Deduce la puntata
-        State.deductBalance(bet);
+        if (!State.deductBalance(bet)) {
+            System.out.println("❌ Puntata non valida o saldo insufficiente!");
+            return;
+        }
         
         ChickenGame game = new ChickenGame(bet);
         
@@ -69,16 +70,11 @@ public class ChickenMain {
                 System.out.printf("║ Nuovo saldo: €%.2f                     ║%n", State.getBalance());
                 System.out.println("╚════════════════════════════════════════╝");
                 
-                // Registra vittoria
                 if (Auth.getCurrentUser() != null) {
-                    GameRecord record = new GameRecord(
-                        Auth.getCurrentUser().getId(),
-                        "Chicken Road",
-                        bet,
-                        winAmount,
-                        winAmount - bet
-                    );
-                    Database.addGameRecord(record);
+                    double gain = winAmount - bet;
+                    boolean win = gain > 0;
+                    GameRecord record = new GameRecord("Chicken Road", bet, gain, win);
+                    Database.recordGameResult(Auth.getCurrentUser().getId(), record);
                 }
                 
                 break;
@@ -102,16 +98,9 @@ public class ChickenMain {
                 System.out.printf("║ Saldo rimanente: €%.2f                 ║%n", State.getBalance());
                 System.out.println("╚════════════════════════════════════════╝");
                 
-                // Registra perdita
                 if (Auth.getCurrentUser() != null) {
-                    GameRecord record = new GameRecord(
-                        Auth.getCurrentUser().getId(),
-                        "Chicken Road",
-                        bet,
-                        0,
-                        -bet
-                    );
-                    Database.addGameRecord(record);
+                    GameRecord record = new GameRecord("Chicken Road", bet, -bet, false);
+                    Database.recordGameResult(Auth.getCurrentUser().getId(), record);
                 }
                 
                 break;

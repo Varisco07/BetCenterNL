@@ -1,4 +1,4 @@
-package games.dice;
+package games.dadi;
 
 import core.State;
 import games.dadi.dadi;

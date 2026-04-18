@@ -16,8 +16,19 @@ public class State {
         balance += amount;
     }
     
-    public static void deductBalance(double amount) {
-        balance = Math.max(0, balance - amount);
+    /** Sottrae {@code amount} dal saldo. @return false se il saldo non basta o importo negativo */
+    public static boolean deductBalance(double amount) {
+        if (amount < 0) {
+            return false;
+        }
+        if (amount == 0) {
+            return true;
+        }
+        if (!canBet(amount)) {
+            return false;
+        }
+        balance -= amount;
+        return true;
     }
     
     public static boolean canBet(double amount) {

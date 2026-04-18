@@ -48,12 +48,10 @@ public class PokerMain {
                 continue;
             }
             
-            if (!State.canBet(bet)) {
+            if (!State.deductBalance(bet)) {
                 System.out.println("❌ Saldo insufficiente!");
                 continue;
             }
-            
-            State.deductBalance(bet);
             
             // Deal initial hand
             List<VideoPoker.Card> hand = VideoPoker.dealHand();

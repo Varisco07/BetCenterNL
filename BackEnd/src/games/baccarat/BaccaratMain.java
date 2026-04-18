@@ -67,7 +67,10 @@ public class BaccaratMain {
                     continue;
             }
             
-            State.deductBalance(bet);
+            if (!State.deductBalance(bet)) {
+                System.out.println("❌ Saldo insufficiente!");
+                continue;
+            }
             Baccarat.BaccaratResult result = Baccarat.play(betType);
             
             System.out.println("\n╔════════════════════════════════════════╗");
