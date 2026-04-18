@@ -25,12 +25,34 @@ public class dadi {
             System.out.println("6 - Hardway 6 (9x)");
             System.out.println("0 - Esci");
 
-            int choice = Integer.parseInt(sc.nextLine());
+            int choice = -1;
+            try {
+                choice = Integer.parseInt(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Inserisci un numero valido!");
+                continue;
+            }
 
             if (choice == 0) break;
 
+            if (choice < 1 || choice > 6) {
+                System.out.println("❌ Scelta non valida! Scegli tra 1 e 6.");
+                continue;
+            }
+
             System.out.print("Puntata: ");
-            double bet = Double.parseDouble(sc.nextLine());
+            double bet = 0;
+            try {
+                bet = Double.parseDouble(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Inserisci un numero valido!");
+                continue;
+            }
+
+            if (bet <= 0) {
+                System.out.println("❌ La puntata deve essere positiva!");
+                continue;
+            }
 
             play(choice, bet);
         }

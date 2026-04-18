@@ -39,13 +39,8 @@ public class Blackjack {
         stampaBenvenuto();
         RegoleGioco.stampaRegole();
 
-        System.out.print("Inserisci il tuo nome: ");
-        String nomeGiocatore = tastiera.nextLine();
-
-        giocatore = new GiocatoreUmano(nomeGiocatore, CREDITI_INIZIALI);
-
         System.out.println();
-        System.out.println(VERDE + "Benvenuto " + nomeGiocatore + "!" + RESET);
+        System.out.println(VERDE + "Benvenuto!" + RESET);
         System.out.println(GIALLO + "Inizi con " + CREDITI_INIZIALI + " crediti." + RESET);
         System.out.println();
 

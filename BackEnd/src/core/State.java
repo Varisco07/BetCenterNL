@@ -12,6 +12,11 @@ public class State {
         return balance;
     }
 
+    public static void setBalance(double amount) {
+        balance = amount;
+        saveBalance();
+    }
+
     public static boolean deductBalance(double amount) {
         if (balance >= amount) {
             balance -= amount;

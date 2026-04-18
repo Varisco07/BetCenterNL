@@ -30,34 +30,50 @@ public class RouletteMain {
             System.out.println("4 - Pari");
             System.out.println("5 - Dispari");
 
-            String scelta = tastiera.nextLine();
+            int scelta = -1;
+            try {
+                scelta = Integer.parseInt(tastiera.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Inserisci un numero valido!");
+                continue;
+            }
 
             switch (scelta) {
 
-                case "1":
+                case 1:
                     System.out.print("Numero (0-36): ");
-                    int num = Integer.parseInt(tastiera.nextLine());
+                    int num = -1;
+                    try {
+                        num = Integer.parseInt(tastiera.nextLine());
+                        if (num < 0 || num > 36) {
+                            System.out.println("❌ Numero non valido! Scegli tra 0 e 36.");
+                            continue;
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("❌ Inserisci un numero valido!");
+                        continue;
+                    }
                     game.addBet(new Bet("number", num, puntata, 36));
                     break;
 
-                case "2":
+                case 2:
                     game.addBet(new Bet("red", 0, puntata, 1.9));
                     break;
 
-                case "3":
+                case 3:
                     game.addBet(new Bet("black", 0, puntata, 1.9));
                     break;
 
-                case "4":
+                case 4:
                     game.addBet(new Bet("even", 0, puntata, 1.9));
                     break;
 
-                case "5":
+                case 5:
                     game.addBet(new Bet("odd", 0, puntata, 1.9));
                     break;
 
                 default:
-                    System.out.println("Scelta non valida!");
+                    System.out.println("❌ Scelta non valida! Scegli tra 1 e 5.");
                     continue;
             }
 
@@ -89,15 +105,13 @@ public class RouletteMain {
                 double p = Double.parseDouble(tastiera.nextLine());
 
                 if (p <= 0) {
-                    System.out.println("Deve essere > 0");
-                } else if (!State.deductBalance(0)) {
-                    return p;
+                    System.out.println("❌ La puntata deve essere positiva!");
                 } else {
                     return p;
                 }
 
-            } catch (Exception e) {
-                System.out.println("Numero non valido");
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Numero non valido!");
             }
         }
     }

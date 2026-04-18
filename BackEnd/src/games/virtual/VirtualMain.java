@@ -60,7 +60,17 @@ public class VirtualMain {
         while (continua) {
 
             System.out.print("\nScegli evento (numero): ");
-            int scelta = Integer.parseInt(tastiera.nextLine()) - 1;
+            int scelta = -1;
+            try {
+                scelta = Integer.parseInt(tastiera.nextLine()) - 1;
+                if (scelta < 0 || scelta >= game.getEvents().size()) {
+                    System.out.println("❌ Evento non valido!");
+                    continue;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Inserisci un numero valido!");
+                continue;
+            }
 
             Eventi e = game.getEvents().get(scelta);
 
@@ -68,30 +78,38 @@ public class VirtualMain {
             System.out.println("2 - Pareggio");
             System.out.println("3 - " + e.away);
 
-            String tipo = tastiera.nextLine();
+            int tipo = -1;
+            try {
+                tipo = Integer.parseInt(tastiera.nextLine());
+            } catch (NumberFormatException ex) {
+                System.out.println("❌ Inserisci un numero valido!");
+                continue;
+            }
 
             switch (tipo) {
-                case "1":
+                case 1:
                     game.addBet(e.homeOdd);
                     System.out.println("✔ aggiunto: " + e.home);
                     break;
 
-                case "2":
+                case 2:
                     game.addBet(e.drawOdd);
                     System.out.println("✔ aggiunto: X");
                     break;
 
-                case "3":
+                case 3:
                     game.addBet(e.awayOdd);
                     System.out.println("✔ aggiunto: " + e.away);
                     break;
 
                 default:
-                    System.out.println("❌ scelta errata");
+                    System.out.println("❌ Scelta non valida! Scegli tra 1 e 3.");
+                    continue;
             }
 
             System.out.print("Aggiungere altra partita? (1 sì / 2 no): ");
-            continua = tastiera.nextLine().equals("1");
+            String risposta = tastiera.nextLine();
+            continua = risposta.equals("1");
         }
     }
 
@@ -114,13 +132,13 @@ public class VirtualMain {
                 double p = Double.parseDouble(tastiera.nextLine());
 
                 if (p <= 0) {
-                    System.out.println("Inserisci valore valido");
+                    System.out.println("❌ La puntata deve essere positiva!");
                 } else {
                     return p;
                 }
 
             } catch (Exception e) {
-                System.out.println("Numero non valido");
+                System.out.println("❌ Numero non valido!");
             }
         }
     }

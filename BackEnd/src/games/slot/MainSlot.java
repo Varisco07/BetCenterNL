@@ -16,9 +16,20 @@ public class MainSlot {
 
         while (true) {
             System.out.print("Puntata (0 per uscire): ");
-            double bet = Double.parseDouble(sc.nextLine());
+            double bet = 0;
+            try {
+                bet = Double.parseDouble(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Inserisci un numero valido!");
+                continue;
+            }
 
             if (bet == 0) break;
+
+            if (bet < 0) {
+                System.out.println("❌ La puntata deve essere positiva!");
+                continue;
+            }
 
             slot.spin(bet);
             System.out.println();
