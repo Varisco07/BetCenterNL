@@ -52,34 +52,37 @@ public class Main {
                     giocaPoker();
                     break;
                 case "7":
-                    giocaVirtualSports();
+                    giocaChicken();
                     break;
                 case "8":
-                    mostraPortafoglioStats(user);
+                    giocaVirtualSports();
                     break;
                 case "9":
-                    mostraStorico(user);
+                    mostraPortafoglioStats(user);
                     break;
                 case "10":
-                    mostraBonusGiornaliero(user);
+                    mostraStorico(user);
                     break;
                 case "11":
-                    Leaderboard.displayLeaderboard();
+                    mostraBonusGiornaliero(user);
                     break;
                 case "12":
+                    Leaderboard.displayLeaderboard();
+                    break;
+                case "13":
                     Achievements.checkAndUnlock(user);
                     Achievements.displayAchievements(user);
                     break;
-                case "13":
+                case "14":
                     mostraChat(user, scanner);
                     break;
-                case "14":
+                case "15":
                     LiveFeed.displayFeed(10);
                     break;
-                case "15":
+                case "16":
                     mostraGiocoResponsabile();
                     break;
-                case "16":
+                case "17":
                     continua = false;
                     user.setSaldo(State.getBalance());
                     System.out.println("\n╔════════════════════════════════════════╗");
@@ -112,18 +115,19 @@ public class Main {
         System.out.println("│ 4. 🎯 SLOT MACHINE                     │");
         System.out.println("│ 5. 💎 BACCARAT                         │");
         System.out.println("│ 6. ♠ VIDEO POKER                       │");
-        System.out.println("│ 7. ⚽ VIRTUAL SPORTS                   │");
+        System.out.println("│ 7. 🐔 CHICKEN ROAD                     │");
+        System.out.println("│ 8. ⚽ VIRTUAL SPORTS                   │");
         System.out.println("├────────────────────────────────────────┤");
         System.out.println("│ ACCOUNT                                │");
-        System.out.println("│ 8. 💳 PORTAFOGLIO & STATS              │");
-        System.out.println("│ 9. 📋 STORICO                          │");
-        System.out.println("│ 10. 🎁 BONUS GIORNALIERO               │");
-        System.out.println("│ 11. 🏆 CLASSIFICA                      │");
-        System.out.println("│ 12. 🏅 TRAGUARDI                       │");
-        System.out.println("│ 13. 💬 CHAT GLOBALE                    │");
-        System.out.println("│ 14. 📡 LIVE FEED                       │");
-        System.out.println("│ 15. ⚠️  GIOCO RESPONSABILE             │");
-        System.out.println("│ 16. 🚪 ESCI                            │");
+        System.out.println("│ 9. 💳 PORTAFOGLIO & STATS              │");
+        System.out.println("│ 10. 📋 STORICO                         │");
+        System.out.println("│ 11. 🎁 BONUS GIORNALIERO               │");
+        System.out.println("│ 12. 🏆 CLASSIFICA                      │");
+        System.out.println("│ 13. 🏅 TRAGUARDI                       │");
+        System.out.println("│ 14. 💬 CHAT GLOBALE                    │");
+        System.out.println("│ 15. 📡 LIVE FEED                       │");
+        System.out.println("│ 16. ⚠️  GIOCO RESPONSABILE             │");
+        System.out.println("│ 17. 🚪 ESCI                            │");
         System.out.println("└────────────────────────────────────────┘");
     }
 
@@ -178,6 +182,15 @@ public class Main {
             PokerMain.main(new String[]{});
         } catch (Exception e) {
             System.out.println("Errore nel caricamento di Video Poker");
+        }
+    }
+
+    private static void giocaChicken() {
+        System.out.println("\n🐔 CHICKEN ROAD - Avvio del gioco...\n");
+        try {
+            games.chicken.ChickenMain.main(new String[]{});
+        } catch (Exception e) {
+            System.out.println("Errore nel caricamento di Chicken Road");
         }
     }
 

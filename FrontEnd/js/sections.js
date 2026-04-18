@@ -12,6 +12,7 @@ const Sections = {
       { section:'roulette',  icon:'⭕', name:'Roulette',       desc:'Europea (zero singolo). Numeri, colori, dozzine, colonne.',             tag:'tag-casino', tagLabel:'Casino' },
       { section:'dadi',      icon:'🎲', name:'Craps',          desc:'Pass Line, Field Bet, Hardways. Il dado porta fortuna.',               tag:'tag-casino', tagLabel:'Casino' },
       { section:'baccarat',  icon:'💎', name:'Baccarat',       desc:'Giocatore vs Banco. Più vicino a 9. Tie paga 8:1.',                    tag:'tag-casino', tagLabel:'Casino' },
+      { section:'chicken',   icon:'🐔', name:'Chicken Dash',   desc:'Torre verticale con 10 livelli. Sali evitando le auto. Moltiplicatore crescente!', tag:'tag-hot',    tagLabel:'🔥 HOT' },
       { section:'calcio',    icon:'⚽', name:'Calcio Virtual', desc:'Serie A, Champions, Premier virtuali. Quote 1X2 live.',               tag:'tag-sport',  tagLabel:'Virtual' },
       { section:'tennis',    icon:'🎾', name:'Tennis Virtual', desc:'Cemento, erba, terra. I tuoi campioni preferiti.',                    tag:'tag-sport',  tagLabel:'Virtual' },
       { section:'basket',    icon:'🏀', name:'Basket Virtual', desc:'NBA virtuale, spread e totale. Le migliori franchigie.',              tag:'tag-sport',  tagLabel:'Virtual' },

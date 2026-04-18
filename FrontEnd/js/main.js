@@ -69,6 +69,13 @@ function renderSection(section) {
         break;
       case 'dadi':        html = DadiGame.render();                    break;
       case 'baccarat':    html = BaccaratGame.render();                break;
+      case 'chicken':     
+        if (typeof ChickenGame !== 'undefined') {
+          html = ChickenGame.render();
+        } else {
+          html = '<div class="error-message">⚠️ Errore caricamento Chicken Road. Ricarica la pagina.</div>';
+        }
+        break;
       case 'calcio':      html = VirtualSports.renderFootball();       break;
       case 'tennis':      html = VirtualSports.renderTennis();         break;
       case 'basket':      html = VirtualSports.renderBasket();         break;
