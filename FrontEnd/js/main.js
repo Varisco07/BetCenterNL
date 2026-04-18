@@ -60,7 +60,13 @@ function renderSection(section) {
       case 'slots':       html = SlotGame.render();                    break;
       case 'blackjack':   html = BlackjackGame.render();               break;
       case 'poker':       html = PokerGame.render();                   break;
-      case 'roulette':    html = RouletteGame.render();                break;
+      case 'roulette':    
+        if (typeof RouletteGame !== 'undefined') {
+          html = RouletteGame.render();
+        } else {
+          html = '<div class="error-message">⚠️ Errore caricamento Roulette. Ricarica la pagina.</div>';
+        }
+        break;
       case 'dadi':        html = DadiGame.render();                    break;
       case 'baccarat':    html = BaccaratGame.render();                break;
       case 'calcio':      html = VirtualSports.renderFootball();       break;

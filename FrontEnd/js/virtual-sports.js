@@ -398,10 +398,8 @@ const VirtualSports = (() => {
     const totalBet = Object.values(raceBets).reduce((s, a) => s + a, 0);
     const won = hasWinningBet && totalWin > totalBet;
 
-    // Show podium for dog races
-    if (sport === 'cani') {
-      await showPodium(finishOrder, sport);
-    }
+    // Show podium for both horse and dog races
+    await showPodium(finishOrder, sport);
 
     // Simulate result reveal with animation
     await simulateResultReveal(won, winnerName, totalWin, totalBet, sport);
@@ -427,28 +425,34 @@ const VirtualSports = (() => {
     const second = top3[1] ? document.getElementById(`runner-name-${sport}-${top3[1].idx}`)?.textContent || 'N/A' : 'N/A';
     const third = top3[2] ? document.getElementById(`runner-name-${sport}-${top3[2].idx}`)?.textContent || 'N/A' : 'N/A';
     
+    const sportIcon = sport === 'cavalli' ? '🐎' : '🐕';
+    const sportTitle = sport === 'cavalli' ? 'CORSE DI CAVALLI' : 'CORSE DI CANI';
+    
     const podiumHTML = `
       <div class="podium-overlay">
         <div class="podium-container">
-          <div class="podium-title">🏆 PODIO 🏆</div>
+          <div class="podium-title">${sportIcon} PODIO ${sportTitle} ${sportIcon}</div>
           <div class="podium-stand">
             <div class="podium-position second">
               <div class="podium-medal">🥈</div>
-              <div class="podium-name">${second}</div>
+              <div class="podium-name">${second.replace(/<[^>]*>/g, '')}</div>
               <div class="podium-rank">2°</div>
             </div>
             <div class="podium-position first">
               <div class="podium-medal">🥇</div>
-              <div class="podium-name">${first}</div>
+              <div class="podium-name">${first.replace(/<[^>]*>/g, '')}</div>
               <div class="podium-rank">1°</div>
             </div>
             <div class="podium-position third">
               <div class="podium-medal">🥉</div>
-              <div class="podium-name">${third}</div>
+              <div class="podium-name">${third.replace(/<[^>]*>/g, '')}</div>
               <div class="podium-rank">3°</div>
             </div>
           </div>
-          <button class="btn-primary" onclick="document.querySelector('.podium-overlay').remove()">Continua</button>
+          <div style="text-align: center; margin: 1rem 0; color: var(--text-2); font-size: 0.9rem;">
+            🏆 Congratulazioni ai vincitori! 🏆
+          </div>
+          <button class="btn-primary" onclick="document.querySelector('.podium-overlay').remove()">Vedi Classifica Completa</button>
         </div>
       </div>
     `;
@@ -465,7 +469,10 @@ const VirtualSports = (() => {
     // Wait for user to close
     await new Promise(resolve => {
       const btn = overlay.querySelector('.btn-primary');
-      btn.addEventListener('click', resolve, { once: true });
+      btn.addEventListener('click', () => {
+        overlay.remove();
+        resolve();
+      }, { once: true });
     });
 
     // Show full standings
@@ -473,21 +480,31 @@ const VirtualSports = (() => {
   }
 
   async function showFullStandings(finishOrder, sport) {
+    const sportIcon = sport === 'cavalli' ? '🐎' : '🐕';
+    const sportTitle = sport === 'cavalli' ? 'CAVALLI' : 'CANI';
+    
     const standingsHTML = `
       <div class="standings-overlay">
         <div class="standings-container">
-          <div class="standings-title">📊 CLASSIFICA COMPLETA</div>
+          <div class="standings-title">${sportIcon} CLASSIFICA FINALE ${sportTitle}</div>
           <div class="standings-list">
             ${finishOrder.map((item, idx) => {
               const name = document.getElementById(`runner-name-${sport}-${item.idx}`)?.textContent || 'N/A';
+              const cleanName = name.replace(/<[^>]*>/g, '').replace('🏆', '').trim();
+              const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
+              const positionClass = idx < 3 ? 'podium-position-row' : '';
+              
               return `
-              <div class="standings-row" style="animation-delay: ${idx * 0.1}s">
-                <span class="standings-pos">${idx + 1}°</span>
-                <span class="standings-name">${name}</span>
+              <div class="standings-row ${positionClass}" style="animation-delay: ${idx * 0.1}s">
+                <span class="standings-pos">${medal || (idx + 1) + '°'}</span>
+                <span class="standings-name">${cleanName}</span>
                 <span class="standings-progress">${Math.round(item.progress)}%</span>
               </div>
             `;
             }).join('')}
+          </div>
+          <div style="text-align: center; margin: 1rem 0; color: var(--text-2); font-size: 0.85rem;">
+            Grazie per aver partecipato alla gara! 🏁
           </div>
           <button class="btn-primary" onclick="document.querySelector('.standings-overlay').remove()">Chiudi</button>
         </div>
@@ -504,7 +521,10 @@ const VirtualSports = (() => {
 
     await new Promise(resolve => {
       const btn = overlay.querySelector('.btn-primary');
-      btn.addEventListener('click', resolve, { once: true });
+      btn.addEventListener('click', () => {
+        overlay.remove();
+        resolve();
+      }, { once: true });
     });
   }
 

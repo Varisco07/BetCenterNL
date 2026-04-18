@@ -60,41 +60,94 @@ const SlotGame = (() => {
         </div>
 
         <!-- JACKPOT DISPLAY -->
-        <div style="text-align:center;margin-bottom:1rem">
-          <div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-2)">🏆 JACKPOT PROGRESSIVO</div>
-          <div style="font-family:var(--font-display);font-size:2.8rem;color:var(--accent);letter-spacing:0.05em;text-shadow:0 0 32px rgba(200,169,110,0.4)" id="jackpot-display">${formatCurrency(parseFloat(jackpot))}</div>
+        <div class="jackpot-container">
+          <div class="jackpot-label">🏆 JACKPOT PROGRESSIVO 🏆</div>
+          <div class="jackpot-amount" id="jackpot-display">${formatCurrency(parseFloat(jackpot))}</div>
+          <div class="jackpot-subtitle">Vinci con 🔔🔔🔔</div>
         </div>
 
         <div class="slot-machine">
-          <div class="slot-lines">5 LINEE • AUTO SPIN • 8 SIMBOLI</div>
-          <div class="slot-reels">
-            <div class="slot-reel"><div class="reel-window" id="reel-0">🍒</div></div>
-            <div class="slot-reel"><div class="reel-window" id="reel-1">🍒</div></div>
-            <div class="slot-reel"><div class="reel-window" id="reel-2">🍒</div></div>
+          <div class="slot-machine-frame">
+            <div class="slot-machine-top">
+              <div class="slot-lights">
+                <span class="light"></span>
+                <span class="light"></span>
+                <span class="light"></span>
+                <span class="light"></span>
+                <span class="light"></span>
+              </div>
+            </div>
+            
+            <div class="slot-reels-container">
+              <div class="slot-reels">
+                <div class="slot-reel" id="reel-0"><div class="reel-symbol">🍒</div></div>
+                <div class="slot-reel" id="reel-1"><div class="reel-symbol">🍒</div></div>
+                <div class="slot-reel" id="reel-2"><div class="reel-symbol">🍒</div></div>
+              </div>
+              <div class="slot-payline"></div>
+            </div>
+            
+            <div class="slot-machine-bottom">
+              <div id="slot-result"></div>
+            </div>
           </div>
-          <div id="slot-result"></div>
+
           ${createBetControls('slot', 5)}
+          
           <div class="game-btn-row">
-            <button class="btn-game btn-deal" id="spin-btn" onclick="SlotGame.spin()">🎰 GIRA!</button>
-            <button class="btn-game btn-double" id="auto-btn" onclick="SlotGame.toggleAuto()">AUTO: OFF</button>
+            <button class="btn-game btn-deal btn-spin-large" id="spin-btn" onclick="SlotGame.spin()">
+              <span class="btn-icon">🎰</span>
+              <span class="btn-text">GIRA!</span>
+            </button>
+            <button class="btn-game btn-double" id="auto-btn" onclick="SlotGame.toggleAuto()">
+              <span class="btn-icon">⚡</span>
+              <span class="btn-text">AUTO: OFF</span>
+            </button>
           </div>
-          <div class="hotkey-hint"><span class="key-badge">Enter</span> per girare rapidamente</div>
+          
+          <div class="hotkey-hint">
+            <span class="key-badge">Enter</span> per girare rapidamente
+          </div>
         </div>
 
         <!-- PAYTABLE -->
-        <div style="margin-top:1.25rem">
-          <div style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-2);margin-bottom:0.5rem">TABELLA PAGAMENTI</div>
-          <div class="slot-multiplier">
-            <div class="mult-item">🍒🍒🍒 → 5x</div>
-            <div class="mult-item">🍋🍋🍋 → 8x</div>
-            <div class="mult-item">🍊🍊🍊 → 10x</div>
-            <div class="mult-item">🍇🍇🍇 → 15x</div>
-            <div class="mult-item">⭐⭐⭐ → 25x</div>
-            <div class="mult-item">💎💎💎 → 50x</div>
-            <div class="mult-item">7️⃣7️⃣7️⃣ → 100x</div>
-            <div class="mult-item">🔔🔔🔔 → 200x</div>
-            <div class="mult-item">🍒🍒? → 1.5x</div>
+        <div class="paytable-container">
+          <div class="paytable-header">💰 TABELLA PAGAMENTI</div>
+          <div class="paytable-grid">
+            <div class="paytable-item premium">
+              <div class="paytable-symbols">🔔🔔🔔</div>
+              <div class="paytable-multiplier">200x</div>
+            </div>
+            <div class="paytable-item premium">
+              <div class="paytable-symbols">7️⃣7️⃣7️⃣</div>
+              <div class="paytable-multiplier">100x</div>
+            </div>
+            <div class="paytable-item high">
+              <div class="paytable-symbols">💎💎💎</div>
+              <div class="paytable-multiplier">50x</div>
+            </div>
+            <div class="paytable-item high">
+              <div class="paytable-symbols">⭐⭐⭐</div>
+              <div class="paytable-multiplier">25x</div>
+            </div>
+            <div class="paytable-item medium">
+              <div class="paytable-symbols">🍇🍇🍇</div>
+              <div class="paytable-multiplier">15x</div>
+            </div>
+            <div class="paytable-item medium">
+              <div class="paytable-symbols">🍊🍊🍊</div>
+              <div class="paytable-multiplier">10x</div>
+            </div>
+            <div class="paytable-item low">
+              <div class="paytable-symbols">🍋🍋🍋</div>
+              <div class="paytable-multiplier">8x</div>
+            </div>
+            <div class="paytable-item low">
+              <div class="paytable-symbols">🍒🍒🍒</div>
+              <div class="paytable-multiplier">5x</div>
+            </div>
           </div>
+          <div class="paytable-note">💡 Due simboli uguali pagano anche!</div>
         </div>
       </div>`;
   }
@@ -107,16 +160,12 @@ const SlotGame = (() => {
     const btn = document.getElementById('auto-btn');
     if (!btn) return;
     if (autoOn) {
-      btn.textContent = 'AUTO SPIN: ON';
-      btn.style.background = 'var(--red-bg)';
-      btn.style.borderColor = 'var(--red)';
-      btn.style.color = 'var(--red)';
+      btn.innerHTML = '<span class="btn-icon">⚡</span><span class="btn-text">AUTO: ON</span>';
+      btn.classList.add('auto-active');
       autoSpinInterval = setInterval(() => { if (!spinning) spin(); }, 1500);
     } else {
-      btn.textContent = 'AUTO SPIN: OFF';
-      btn.style.background = '';
-      btn.style.borderColor = '';
-      btn.style.color = '';
+      btn.innerHTML = '<span class="btn-icon">⚡</span><span class="btn-text">AUTO: OFF</span>';
+      btn.classList.remove('auto-active');
       clearInterval(autoSpinInterval);
     }
   }
@@ -136,21 +185,18 @@ const SlotGame = (() => {
     document.getElementById('slot-result').innerHTML = '';
     AudioEngine.play('spin');
 
-    // Animate
-    const reelEls = [0,1,2].map(i => document.getElementById(`reel-${i}`));
-    reelEls.forEach(el => { if(el) el.classList.add('spinning'); });
-
     const newReels = [weightedRandom(), weightedRandom(), weightedRandom()];
 
-    // Stagger stop
+    // Start spinning all reels
     for (let i = 0; i < 3; i++) {
-      await delay(400 + i * 250);
-      const el = document.getElementById(`reel-${i}`);
-      if (el) {
-        el.classList.remove('spinning');
-        el.textContent = newReels[i];
-        AudioEngine.play('slotStop');
-      }
+      startReelSpin(i);
+    }
+
+    // Stop reels one by one with delay
+    for (let i = 0; i < 3; i++) {
+      await delay(800 + i * 400);
+      stopReelSpin(i, newReels[i]);
+      AudioEngine.play('slotStop');
     }
 
     currentReels = newReels;
@@ -159,6 +205,16 @@ const SlotGame = (() => {
     if (mult > 0) {
       const win = parseFloat((bet * mult).toFixed(2));
       State.addBalance(win);
+      
+      // Add glow effect to winning reels
+      [0, 1, 2].forEach(i => {
+        const reel = document.getElementById(`reel-${i}`);
+        if (reel) {
+          reel.classList.add('winning');
+          setTimeout(() => reel.classList.remove('winning'), 2000);
+        }
+      });
+      
       const resultEl = document.getElementById('slot-result');
       if (resultEl) {
         resultEl.innerHTML = `<div class="result-banner result-win">🏆 HAI VINTO ${formatCurrency(win)}! (${mult}x)</div>`;
@@ -199,6 +255,46 @@ const SlotGame = (() => {
     spinning = false;
     const spinBtn = document.getElementById('spin-btn');
     if (spinBtn) spinBtn.disabled = false;
+  }
+
+  function startReelSpin(reelIndex) {
+    const reelEl = document.getElementById(`reel-${reelIndex}`);
+    if (!reelEl) return;
+    
+    reelEl.classList.add('spinning');
+    
+    // Attiva le luci
+    document.querySelectorAll('.light').forEach(light => light.classList.add('active'));
+    
+    // Cambia simbolo velocemente per dare effetto di rotazione
+    const interval = setInterval(() => {
+      const randomSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+      reelEl.innerHTML = `<div class="reel-symbol">${randomSymbol}</div>`;
+    }, 100);
+    
+    // Salva l'interval per poterlo fermare dopo
+    reelEl.dataset.interval = interval;
+  }
+
+  function stopReelSpin(reelIndex, finalSymbol) {
+    const reelEl = document.getElementById(`reel-${reelIndex}`);
+    if (!reelEl) return;
+    
+    // Ferma l'interval
+    const interval = reelEl.dataset.interval;
+    if (interval) {
+      clearInterval(parseInt(interval));
+    }
+    
+    reelEl.classList.remove('spinning');
+    reelEl.innerHTML = `<div class="reel-symbol final">${finalSymbol}</div>`;
+    
+    // Se è l'ultimo rullo, disattiva le luci
+    if (reelIndex === 2) {
+      setTimeout(() => {
+        document.querySelectorAll('.light').forEach(light => light.classList.remove('active'));
+      }, 300);
+    }
   }
 
   return { render, spin, toggleAuto };

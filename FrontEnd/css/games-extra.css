@@ -478,6 +478,15 @@
   margin-top: 1.5rem;
 }
 
+.podium-position-row {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.podium-position-row .standings-pos {
+  font-size: 1.4rem;
+}
+
 /* ── RESULT SIMULATION ── */
 .result-simulation {
   position: fixed;
@@ -746,6 +755,7 @@
   border-radius: var(--radius);
   border: 2px solid var(--accent);
   box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+  height: 80px;
 }
 
 .roulette-pointer-h {
@@ -767,6 +777,7 @@
   height: 80px;
   transition: transform 0.1s linear;
   transform: translateX(0);
+  will-change: transform;
 }
 
 .strip-number {

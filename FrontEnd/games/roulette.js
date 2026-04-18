@@ -10,6 +10,69 @@ const RouletteGame = (() => {
   let spinning = false;
   let lastResult = null;
 
+  // Helper functions
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function safeFormatCurrency(amount) {
+    if (typeof formatCurrency === 'function') {
+      return formatCurrency(amount);
+    }
+    return `€ ${Number(amount || 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
+  function safeGetBalance() {
+    return (typeof State !== 'undefined' && State.balance !== undefined) ? State.balance : 1000;
+  }
+
+  function safeDeductBalance(amount) {
+    if (typeof State !== 'undefined' && State.deductBalance) {
+      return State.deductBalance(amount);
+    }
+    return true; // Fallback per demo
+  }
+
+  function safeAddBalance(amount) {
+    if (typeof State !== 'undefined' && State.addBalance) {
+      State.addBalance(amount);
+    }
+  }
+
+  function safeRecordHistory(record) {
+    if (typeof State !== 'undefined' && State.recordHistory) {
+      State.recordHistory(record);
+    }
+  }
+
+  function safeGetBet(gameId) {
+    if (typeof getBet === 'function') {
+      return getBet(gameId);
+    }
+    const input = document.getElementById(`${gameId}-bet`);
+    return parseFloat(input ? input.value : 0) || 0;
+  }
+
+  function safeShowToast(msg, type, duration) {
+    if (typeof showToast === 'function') {
+      showToast(msg, type, duration);
+    } else {
+      console.log(`Toast: ${msg}`);
+    }
+  }
+
+  function safeCreateBetControls(gameId, defaultBet) {
+    if (typeof createBetControls === 'function') {
+      return createBetControls(gameId, defaultBet);
+    }
+    return `
+      <div class="bet-controls">
+        <label>Puntata (€)</label>
+        <input type="number" id="${gameId}-bet" value="${defaultBet}" min="1" max="1000" />
+      </div>
+    `;
+  }
+
   function getColor(n) {
     if (n === 0) return 'green';
     return RED_NUMS.includes(n) ? 'red' : 'black';
@@ -32,7 +95,7 @@ const RouletteGame = (() => {
       <div class="game-section" style="max-width:1000px">
         <div class="game-header">
           <h2 class="game-title">⭕ ROULETTE EUROPEA</h2>
-          <div class="game-balance" id="rl-bal">${formatCurrency(State.balance)}</div>
+          <div class="game-balance" id="rl-bal">${safeFormatCurrency(safeGetBalance())}</div>
         </div>
         <div class="roulette-container">
           <div class="roulette-wheel-area">
@@ -61,7 +124,7 @@ const RouletteGame = (() => {
             </div>
             <div class="section-divider"></div>
             <div id="rl-bet-list" style="font-size:0.8rem;color:var(--text-1);min-height:40px;margin-bottom:0.5rem"></div>
-            ${createBetControls('rl', 5)}
+            ${safeCreateBetControls('rl', 5)}
             <div class="game-btn-row">
               <button class="btn-game btn-deal" id="rl-spin" onclick="RouletteGame.spin()">🎯 LANCIA!</button>
               <button class="btn-game btn-clear" onclick="RouletteGame.clearBets()">Cancella Scommesse</button>
@@ -74,11 +137,15 @@ const RouletteGame = (() => {
   function generateWheelStrip() {
     const numbers = [0,26,3,35,12,28,7,29,18,22,9,31,14,20,1,33,16,24,5,34,17,6,27,13,36,11,30,8,23,10,32,15,19,4,21,2,25];
     let html = '';
-    for (let i = 0; i < numbers.length; i++) {
-      const num = numbers[i];
-      const color = getColor(num);
-      const bgColor = color === 'red' ? '#e74c3c' : color === 'black' ? '#000' : '#1abc9c';
-      html += `<div class="strip-number" style="background:${bgColor}">${num}</div>`;
+    
+    // Ripeti i numeri 4 volte per avere abbastanza spazio per l'animazione
+    for (let repeat = 0; repeat < 4; repeat++) {
+      for (let i = 0; i < numbers.length; i++) {
+        const num = numbers[i];
+        const color = getColor(num);
+        const bgColor = color === 'red' ? '#e74c3c' : color === 'black' ? '#000' : '#1abc9c';
+        html += `<div class="strip-number" style="background:${bgColor}">${num}</div>`;
+      }
     }
     return html;
   }
@@ -98,8 +165,8 @@ const RouletteGame = (() => {
   }
 
   function betNum(n) {
-    const bet = getBet('rl');
-    if (!bet || bet < 1) { showToast('Imposta la puntata prima', 'info'); return; }
+    const bet = safeGetBet('rl');
+    if (!bet || bet < 1) { safeShowToast('Imposta la puntata prima', 'info'); return; }
     selectedBets.push({ type: 'number', value: n, label: `Num ${n}`, odds: 36, amount: bet });
     updateBetList();
     // Visual feedback
@@ -109,8 +176,8 @@ const RouletteGame = (() => {
   }
 
   function betOutside(type, label, odds) {
-    const bet = getBet('rl');
-    if (!bet || bet < 1) { showToast('Imposta la puntata prima', 'info'); return; }
+    const bet = safeGetBet('rl');
+    if (!bet || bet < 1) { safeShowToast('Imposta la puntata prima', 'info'); return; }
     // Remove duplicate
     selectedBets = selectedBets.filter(b => b.type !== type);
     selectedBets.push({ type, label, odds, amount: bet });
@@ -134,28 +201,51 @@ const RouletteGame = (() => {
 
   async function spin() {
     if (spinning) return;
-    if (selectedBets.length === 0) { showToast('Piazza almeno una scommessa!', 'info'); return; }
+    if (selectedBets.length === 0) { safeShowToast('Piazza almeno una scommessa!', 'info'); return; }
 
     const totalBet = selectedBets.reduce((s, b) => s + b.amount, 0);
-    if (!State.deductBalance(totalBet)) { showToast('Saldo insufficiente!', 'lose'); return; }
+    if (!safeDeductBalance(totalBet)) { safeShowToast('Saldo insufficiente!', 'lose'); return; }
 
     spinning = true;
     document.getElementById('rl-spin').disabled = true;
-    AudioEngine.play('rouletteSpin');
+    if (typeof AudioEngine !== 'undefined') AudioEngine.play('rouletteSpin');
 
-    // Animate wheel with acceleration and deceleration
+    // Reset wheel position first
     const wheel = document.getElementById('rl-wheel');
     const result = Math.floor(Math.random() * 37); // 0-36
     const numbers = [0,26,3,35,12,28,7,29,18,22,9,31,14,20,1,33,16,24,5,34,17,6,27,13,36,11,30,8,23,10,32,15,19,4,21,2,25];
     const resultIndex = numbers.indexOf(result);
-    const offset = -(resultIndex * 60) + 300; // 60px per numero, centered
     
     if (wheel) {
-      wheel.style.transition = 'transform 5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-      wheel.style.transform = `translateX(${offset}px)`;
+      // Reset position instantly
+      wheel.style.transition = 'none';
+      wheel.style.transform = 'translateX(0px)';
+      
+      // Force reflow
+      wheel.offsetHeight;
+      
+      // Start spinning animation
+      const numberWidth = 60; // Width of each number
+      const centerOffset = 300; // Offset to center the result
+      const totalNumbers = numbers.length; // 37 numbers
+      
+      // Usa il secondo set di numeri (ripetizione 1) per il risultato finale
+      // Questo assicura che ci siano numeri prima e dopo
+      const targetIndex = totalNumbers + resultIndex; // Secondo set
+      const finalPosition = -(targetIndex * numberWidth) + centerOffset;
+      
+      // Apply animation
+      setTimeout(() => {
+        wheel.style.transition = 'transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)';
+        wheel.style.transform = `translateX(${finalPosition}px)`;
+      }, 50);
     }
 
-    await delay(5200);
+    // Show spinning indicator
+    const resultNumEl = document.getElementById('rl-result-num');
+    resultNumEl.innerHTML = '<span class="spinning-indicator">🎰 Girando...</span>';
+
+    await delay(3200);
 
     // Calculate wins
     let totalWin = 0;
@@ -171,7 +261,6 @@ const RouletteGame = (() => {
     // Update result with animation
     const color = getColor(result);
     const colorEmoji = { red: '🔴', black: '⚫', green: '🟢' }[color];
-    const resultNumEl = document.getElementById('rl-result-num');
     
     resultNumEl.innerHTML = `<span class="result-number-animate">${colorEmoji} ${result}</span>`;
     resultNumEl.classList.add('result-pop');
@@ -180,32 +269,41 @@ const RouletteGame = (() => {
 
     const resultEl = document.getElementById('rl-result');
     if (totalWin > 0) {
-      State.addBalance(totalWin);
-      resultEl.innerHTML = `<div class="result-banner result-win">✅ VINCI ${formatCurrency(totalWin)}!</div>`;
-      showToast(`🎯 Numero ${result} — Vinto ${formatCurrency(totalWin)}!`, 'win');
-      if (totalWin > 50) VFX.celebrate();
-      State.recordHistory({ game: 'Roulette', bet: totalBet, result: 'win', gain: totalWin - totalBet });
+      safeAddBalance(totalWin);
+      resultEl.innerHTML = `<div class="result-banner result-win">✅ VINCI ${safeFormatCurrency(totalWin)}!</div>`;
+      safeShowToast(`🎯 Numero ${result} — Vinto ${safeFormatCurrency(totalWin)}!`, 'win');
+      if (totalWin > 50 && typeof VFX !== 'undefined') VFX.celebrate();
+      safeRecordHistory({ game: 'Roulette', bet: totalBet, result: 'win', gain: totalWin - totalBet });
     } else {
       resultEl.innerHTML = `<div class="result-banner result-lose">❌ Numero ${result} — Nessuna vincita</div>`;
-      showToast(`⭕ Numero ${result} — Perso`, 'lose');
-      VFX.screenShake();
-      State.recordHistory({ game: 'Roulette', bet: totalBet, result: 'lose', gain: -totalBet });
+      safeShowToast(`⭕ Numero ${result} — Perso`, 'lose');
+      if (typeof VFX !== 'undefined') VFX.screenShake();
+      safeRecordHistory({ game: 'Roulette', bet: totalBet, result: 'lose', gain: -totalBet });
     }
 
     const balEl = document.getElementById('rl-bal');
-    if (balEl) balEl.textContent = formatCurrency(State.balance);
+    if (balEl) balEl.textContent = safeFormatCurrency(safeGetBalance());
 
     spinning = false;
     clearBets();
     document.getElementById('rl-spin').disabled = false;
     
-    // Reset wheel smoothly
+    // Reset wheel smoothly after showing results
     await delay(2000);
     if (wheel) {
-      wheel.style.transition = 'transform 1s ease-out';
-      wheel.style.transform = 'translateX(0)';
+      wheel.style.transition = 'transform 0.8s ease-out';
+      wheel.style.transform = 'translateX(0px)';
     }
-    resultNumEl.classList.remove('result-pop');
+    
+    // Clear animations
+    await delay(800);
+    if (resultNumEl) resultNumEl.classList.remove('result-pop');
+    
+    // Clear result after a while
+    setTimeout(() => {
+      if (resultEl) resultEl.innerHTML = '';
+      if (resultNumEl) resultNumEl.innerHTML = '—';
+    }, 3000);
   }
 
   function checkBetWin(bet, result) {
@@ -227,3 +325,10 @@ const RouletteGame = (() => {
 
   return { render, betNum, betOutside, removeBet, clearBets, spin };
 })();
+
+// Verifica che il modulo sia stato caricato correttamente
+if (typeof RouletteGame === 'undefined') {
+  console.error('❌ RouletteGame non è stato caricato correttamente');
+} else {
+  console.log('✅ RouletteGame caricato con successo');
+}

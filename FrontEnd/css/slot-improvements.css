@@ -1,0 +1,385 @@
+/* =============================================
+   SLOT MACHINE IMPROVEMENTS
+   ============================================= */
+
+/* Jackpot Display */
+.jackpot-container {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.jackpot-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+  animation: jackpot-shine 3s linear infinite;
+}
+
+@keyframes jackpot-shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.jackpot-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #ffd700;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.jackpot-amount {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  color: #ffd700;
+  letter-spacing: 0.05em;
+  text-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.8),
+    0 0 40px rgba(255, 215, 0, 0.4);
+  animation: jackpot-pulse 2s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes jackpot-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.jackpot-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-2);
+  margin-top: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Slot Machine Frame */
+.slot-machine-frame {
+  background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+  border: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(0, 212, 255, 0.2),
+    inset 0 2px 10px rgba(255, 255, 255, 0.05);
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.slot-machine-top {
+  margin-bottom: 1rem;
+}
+
+.slot-lights {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  animation: light-blink 1s ease-in-out infinite;
+}
+
+.light:nth-child(1) { animation-delay: 0s; }
+.light:nth-child(2) { animation-delay: 0.2s; }
+.light:nth-child(3) { animation-delay: 0.4s; }
+.light:nth-child(4) { animation-delay: 0.6s; }
+.light:nth-child(5) { animation-delay: 0.8s; }
+
+.light.active {
+  animation: light-blink-fast 0.3s ease-in-out infinite;
+}
+
+@keyframes light-blink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 10px var(--accent); }
+  50% { opacity: 0.3; box-shadow: 0 0 5px var(--accent); }
+}
+
+@keyframes light-blink-fast {
+  0%, 100% { 
+    opacity: 1; 
+    box-shadow: 0 0 20px var(--accent);
+    background: var(--accent-light);
+  }
+  50% { 
+    opacity: 0.5; 
+    box-shadow: 0 0 10px var(--accent);
+    background: var(--accent);
+  }
+}
+
+.slot-reels-container {
+  position: relative;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+
+.slot-payline {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  transform: translateY(-50%);
+  pointer-events: none;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.slot-reels {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.slot-machine-bottom {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Enhanced Spin Button */
+.btn-spin-large {
+  font-size: 1.2rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  border: 2px solid var(--accent-light);
+  box-shadow: 
+    0 4px 20px rgba(0, 212, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-spin-large::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: rotate(45deg);
+  animation: button-shine 3s linear infinite;
+}
+
+@keyframes button-shine {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.btn-spin-large:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 30px rgba(0, 212, 255, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.btn-spin-large:active {
+  transform: translateY(0);
+}
+
+.btn-icon {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+.btn-text {
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.auto-active {
+  background: linear-gradient(135deg, var(--red), #cc0033) !important;
+  border-color: var(--red) !important;
+  animation: auto-pulse 1s ease-in-out infinite;
+}
+
+@keyframes auto-pulse {
+  0%, 100% { 
+    box-shadow: 0 4px 20px rgba(255, 51, 102, 0.4);
+  }
+  50% { 
+    box-shadow: 0 4px 30px rgba(255, 51, 102, 0.6);
+  }
+}
+
+/* Paytable */
+.paytable-container {
+  margin-top: 2rem;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.paytable-header {
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.paytable-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.paytable-item {
+  background: var(--bg-3);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.paytable-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+}
+
+.paytable-item.premium {
+  border-color: #ffd700;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+}
+
+.paytable-item.premium:hover {
+  border-color: #ffd700;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.paytable-item.high {
+  border-color: rgba(138, 43, 226, 0.5);
+}
+
+.paytable-item.medium {
+  border-color: rgba(0, 191, 255, 0.5);
+}
+
+.paytable-item.low {
+  border-color: rgba(50, 205, 50, 0.5);
+}
+
+.paytable-symbols {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.paytable-multiplier {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.paytable-item.premium .paytable-multiplier {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.paytable-note {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-2);
+  font-style: italic;
+}
+
+/* Enhanced Reel Styling */
+.slot-reel {
+  width: 110px;
+  height: 130px;
+  background: linear-gradient(135deg, #1a1a22, #0f0f12);
+  border: 3px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 
+    inset 0 4px 12px rgba(0,0,0,0.7),
+    0 4px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot-reel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, 
+    rgba(255,255,255,0.05) 0%, 
+    transparent 20%, 
+    transparent 80%, 
+    rgba(0,0,0,0.3) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.reel-symbol {
+  font-size: 4rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  position: relative;
+  z-index: 1;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  .jackpot-amount {
+    font-size: 2.5rem;
+  }
+  
+  .slot-reels {
+    gap: 0.75rem;
+  }
+  
+  .slot-reel {
+    width: 90px;
+    height: 110px;
+  }
+  
+  .reel-symbol {
+    font-size: 3rem;
+  }
+  
+  .paytable-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .btn-spin-large {
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+  }
+}
