@@ -7,6 +7,15 @@ public class VideoPoker {
     private static final String[] RANKS = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
     private static final Map<String, Integer> RANK_VALUES = new HashMap<>();
     
+    // ANSI Color codes per le carte
+    private static final String RED = "\u001B[31m";
+    private static final String BLACK = "\u001B[30m";
+    private static final String RESET = "\u001B[0m";
+    private static final String BOLD = "\u001B[1m";
+    private static final String CYAN = "\u001B[36m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String GREEN = "\u001B[32m";
+    
     static {
         for (int i = 0; i < RANKS.length; i++) {
             RANK_VALUES.put(RANKS[i], i + 2);
@@ -26,9 +35,18 @@ public class VideoPoker {
             return RANK_VALUES.getOrDefault(rank, 0);
         }
         
+        public boolean isRed() {
+            return suit.equals("♥") || suit.equals("♦");
+        }
+        
         @Override
         public String toString() {
             return rank + suit;
+        }
+        
+        public String toColoredString() {
+            String color = isRed() ? RED : BLACK;
+            return color + BOLD + rank + suit + RESET;
         }
     }
     
@@ -123,5 +141,37 @@ public class VideoPoker {
         }
         Collections.shuffle(deck);
         return deck;
+    }
+    
+    public static void printGameRules() {
+        System.out.println("\n╔════════════════════════════════════════════════════════════╗");
+        System.out.println("║           " + CYAN + BOLD + "🎰 VIDEO POKER - REGOLE DEL GIOCO" + RESET + "           ║");
+        System.out.println("╠════════════════════════════════════════════════════════════╣");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + YELLOW + "COME SI GIOCA:" + RESET + "                                            ║");
+        System.out.println("║  1. Piazza la tua puntata                                  ║");
+        System.out.println("║  2. Ricevi 5 carte iniziali                                ║");
+        System.out.println("║  3. Scegli quali carte tenere (hold)                       ║");
+        System.out.println("║  4. Le carte non tenute vengono sostituite                 ║");
+        System.out.println("║  5. Vinci in base alla combinazione finale                 ║");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + GREEN + "COMBINAZIONI VINCENTI (Moltiplicatori):" + RESET + "                  ║");
+        System.out.println("║  • Royal Flush (A-K-Q-J-10 stesso seme)    → 800x         ║");
+        System.out.println("║  • Straight Flush (scala colore)           → 50x          ║");
+        System.out.println("║  • Poker (4 carte uguali)                  → 25x          ║");
+        System.out.println("║  • Full House (tris + coppia)              → 9x           ║");
+        System.out.println("║  • Flush (5 carte stesso seme)             → 6x           ║");
+        System.out.println("║  • Straight (scala)                        → 4x           ║");
+        System.out.println("║  • Tris (3 carte uguali)                   → 3x           ║");
+        System.out.println("║  • Doppia Coppia                           → 2x           ║");
+        System.out.println("║  • Coppia J+ (J, Q, K, A)                  → 1x           ║");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + YELLOW + "⚠️  GIOCO RESPONSABILE:" + RESET + "                                   ║");
+        System.out.println("║  • Stabilisci un budget prima di giocare                   ║");
+        System.out.println("║  • Non inseguire le perdite                                ║");
+        System.out.println("║  • Il gioco deve rimanere un divertimento                  ║");
+        System.out.println("║  • Se hai problemi, cerca aiuto professionale              ║");
+        System.out.println("║                                                            ║");
+        System.out.println("╚════════════════════════════════════════════════════════════╝");
     }
 }

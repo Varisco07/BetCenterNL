@@ -6,6 +6,15 @@ public class Baccarat {
     private static final String[] SUITS = {"♠", "♥", "♦", "♣"};
     private static final String[] RANKS = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
     
+    // ANSI Color codes
+    private static final String RED = "\u001B[31m";
+    private static final String BLACK = "\u001B[30m";
+    private static final String RESET = "\u001B[0m";
+    private static final String BOLD = "\u001B[1m";
+    private static final String CYAN = "\u001B[36m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String GREEN = "\u001B[32m";
+    
     public static class Card {
         public String rank;
         public String suit;
@@ -21,9 +30,18 @@ public class Baccarat {
             return Integer.parseInt(rank);
         }
         
+        public boolean isRed() {
+            return suit.equals("♥") || suit.equals("♦");
+        }
+        
         @Override
         public String toString() {
             return rank + suit;
+        }
+        
+        public String toColoredString() {
+            String color = isRed() ? RED : BLACK;
+            return color + BOLD + rank + suit + RESET;
         }
     }
     
@@ -104,5 +122,38 @@ public class Baccarat {
         }
         Collections.shuffle(deck);
         return deck;
+    }
+    
+    public static void printGameRules() {
+        System.out.println("\n╔════════════════════════════════════════════════════════════╗");
+        System.out.println("║            " + CYAN + BOLD + "🎴 BACCARAT - REGOLE DEL GIOCO" + RESET + "            ║");
+        System.out.println("╠════════════════════════════════════════════════════════════╣");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + YELLOW + "COME SI GIOCA:" + RESET + "                                            ║");
+        System.out.println("║  1. Scommetti su GIOCATORE, BANCO o PAREGGIO              ║");
+        System.out.println("║  2. Vengono distribuite 2 carte a Giocatore e Banco       ║");
+        System.out.println("║  3. Il valore delle carte viene calcolato (modulo 10)     ║");
+        System.out.println("║  4. Può essere pescata una terza carta (regole fisse)     ║");
+        System.out.println("║  5. Vince chi si avvicina di più a 9                       ║");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + GREEN + "VALORI DELLE CARTE:" + RESET + "                                       ║");
+        System.out.println("║  • Asso = 1 punto                                          ║");
+        System.out.println("║  • 2-9 = valore nominale                                   ║");
+        System.out.println("║  • 10, J, Q, K = 0 punti                                   ║");
+        System.out.println("║  • Totale > 9: si conta solo l'ultima cifra                ║");
+        System.out.println("║    (es: 7+8=15 → vale 5)                                   ║");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + GREEN + "PAGAMENTI:" + RESET + "                                                ║");
+        System.out.println("║  • Giocatore vince  → 2.00x (1:1)                          ║");
+        System.out.println("║  • Banco vince      → 1.95x (1:1 meno 5% commissione)     ║");
+        System.out.println("║  • Pareggio         → 9.00x (8:1)                          ║");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + YELLOW + "⚠️  GIOCO RESPONSABILE:" + RESET + "                                   ║");
+        System.out.println("║  • Stabilisci un budget e rispettalo                       ║");
+        System.out.println("║  • Non cercare di recuperare le perdite                    ║");
+        System.out.println("║  • Gioca per divertimento, non per necessità               ║");
+        System.out.println("║  • Chiedi aiuto se il gioco diventa un problema            ║");
+        System.out.println("║                                                            ║");
+        System.out.println("╚════════════════════════════════════════════════════════════╝");
     }
 }

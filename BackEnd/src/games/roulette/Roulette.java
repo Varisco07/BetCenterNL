@@ -1,9 +1,22 @@
 package games.roulette;
 
 import java.util.*;
-import core.State;
+import core.*;
 
 public class Roulette {
+    
+    // ANSI Color codes
+    private static final String RED = "\u001B[31m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String CYAN = "\u001B[36m";
+    private static final String MAGENTA = "\u001B[35m";
+    private static final String WHITE = "\u001B[37m";
+    private static final String RESET = "\u001B[0m";
+    private static final String BOLD = "\u001B[1m";
+    private static final String BG_RED = "\u001B[41m";
+    private static final String BG_BLACK = "\u001B[40m";
+    private static final String BG_GREEN = "\u001B[42m";
 
     private ruotaRoulette wheel = new ruotaRoulette();
     private List<Bet> bets = new ArrayList<>();
@@ -57,19 +70,28 @@ public class Roulette {
         }
 
         System.out.println("├─────────────────────────────────────────┤");
-        System.out.printf("│ TOTALE PUNTATO: €%.2f%n", totalBet);
-        System.out.printf("│ TOTALE VINTO: €%.2f%n", totalWin);
+        System.out.printf("│ TOTALE PUNTATO: " + CYAN + "€%.2f" + RESET + "%n", totalBet);
+        System.out.printf("│ TOTALE VINTO: " + (totalWin > 0 ? GREEN : RED) + "€%.2f" + RESET + "%n", totalWin);
         
         double netGain = totalWin - totalBet;
         if (netGain > 0) {
             State.addBalance(totalWin);
-            System.out.printf("│ 🎉 GUADAGNO NETTO: +€%.2f%n", netGain);
+            System.out.printf("│ " + GREEN + BOLD + "🎉 GUADAGNO NETTO: +€%.2f" + RESET + "%n", netGain);
         } else {
-            System.out.printf("│ 💸 PERDITA NETTA: €%.2f%n", Math.abs(netGain));
+            System.out.printf("│ " + RED + "💸 PERDITA NETTA: €%.2f" + RESET + "%n", Math.abs(netGain));
         }
         
-        System.out.printf("│ 💰 SALDO ATTUALE: €%.2f%n", State.getBalance());
+        System.out.printf("│ " + CYAN + "💰 SALDO ATTUALE: €%.2f" + RESET + "%n", State.getBalance());
         System.out.println("└─────────────────────────────────────────┘");
+
+        // Registra il risultato nel database
+        core.User user = core.Auth.getCurrentUser();
+        if (user != null) {
+            netGain = totalWin - totalBet;
+            boolean win = netGain > 0;
+            core.GameRecord record = new core.GameRecord("Roulette", totalBet, netGain, win);
+            core.Database.recordGameResult(user.getId(), record);
+        }
 
         bets.clear();
     }
@@ -78,7 +100,7 @@ public class Roulette {
         String[] frames = {"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"};
         try {
             for (int i = 0; i < 20; i++) {
-                System.out.print("\r" + frames[i % frames.length] + " Girando...");
+                System.out.print("\r" + CYAN + frames[i % frames.length] + " Girando..." + RESET);
                 Thread.sleep(100);
             }
             System.out.print("\r");
@@ -88,24 +110,37 @@ public class Roulette {
     }
 
     private void displayResult(int number, String color) {
-        String colorEmoji = getColorEmoji(color);
+        String colorDisplay = "";
+        String bgColor = "";
+        
+        if (color.equals("red")) {
+            colorDisplay = RED + "ROSSO" + RESET;
+            bgColor = BG_RED + WHITE + BOLD;
+        } else if (color.equals("black")) {
+            colorDisplay = "NERO";
+            bgColor = BG_BLACK + WHITE + BOLD;
+        } else {
+            colorDisplay = GREEN + "VERDE" + RESET;
+            bgColor = BG_GREEN + WHITE + BOLD;
+        }
+        
         String border = "═".repeat(25);
         
         System.out.println("\n╔" + border + "╗");
-        System.out.printf("║     🎯 RISULTATO: %s%-2d     ║%n", colorEmoji, number);
-        System.out.printf("║        (%s)        ║%n", color.toUpperCase());
+        System.out.printf("║     🎯 RISULTATO: " + bgColor + " %2d " + RESET + "     ║%n", number);
+        System.out.printf("║        (%s)        ║%n", colorDisplay);
         System.out.println("╚" + border + "╝");
         
         // Mostra info aggiuntive sul numero
         if (number == 0) {
-            System.out.println("🍀 ZERO! La casa vince su pari/dispari, rosso/nero");
+            System.out.println(YELLOW + "🍀 ZERO! La casa vince su pari/dispari, rosso/nero" + RESET);
         } else {
-            String parity = (number % 2 == 0) ? "PARI" : "DISPARI";
+            String parity = (number % 2 == 0) ? CYAN + "PARI" + RESET : MAGENTA + "DISPARI" + RESET;
             String range = (number <= 18) ? "BASSO (1-18)" : "ALTO (19-36)";
             String dozen = getDozens(number);
             String column = getColumn(number);
             
-            System.out.println("📋 Proprietà del numero:");
+            System.out.println(CYAN + "📋 Proprietà del numero:" + RESET);
             System.out.println("   • " + parity + " • " + range);
             System.out.println("   • " + dozen + " • " + column);
         }

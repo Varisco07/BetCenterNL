@@ -5,6 +5,16 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class ChickenGame {
+    
+    // ANSI Color codes
+    private static final String RED = "\u001B[31m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String CYAN = "\u001B[36m";
+    private static final String MAGENTA = "\u001B[35m";
+    private static final String RESET = "\u001B[0m";
+    private static final String BOLD = "\u001B[1m";
+    
     private static final int GRID_SIZE = 5;
     private static final Random random = new Random();
     
@@ -76,10 +86,10 @@ public class ChickenGame {
     
     public void displayGrid() {
         System.out.println("\n╔════════════════════════════════════════╗");
-        System.out.println("║     🐔 CHICKEN CROSS THE ROAD         ║");
+        System.out.println("║     " + YELLOW + BOLD + "🐔 CHICKEN CROSS THE ROAD" + RESET + "         ║");
         System.out.println("╠════════════════════════════════════════╣");
-        System.out.printf("║ Livello: %d  │  Moltiplicatore: %.2fx  ║%n", level, currentMultiplier);
-        System.out.printf("║ Puntata: €%.2f  │  Vincita: €%.2f      ║%n", bet, bet * currentMultiplier);
+        System.out.printf("║ " + CYAN + "Livello: %d" + RESET + "  │  " + GREEN + "Moltiplicatore: %.2fx" + RESET + "  ║%n", level, currentMultiplier);
+        System.out.printf("║ " + YELLOW + "Puntata: €%.2f" + RESET + "  │  " + GREEN + "Vincita: €%.2f" + RESET + "      ║%n", bet, bet * currentMultiplier);
         System.out.println("╠════════════════════════════════════════╣");
         
         // Mostra la griglia
@@ -88,7 +98,7 @@ public class ChickenGame {
             System.out.print("║     ");
             for (int j = 0; j < GRID_SIZE; j++) {
                 if (j == i) {
-                    System.out.print("[" + (j + 1) + "] ");
+                    System.out.print(CYAN + "[" + (j + 1) + "]" + RESET + " ");
                 } else {
                     System.out.print("    ");
                 }
@@ -97,7 +107,7 @@ public class ChickenGame {
         }
         System.out.println("║                                        ║");
         System.out.println("╚════════════════════════════════════════╝");
-        System.out.println("Scegli una posizione (1-5) o 0 per incassare");
+        System.out.println(YELLOW + "Scegli una posizione (1-5) o 0 per incassare" + RESET);
     }
     
     public boolean isGameOver() {

@@ -25,6 +25,26 @@ public class GiocatoreUmano extends Giocatore {
     public int getCreditiAttuali() {
         return creditiAttuali;
     }
+    
+    public int getManiVinte() {
+        return maniVinte;
+    }
+    
+    public int getManiPerse() {
+        return maniPerse;
+    }
+    
+    public int getTotaleCreditiVinti() {
+        return totaleCreditiVinti;
+    }
+    
+    public int getTotaleCreditiPersi() {
+        return totaleCreditiPersi;
+    }
+    
+    public int maniGiocate() {
+        return maniVinte + maniPerse + maniPareggiate;
+    }
     public void aggiungiCrediti(int quantita) {
         creditiAttuali = creditiAttuali + quantita;
         totaleCreditiVinti = totaleCreditiVinti + quantita;
@@ -49,10 +69,6 @@ public class GiocatoreUmano extends Giocatore {
 
     public void registraPareggio() {
         maniPareggiate = maniPareggiate + 1;
-    }
-
-    public int maniGiocate() {
-        return maniVinte + maniPerse + maniPareggiate;
     }
 
     public void stampaStatistiche() {

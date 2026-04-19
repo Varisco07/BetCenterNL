@@ -4,6 +4,11 @@ import games.BlackJack.modello.Carta;
 import games.BlackJack.modello.MazzoCarte;
 import games.BlackJack.giocatori.GiocatoreUmano;
 import games.BlackJack.giocatori.Banco;
+import core.State;
+import core.Auth;
+import core.User;
+import core.Database;
+import core.GameRecord;
 import java.util.Scanner;
 
 public class Blackjack {
@@ -26,10 +31,13 @@ public class Blackjack {
     private GiocatoreUmano giocatore;
     private Banco banco;
     private Scanner tastiera;
+    private User user;
 
     public Blackjack() {
+        this.user = Auth.getCurrentUser();
+        double saldoAttuale = State.getBalance();
         mazzo = new MazzoCarte();
-        giocatore = new GiocatoreUmano("Giocatore", CREDITI_INIZIALI);
+        giocatore = new GiocatoreUmano("Giocatore", (int) saldoAttuale);
         banco = new Banco();
         tastiera = new Scanner(System.in);
     }
@@ -41,7 +49,7 @@ public class Blackjack {
 
         System.out.println();
         System.out.println(VERDE + "Benvenuto!" + RESET);
-        System.out.println(GIALLO + "Inizi con " + CREDITI_INIZIALI + " crediti." + RESET);
+        System.out.println(GIALLO + "Inizi con " + giocatore.getCreditiAttuali() + " crediti." + RESET);
         System.out.println();
 
         boolean vuoleContinuare = true;
@@ -63,7 +71,36 @@ public class Blackjack {
         System.out.println(BIANCO + "=== STATISTICHE FINALI ===" + RESET);
         giocatore.stampaStatistiche();
         RegoleGioco.stampaMessaggioFinale();
-
+        
+        // Sincronizza i dati con State e User
+        sincronizzaDati();
+    }
+    
+    private void sincronizzaDati() {
+        if (user == null) return;
+        
+        // Aggiorna il saldo in State
+        State.setBalance(giocatore.getCreditiAttuali());
+        
+        // Aggiorna l'utente
+        user.setSaldo(giocatore.getCreditiAttuali());
+        
+        // Registra il risultato complessivo della sessione
+        int maniGiocate = giocatore.maniGiocate();
+        if (maniGiocate > 0) {
+            int maniVinte = giocatore.getManiVinte();
+            int totaleCreditiVinti = giocatore.getTotaleCreditiVinti();
+            int totaleCreditiPersi = giocatore.getTotaleCreditiPersi();
+            int guadagnoNetto = totaleCreditiVinti - totaleCreditiPersi;
+            
+            // Registra una singola partita con il risultato complessivo
+            boolean win = guadagnoNetto > 0;
+            GameRecord record = new GameRecord("Blackjack", totaleCreditiPersi, guadagnoNetto, win);
+            Database.recordGameResult(user.getId(), record);
+        }
+        
+        // Salva i dati
+        Database.saveUsers();
     }
     private void giocaUnaMano() {
         if (mazzo.carteRimaste() < SOGLIA_CARTE_MAZZO) {

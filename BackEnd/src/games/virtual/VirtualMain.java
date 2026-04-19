@@ -153,7 +153,8 @@ public class VirtualMain {
     }
 
     private void stampaBenvenuto() {
-        System.out.println("=================================");
+        VirtualCalcio.printGameRules();
+        System.out.println("\n=================================");
         System.out.println("      ⚽ VIRTUAL SPORTS");
         System.out.println("=================================");
     }

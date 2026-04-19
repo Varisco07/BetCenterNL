@@ -1,18 +1,27 @@
 package games.dadi;
 
-import core.State;
-import core.random;
+import core.*;
 
 import java.util.Scanner;
 
 public class dadi {
+    
+    // ANSI Color codes
+    private static final String RED = "\u001B[31m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String CYAN = "\u001B[36m";
+    private static final String RESET = "\u001B[0m";
+    private static final String BOLD = "\u001B[1m";
 
     private final Scanner sc = new Scanner(System.in);
 
     public void start() {
+        
+        printGameRules();
 
-        System.out.println("🎲 CRAPS / DADI");
-        System.out.println("💰 Saldo: " + State.getBalance());
+        System.out.println("\n🎲 " + BOLD + "CRAPS / DADI" + RESET);
+        System.out.println("💰 Saldo: " + GREEN + State.getBalance() + RESET);
 
         while (true) {
 
@@ -121,6 +130,14 @@ public class dadi {
         }
 
         System.out.println("💰 Saldo: " + State.getBalance());
+        
+        // Registra il risultato nel database
+        core.User user = core.Auth.getCurrentUser();
+        if (user != null) {
+            double gain = win ? (bet * mult - bet) : -bet;
+            core.GameRecord record = new core.GameRecord("Dadi", bet, gain, win);
+            core.Database.recordGameResult(user.getId(), record);
+        }
     }
 
     private int roll() {
@@ -129,21 +146,54 @@ public class dadi {
 
     private void animate(int d1, int d2) {
 
-        System.out.println("\n🎲 LANCIO DADI...");
+        System.out.println("\n🎲 " + CYAN + "LANCIO DADI..." + RESET);
 
         for (int i = 0; i < 10; i++) {
             int a = roll();
             int b = roll();
-            System.out.print("\r🎲 " + a + " | " + b);
+            System.out.print("\r🎲 " + YELLOW + a + RESET + " | " + YELLOW + b + RESET);
             sleep(80 + i * 10);
         }
 
-        System.out.print("\r🎲 " + d1 + " | " + d2 + "   \n");
+        System.out.print("\r🎲 " + BOLD + GREEN + d1 + RESET + " | " + BOLD + GREEN + d2 + RESET + "   \n");
     }
 
     private void sleep(int ms) {
         try {
             Thread.sleep(ms);
         } catch (Exception ignored) {}
+    }
+    
+    public static void printGameRules() {
+        System.out.println("\n╔════════════════════════════════════════════════════════════╗");
+        System.out.println("║              " + CYAN + BOLD + "🎲 CRAPS - REGOLE DEL GIOCO" + RESET + "              ║");
+        System.out.println("╠════════════════════════════════════════════════════════════╣");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + YELLOW + "COME SI GIOCA:" + RESET + "                                            ║");
+        System.out.println("║  1. Scegli il tipo di scommessa                            ║");
+        System.out.println("║  2. Piazza la tua puntata                                  ║");
+        System.out.println("║  3. Lancia i dadi (2 dadi a 6 facce)                       ║");
+        System.out.println("║  4. Vinci in base al risultato e alla scommessa            ║");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + GREEN + "TIPI DI SCOMMESSE:" + RESET + "                                        ║");
+        System.out.println("║  • Pass Line (1x)      → Vinci con 7 o 11                  ║");
+        System.out.println("║  • Don't Pass (1x)     → Vinci con 2 o 3                   ║");
+        System.out.println("║  • Field Bet (1.5x)    → Vinci con 2,3,4,9,10,11,12        ║");
+        System.out.println("║  • Any Seven (4x)      → Vinci se esce 7                   ║");
+        System.out.println("║  • Hardway 8 (9x)      → Vinci con doppio 4 (4+4)          ║");
+        System.out.println("║  • Hardway 6 (9x)      → Vinci con doppio 3 (3+3)          ║");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + YELLOW + "PROBABILITÀ:" + RESET + "                                              ║");
+        System.out.println("║  • 7 è il numero più probabile (16.67%)                    ║");
+        System.out.println("║  • 2 e 12 sono i meno probabili (2.78%)                    ║");
+        System.out.println("║  • Hardway: probabilità bassa, payout alto                 ║");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + YELLOW + "⚠️  GIOCO RESPONSABILE:" + RESET + "                                   ║");
+        System.out.println("║  • Imposta limiti di spesa prima di iniziare               ║");
+        System.out.println("║  • Non giocare con soldi che non puoi perdere              ║");
+        System.out.println("║  • Fai pause regolari durante il gioco                     ║");
+        System.out.println("║  • Cerca supporto se il gioco diventa problematico         ║");
+        System.out.println("║                                                            ║");
+        System.out.println("╚════════════════════════════════════════════════════════════╝");
     }
 }

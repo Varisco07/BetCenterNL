@@ -1,9 +1,10 @@
 package games.chicken;
 
 import core.State;
-import core.GameRecord;
-import core.Database;
 import core.Auth;
+import core.User;
+import core.Database;
+import core.GameRecord;
 import java.util.Scanner;
 
 public class ChickenMain {

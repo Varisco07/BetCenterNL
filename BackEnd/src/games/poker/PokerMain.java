@@ -1,7 +1,11 @@
 package games.poker;
 
 import java.util.*;
-import core.*;
+import core.State;
+import core.Auth;
+import core.User;
+import core.Database;
+import core.GameRecord;
 
 public class PokerMain {
     

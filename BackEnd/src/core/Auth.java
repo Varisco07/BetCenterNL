@@ -122,8 +122,13 @@ public class Auth {
     }
     
     private static void demoLogin() {
-        User demoUser = new User("Demo", "Player", "demo", "demo@betcenter.nl", "demo123", "1990-01-01");
-        Database.registerUser(demoUser);
+        // FIX: in precedenza veniva registrato un nuovo utente demo ad ogni sessione,
+        // creando utenti duplicati nel database. Ora si riusa l'utente demo esistente.
+        User demoUser = Database.getUserByEmail("demo@betcenter.nl");
+        if (demoUser == null) {
+            demoUser = new User("Demo", "Player", "demo", "demo@betcenter.nl", "demo123", "1990-01-01");
+            Database.registerUser(demoUser);
+        }
         currentUser = demoUser;
         System.out.println("\n🎮 Modalità demo attivata!");
         System.out.println("Saldo: €1.000");

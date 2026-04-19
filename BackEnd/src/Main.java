@@ -1,9 +1,9 @@
 import java.util.Scanner;
+import java.util.List;
 import core.*;
 import games.baccarat.BaccaratMain;
 import games.poker.PokerMain;
 import stats.*;
-import chat.*;
 
 public class Main {
 
@@ -28,6 +28,8 @@ public class Main {
         boolean continua = true;
 
         while (continua) {
+            // Sincronizza il saldo prima di mostrare il menu
+            user.setSaldo(State.getBalance());
             mostraMenu(user);
             System.out.print("Scegli un'opzione: ");
             String scelta = scanner.nextLine().trim();
@@ -74,15 +76,9 @@ public class Main {
                     Achievements.displayAchievements(user);
                     break;
                 case "14":
-                    mostraChat(user, scanner);
-                    break;
-                case "15":
-                    LiveFeed.displayFeed(10);
-                    break;
-                case "16":
                     mostraGiocoResponsabile();
                     break;
-                case "17":
+                case "15":
                     continua = false;
                     user.setSaldo(State.getBalance());
                     System.out.println("\n╔════════════════════════════════════════╗");
@@ -96,6 +92,7 @@ public class Main {
             
             // Aggiorna il saldo dopo ogni gioco
             user.setSaldo(State.getBalance());
+            Database.saveUsers();
         }
 
         scanner.close();
@@ -103,10 +100,10 @@ public class Main {
 
     private static void mostraMenu(User user) {
         System.out.println("\n┌────────────────────────────────────────┐");
-        System.out.println("│ Giocatore: " + user.getNome() + " " + user.getCognome());
-        System.out.println("│ SALDO: €" + String.format("%.2f", user.getSaldo()) + "                          │");
-        System.out.println("│ LIVELLO: " + user.getCurrentLevel() + " - " + user.getLevelName() + "                    │");
-        System.out.println("│ XP: " + user.getXp() + "                                 │");
+        System.out.printf("│ Giocatore: %s %s%n", user.getNome(), user.getCognome());
+        System.out.printf("│ SALDO: €%.2f%n", user.getSaldo());
+        System.out.printf("│ LIVELLO: %d - %s%n", user.getCurrentLevel(), user.getLevelName());
+        System.out.printf("│ XP: %d%n", user.getXp());
         System.out.println("├────────────────────────────────────────┤");
         System.out.println("│ CASINO                                 │");
         System.out.println("│ 1. 🎰 BLACKJACK                        │");
@@ -124,10 +121,8 @@ public class Main {
         System.out.println("│ 11. 🎁 BONUS GIORNALIERO               │");
         System.out.println("│ 12. 🏆 CLASSIFICA                      │");
         System.out.println("│ 13. 🏅 TRAGUARDI                       │");
-        System.out.println("│ 14. 💬 CHAT GLOBALE                    │");
-        System.out.println("│ 15. 📡 LIVE FEED                       │");
-        System.out.println("│ 16. ⚠️  GIOCO RESPONSABILE             │");
-        System.out.println("│ 17. 🚪 ESCI                            │");
+        System.out.println("│ 14. ⚠️  GIOCO RESPONSABILE             │");
+        System.out.println("│ 15. � ESCI                            │");
         System.out.println("└────────────────────────────────────────┘");
     }
 
@@ -207,21 +202,21 @@ public class Main {
         System.out.println("\n╔════════════════════════════════════════╗");
         System.out.println("║      💳 PORTAFOGLIO & STATS            ║");
         System.out.println("╠════════════════════════════════════════╣");
-        System.out.println("║ Giocatore: " + user.getNome() + " " + user.getCognome());
-        System.out.println("║ Email: " + user.getEmail());
-        System.out.println("║ Username: " + user.getUsername());
+        System.out.printf("║ Giocatore: %s %s%n", user.getNome(), user.getCognome());
+        System.out.printf("║ Email: %s%n", user.getEmail());
+        System.out.printf("║ Username: %s%n", user.getUsername());
         System.out.println("╠════════════════════════════════════════╣");
-        System.out.println("║ 💰 SALDO ATTUALE: €" + String.format("%.2f", user.getSaldo()));
+        System.out.printf("║ 💰 SALDO ATTUALE: €%.2f%n", user.getSaldo());
         System.out.println("╠════════════════════════════════════════╣");
         System.out.println("║ 📊 STATISTICHE                         ║");
-        System.out.println("║ Giochi giocati: " + user.getGiociGiocati());
-        System.out.println("║ Giochi vinti: " + user.getGiociVinti());
-        System.out.println("║ Giochi persi: " + user.getGiociPersi());
-        System.out.println("║ Tasso di vittoria: " + String.format("%.1f%%", user.getWinRate()));
-        System.out.println("║ Guadagno totale: €" + String.format("%.2f", user.getGuadagnoTotale()));
-        System.out.println("║ Livello: " + user.getCurrentLevel() + " - " + user.getLevelName());
-        System.out.println("║ XP: " + user.getXp());
-        System.out.println("║ Traguardi: " + user.getAchievements().size());
+        System.out.printf("║ Giochi giocati: %d%n", user.getGiociGiocati());
+        System.out.printf("║ Giochi vinti: %d%n", user.getGiociVinti());
+        System.out.printf("║ Giochi persi: %d%n", user.getGiociPersi());
+        System.out.printf("║ Tasso di vittoria: %.1f%%%n", user.getWinRate());
+        System.out.printf("║ Guadagno totale: €%.2f%n", user.getGuadagnoTotale());
+        System.out.printf("║ Livello: %d - %s%n", user.getCurrentLevel(), user.getLevelName());
+        System.out.printf("║ XP: %d%n", user.getXp());
+        System.out.printf("║ Traguardi: %d%n", user.getAchievements().size());
         System.out.println("╚════════════════════════════════════════╝\n");
     }
 
@@ -230,14 +225,14 @@ public class Main {
         System.out.println("║         📋 STORICO SCOMMESSE           ║");
         System.out.println("╠════════════════════════════════════════╣");
         
-        java.util.List<GameRecord> history = Database.getGameHistory(user.getId());
+        List<GameRecord> history = Database.getGameHistory(user.getId());
         if (history.isEmpty()) {
             System.out.println("║ Nessuna scommessa ancora               ║");
         } else {
             int count = 0;
             for (GameRecord record : history) {
                 if (count >= 10) break;
-                System.out.println("║ " + record);
+                System.out.println("║ " + record.toString());
                 count++;
             }
         }
@@ -262,32 +257,17 @@ public class Main {
             int[] bonuses = {50, 75, 100, 150, 200, 300, 500};
             int bonus = bonuses[Math.min(streak, 6)];
             
-            System.out.println("║ Bonus disponibile: €" + bonus);
-            System.out.println("║ Serie: " + (streak + 1) + "/7");
+            System.out.printf("║ Bonus disponibile: €%d                 ║%n", bonus);
+            System.out.printf("║ Serie: %d/7                            ║%n", (streak + 1));
             System.out.println("║                                        ║");
             System.out.println("║ Premi della serie:                     ║");
             for (int i = 0; i < bonuses.length; i++) {
                 String check = i < streak ? "✓" : " ";
-                System.out.println("║ Giorno " + (i+1) + ": €" + bonuses[i] + " " + check);
+                System.out.printf("║ Giorno %d: €%-3d %s                     ║%n", (i+1), bonuses[i], check);
             }
         }
         
         System.out.println("╚════════════════════════════════════════╝\n");
-    }
-
-    private static void mostraChat(User user, Scanner scanner) {
-        System.out.println("\n╔════════════════════════════════════════╗");
-        System.out.println("║           💬 CHAT GLOBALE             ║");
-        System.out.println("╠════════════════════════════════════════╣");
-        
-        Chat.displayChat(10);
-        
-        System.out.print("Invia un messaggio (o premi Enter per tornare): ");
-        String msg = scanner.nextLine().trim();
-        if (!msg.isEmpty()) {
-            Chat.sendMessage(user.getUsername(), msg);
-            System.out.println("✅ Messaggio inviato!");
-        }
     }
 
     private static void mostraGiocoResponsabile() {

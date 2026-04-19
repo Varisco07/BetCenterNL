@@ -74,13 +74,23 @@ public class User implements Serializable {
     public void setBonusStreak(int streak) { this.bonusStreak = streak; }
     
     // Metodi per statistiche
-    public void addGameRecord(GameRecord record) {
-        history.add(0, record);
+    // FIX: addGameRecord aggiungeva il record sia qui (user.history in users.dat) che in
+    // Database.gameHistory (games.dat), causando duplicazione e possibile divergenza dei dati.
+    // Ora updateStats aggiorna solo i contatori/xp; la history è gestita esclusivamente da Database.
+    public void updateStats(GameRecord record) {
         giociGiocati++;
         if (record.isWin()) giociVinti++;
         else giociPersi++;
         guadagnoTotale += record.getGain();
         xp += record.getXpGained();
+    }
+
+    // Mantenuto per retrocompatibilità con codice che lo chiama direttamente fuori da Database,
+    // ma non aggiunge più alla history per evitare duplicazione.
+    /** @deprecated Usare {@link #updateStats(GameRecord)} — la history è in Database.getGameHistory() */
+    @Deprecated
+    public void addGameRecord(GameRecord record) {
+        updateStats(record);
     }
     
     public double getWinRate() {
