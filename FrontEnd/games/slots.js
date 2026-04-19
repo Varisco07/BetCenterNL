@@ -1,56 +1,26 @@
 // =============================================
-// BetCenterNL — SLOT MACHINE
+// BetCenterNL — SLOT MACHINE (collegata al backend)
 // =============================================
 
 const SlotGame = (() => {
-  const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '⭐', '💎', '7️⃣', '🔔'];
-  const WEIGHTS = [20, 18, 16, 14, 10, 8, 6, 4]; // Sum=96
+  const SYMBOLS = ['🍒','🍋','🍊','🍇','⭐','💎','7️⃣','🔔'];
   const PAYTABLE = {
-    '🍒🍒🍒': 5,
-    '🍋🍋🍋': 8,
-    '🍊🍊🍊': 10,
-    '🍇🍇🍇': 15,
-    '⭐⭐⭐': 25,
-    '💎💎💎': 50,
-    '7️⃣7️⃣7️⃣': 100,
-    '🔔🔔🔔': 200,
-    // Two of a kind
-    '🍒🍒_': 1.5,
-    '_🍒🍒': 1.5,
-    '💎💎_': 3,
-    '_💎💎': 3,
-    '7️⃣7️⃣_': 4,
-    '_7️⃣7️⃣': 4,
-    '🔔🔔_': 6,
-    '_🔔🔔': 6,
+    '🍒🍒🍒':5,'🍋🍋🍋':8,'🍊🍊🍊':10,'🍇🍇🍇':15,
+    '⭐⭐⭐':25,'💎💎💎':50,'7️⃣7️⃣7️⃣':100,'🔔🔔🔔':200
   };
 
   let spinning = false;
-  let currentReels = ['🍒', '🍒', '🍒'];
-
-  function weightedRandom() {
-    const total = WEIGHTS.reduce((a, b) => a + b, 0);
-    let r = Math.random() * total;
-    for (let i = 0; i < SYMBOLS.length; i++) {
-      r -= WEIGHTS[i];
-      if (r <= 0) return SYMBOLS[i];
-    }
-    return SYMBOLS[0];
-  }
-
-  function checkWin(reels) {
-    const key = reels.join('');
-    if (PAYTABLE[key]) return PAYTABLE[key];
-    // Check two-of-a-kind
-    const r = reels;
-    if (r[0] === r[1]) return PAYTABLE[`${r[0]}${r[1]}_`] || 0;
-    if (r[1] === r[2]) return PAYTABLE[`_${r[1]}${r[2]}`] || 0;
-    return 0;
-  }
+  let autoOn = false;
+  let autoSpinInterval = null;
 
   function render() {
-    const jackpot = (parseFloat(localStorage.getItem('betcenter_jackpot') || '12450') + Math.random() * 50).toFixed(2);
-    localStorage.setItem('betcenter_jackpot', jackpot);
+    // Carica jackpot dal server
+    API.getJackpot().then(r => {
+      if (r.ok) {
+        const jpEl = document.getElementById('jackpot-display');
+        if (jpEl) jpEl.textContent = formatCurrency(r.jackpot);
+      }
+    }).catch(() => {});
 
     return `
       <div class="game-section">
@@ -58,26 +28,19 @@ const SlotGame = (() => {
           <h2 class="game-title">🎰 SLOT MACHINE</h2>
           <div class="game-balance" id="slot-bal">${formatCurrency(State.balance)}</div>
         </div>
-
-        <!-- JACKPOT DISPLAY -->
         <div class="jackpot-container">
           <div class="jackpot-label">🏆 JACKPOT PROGRESSIVO 🏆</div>
-          <div class="jackpot-amount" id="jackpot-display">${formatCurrency(parseFloat(jackpot))}</div>
+          <div class="jackpot-amount" id="jackpot-display">⏳</div>
           <div class="jackpot-subtitle">Vinci con 🔔🔔🔔</div>
         </div>
-
         <div class="slot-machine">
           <div class="slot-machine-frame">
             <div class="slot-machine-top">
               <div class="slot-lights">
-                <span class="light"></span>
-                <span class="light"></span>
-                <span class="light"></span>
-                <span class="light"></span>
-                <span class="light"></span>
+                <span class="light"></span><span class="light"></span>
+                <span class="light"></span><span class="light"></span><span class="light"></span>
               </div>
             </div>
-            
             <div class="slot-reels-container">
               <div class="slot-reels">
                 <div class="slot-reel" id="reel-0"><div class="reel-symbol">🍒</div></div>
@@ -86,74 +49,32 @@ const SlotGame = (() => {
               </div>
               <div class="slot-payline"></div>
             </div>
-            
-            <div class="slot-machine-bottom">
-              <div id="slot-result"></div>
-            </div>
+            <div class="slot-machine-bottom"><div id="slot-result"></div></div>
           </div>
-
           ${createBetControls('slot', 5)}
-          
           <div class="game-btn-row">
             <button class="btn-game btn-deal btn-spin-large" id="spin-btn" onclick="SlotGame.spin()">
-              <span class="btn-icon">🎰</span>
-              <span class="btn-text">GIRA!</span>
+              <span class="btn-icon">🎰</span><span class="btn-text">GIRA!</span>
             </button>
             <button class="btn-game btn-double" id="auto-btn" onclick="SlotGame.toggleAuto()">
-              <span class="btn-icon">⚡</span>
-              <span class="btn-text">AUTO: OFF</span>
+              <span class="btn-icon">⚡</span><span class="btn-text">AUTO: OFF</span>
             </button>
           </div>
-          
-          <div class="hotkey-hint">
-            <span class="key-badge">Enter</span> per girare rapidamente
-          </div>
+          <div class="hotkey-hint"><span class="key-badge">Enter</span> per girare rapidamente</div>
         </div>
-
-        <!-- PAYTABLE -->
         <div class="paytable-container">
           <div class="paytable-header">💰 TABELLA PAGAMENTI</div>
           <div class="paytable-grid">
-            <div class="paytable-item premium">
-              <div class="paytable-symbols">🔔🔔🔔</div>
-              <div class="paytable-multiplier">200x</div>
-            </div>
-            <div class="paytable-item premium">
-              <div class="paytable-symbols">7️⃣7️⃣7️⃣</div>
-              <div class="paytable-multiplier">100x</div>
-            </div>
-            <div class="paytable-item high">
-              <div class="paytable-symbols">💎💎💎</div>
-              <div class="paytable-multiplier">50x</div>
-            </div>
-            <div class="paytable-item high">
-              <div class="paytable-symbols">⭐⭐⭐</div>
-              <div class="paytable-multiplier">25x</div>
-            </div>
-            <div class="paytable-item medium">
-              <div class="paytable-symbols">🍇🍇🍇</div>
-              <div class="paytable-multiplier">15x</div>
-            </div>
-            <div class="paytable-item medium">
-              <div class="paytable-symbols">🍊🍊🍊</div>
-              <div class="paytable-multiplier">10x</div>
-            </div>
-            <div class="paytable-item low">
-              <div class="paytable-symbols">🍋🍋🍋</div>
-              <div class="paytable-multiplier">8x</div>
-            </div>
-            <div class="paytable-item low">
-              <div class="paytable-symbols">🍒🍒🍒</div>
-              <div class="paytable-multiplier">5x</div>
-            </div>
+            ${Object.entries(PAYTABLE).map(([k,v]) => `
+              <div class="paytable-item ${v>=100?'premium':v>=25?'high':v>=10?'medium':'low'}">
+                <div class="paytable-symbols">${k}</div>
+                <div class="paytable-multiplier">${k === '🔔🔔🔔' ? '🏆 JACKPOT' : v + 'x'}</div>
+              </div>`).join('')}
           </div>
-          <div class="paytable-note">💡 Due simboli uguali pagano anche!</div>
+          <div class="paytable-note">💡 Due 🍒 in qualsiasi posizione pagano 1.5x!</div>
         </div>
       </div>`;
   }
-
-  let autoSpinInterval = null;
-  let autoOn = false;
 
   function toggleAuto() {
     autoOn = !autoOn;
@@ -174,126 +95,94 @@ const SlotGame = (() => {
     if (spinning) return;
     const bet = getBet('slot');
     if (!bet || bet < 1) { showToast('Inserisci una puntata valida', 'info'); return; }
-    if (!State.deductBalance(bet)) {
-      showToast('Saldo insufficiente!', 'lose');
-      if (autoOn) toggleAuto();
-      return;
-    }
+    if (State.balance < bet) { showToast('Saldo insufficiente!', 'lose'); if (autoOn) toggleAuto(); return; }
 
     spinning = true;
     document.getElementById('spin-btn').disabled = true;
     document.getElementById('slot-result').innerHTML = '';
-    AudioEngine.play('spin');
+    try { AudioEngine.play('spin'); } catch (_) {}
 
-    const newReels = [weightedRandom(), weightedRandom(), weightedRandom()];
+    // Avvia animazione rulli
+    for (let i = 0; i < 3; i++) startReelSpin(i);
 
-    // Start spinning all reels
-    for (let i = 0; i < 3; i++) {
-      startReelSpin(i);
+    let result;
+    try {
+      result = await API.spinSlots(bet);
+    } catch (err) {
+      showToast('Errore di connessione al server', 'lose');
+      for (let i = 0; i < 3; i++) stopReelSpin(i, SYMBOLS[0]);
+      spinning = false;
+      document.getElementById('spin-btn').disabled = false;
+      return;
     }
 
-    // Stop reels one by one with delay
+    // Ferma rulli con i risultati del server
     for (let i = 0; i < 3; i++) {
       await delay(800 + i * 400);
-      stopReelSpin(i, newReels[i]);
-      AudioEngine.play('slotStop');
+      stopReelSpin(i, result.reels[i]);
+      try { AudioEngine.play('slotStop'); } catch (_) {}
     }
 
-    currentReels = newReels;
-    const mult = checkWin(newReels);
+    // Sincronizza saldo
+    State.syncFromServer(result.newBalance);
 
-    if (mult > 0) {
-      const win = parseFloat((bet * mult).toFixed(2));
-      State.addBalance(win);
-      
-      // Add glow effect to winning reels
-      [0, 1, 2].forEach(i => {
+    // Aggiorna jackpot dal server
+    const jpEl = document.getElementById('jackpot-display');
+    if (jpEl && result.jackpot) jpEl.textContent = formatCurrency(result.jackpot);
+
+    if (result.win) {
+      const win = parseFloat((bet * result.multiplier).toFixed(2));
+      [0,1,2].forEach(i => {
         const reel = document.getElementById(`reel-${i}`);
-        if (reel) {
-          reel.classList.add('winning');
-          setTimeout(() => reel.classList.remove('winning'), 2000);
-        }
+        if (reel) { reel.classList.add('winning'); setTimeout(() => reel.classList.remove('winning'), 2000); }
       });
-      
-      const resultEl = document.getElementById('slot-result');
-      if (resultEl) {
-        resultEl.innerHTML = `<div class="result-banner result-win">🏆 HAI VINTO ${formatCurrency(win)}! (${mult}x)</div>`;
-      }
-      // VFX
-      if (win > 100) VFX.celebrate();
-      VFX.floatFromElement(document.getElementById('spin-btn'), win, 'win');
-      showToast(`🎰 ${newReels.join('')} — Vinto ${formatCurrency(win)}!`, 'win');
-      State.recordHistory({ game: 'Slot Machine', bet, result: 'win', gain: win - bet });
 
-      // Update jackpot display
-      if (mult === 200) {
-        localStorage.setItem('betcenter_jackpot', '1000');
-        VFX.jackpotFlash('jackpot-display');
-      } else {
-        const jp = parseFloat(localStorage.getItem('betcenter_jackpot') || '12450') + bet * 0.05;
-        localStorage.setItem('betcenter_jackpot', jp.toFixed(2));
-        const jpEl = document.getElementById('jackpot-display');
-        if (jpEl) jpEl.textContent = formatCurrency(jp);
+      const winLabel = result.jackpotWon
+        ? `🏆 JACKPOT! ${formatCurrency(win)}`
+        : `🏆 HAI VINTO ${formatCurrency(win)}! (${result.multiplier}x)`;
+
+      document.getElementById('slot-result').innerHTML =
+        `<div class="result-banner result-win">${winLabel}</div>`;
+      if (win > 100) try { VFX.celebrate(); } catch (_) {}
+      try { VFX.floatFromElement(document.getElementById('spin-btn'), win, 'win'); } catch (_) {}
+      showToast(result.jackpotWon ? `🏆 JACKPOT! +${formatCurrency(win)}` : `🎰 ${result.reels.join('')} — Vinto ${formatCurrency(win)}!`, 'win');
+      State.recordHistory({ game: 'Slot Machine', bet, result: 'win', gain: result.gain });
+      if (result.jackpotWon) {
+        try { VFX.jackpotFlash('jackpot-display'); } catch (_) {}
+        showToast('🏆 HAI VINTO IL JACKPOT!', 'win', 6000);
       }
     } else {
-      const resultEl = document.getElementById('slot-result');
-      if (resultEl) {
-        resultEl.innerHTML = `<div class="result-banner result-lose">Nessuna vincita</div>`;
-      }
-      // Grow jackpot slightly on every spin
-      const jp = parseFloat(localStorage.getItem('betcenter_jackpot') || '12450') + bet * 0.03;
-      localStorage.setItem('betcenter_jackpot', jp.toFixed(2));
-      const jpEl = document.getElementById('jackpot-display');
-      if (jpEl) jpEl.textContent = formatCurrency(jp);
-      State.recordHistory({ game: 'Slot Machine', bet, result: 'lose', gain: -bet });
+      document.getElementById('slot-result').innerHTML =
+        `<div class="result-banner result-lose">Nessuna vincita</div>`;
+      State.recordHistory({ game: 'Slot Machine', bet, result: 'lose', gain: result.gain });
     }
 
-    // Update balance display
     const balEl = document.getElementById('slot-bal');
     if (balEl) balEl.textContent = formatCurrency(State.balance);
 
     spinning = false;
-    const spinBtn = document.getElementById('spin-btn');
-    if (spinBtn) spinBtn.disabled = false;
+    document.getElementById('spin-btn').disabled = false;
   }
 
   function startReelSpin(reelIndex) {
     const reelEl = document.getElementById(`reel-${reelIndex}`);
     if (!reelEl) return;
-    
     reelEl.classList.add('spinning');
-    
-    // Attiva le luci
-    document.querySelectorAll('.light').forEach(light => light.classList.add('active'));
-    
-    // Cambia simbolo velocemente per dare effetto di rotazione
+    document.querySelectorAll('.light').forEach(l => l.classList.add('active'));
     const interval = setInterval(() => {
-      const randomSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-      reelEl.innerHTML = `<div class="reel-symbol">${randomSymbol}</div>`;
+      reelEl.innerHTML = `<div class="reel-symbol">${SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)]}</div>`;
     }, 100);
-    
-    // Salva l'interval per poterlo fermare dopo
     reelEl.dataset.interval = interval;
   }
 
   function stopReelSpin(reelIndex, finalSymbol) {
     const reelEl = document.getElementById(`reel-${reelIndex}`);
     if (!reelEl) return;
-    
-    // Ferma l'interval
-    const interval = reelEl.dataset.interval;
-    if (interval) {
-      clearInterval(parseInt(interval));
-    }
-    
+    clearInterval(parseInt(reelEl.dataset.interval));
     reelEl.classList.remove('spinning');
     reelEl.innerHTML = `<div class="reel-symbol final">${finalSymbol}</div>`;
-    
-    // Se è l'ultimo rullo, disattiva le luci
     if (reelIndex === 2) {
-      setTimeout(() => {
-        document.querySelectorAll('.light').forEach(light => light.classList.remove('active'));
-      }, 300);
+      setTimeout(() => document.querySelectorAll('.light').forEach(l => l.classList.remove('active')), 300);
     }
   }
 

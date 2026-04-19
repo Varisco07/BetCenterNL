@@ -6,6 +6,8 @@ function initApp() {
   initTicker();
   navigateTo('lobby');
   setupNavListeners();
+  // Sincronizza saldo dal server
+  API.getBalance().then(r => { if (r.ok) State.syncBalance(r.balance); }).catch(() => {});
   setTimeout(() => { try { LiveFeed.start(); } catch(_) {} }, 2000);
   setTimeout(() => {
     const badge = document.getElementById('feed-badge');
@@ -85,9 +87,10 @@ function renderSection(section) {
       case 'history':     html = Sections.history();                   break;
       case 'leaderboard': html = Sections.leaderboard();               break;
       case 'responsible': html = Sections.responsible();               break;
+      case 'simulation':  html = SimulationGame.render();              break;
       case 'bonus':
         try { DailyBonus.showModal(); } catch(_) {}
-        html = Sections.wallet();
+        html = Sections.lobby();
         break;
       default:            html = Sections.lobby();
     }
@@ -102,8 +105,7 @@ function renderSection(section) {
   ca.scrollTop = 0;
 
   // Post-render inits (guarded)
-  if (section === 'slots')  try { SlotGame.init  && SlotGame.init();  } catch(_) {}
-  if (section === 'blackjack')  try { BlackjackGame.init  && BlackjackGame.init();  } catch(_) {}
+      if (section === 'simulation') try { SimulationGame.run && SimulationGame.run(); } catch(_) {}
 }
 
 // ── BIG WIN MARQUEE ──
@@ -158,6 +160,29 @@ document.addEventListener('keydown', e => {
 // ── SAVE ON UNLOAD ──
 window.addEventListener('beforeunload', () => {
   try { if (State.user) State.save(); } catch(_) {}
+});
+
+// ── AUTO-LOGIN al caricamento ──
+window.addEventListener('DOMContentLoaded', async () => {
+  // Verifica che il backend risponda (con retry)
+  let backendOk = false;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const r = await fetch('http://localhost:8080/api/health');
+      if (r.ok) { backendOk = true; break; }
+    } catch (_) {
+      if (attempt < 2) await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+
+  if (!backendOk) {
+    const err = document.getElementById('auth-error');
+    if (err) err.textContent = '⚠️ Backend non raggiungibile. Avvia il server Java (porta 8080).';
+    return;
+  }
+
+  // Backend ok — prova auto-login con token salvato
+  await tryAutoLogin().catch(() => {});
 });
 
 // ── RESPONSIVE ──

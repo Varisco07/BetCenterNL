@@ -1,25 +1,74 @@
 package core;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 
 public class Database {
-    private static final String USERS_FILE = "data/users.dat";
-    private static final String GAMES_FILE = "data/games.dat";
-    private static Map<String, User> users = new HashMap<>();
-    private static Map<String, List<GameRecord>> gameHistory = new HashMap<>();
-    
+    // Percorso assoluto alla cartella data — funziona sia da terminale che da IntelliJ
+    private static final String DATA_DIR;
+    private static final String USERS_FILE;
+    private static final String GAMES_FILE;
+
     static {
-        new File("data").mkdirs();
+        // Cerca la cartella "data" risalendo dalla directory di lavoro o dalla posizione del .class
+        String dir = findDataDir();
+        DATA_DIR   = dir;
+        USERS_FILE = dir + File.separator + "users.dat";
+        GAMES_FILE = dir + File.separator + "games.dat";
+        new File(dir).mkdirs();
         loadUsers();
         loadGameHistory();
     }
+
+    private static String findDataDir() {
+        // Usa sempre BackEnd/data come percorso canonico del progetto
+        // Risale dalla directory di lavoro finché trova la cartella BackEnd
+        File cur = new File("").getAbsoluteFile();
+        for (int i = 0; i < 8; i++) {
+            // Caso 1: siamo dentro BackEnd (server web)
+            File candidate1 = new File(cur, "data");
+            if (new File(cur, "src").exists() && candidate1.exists()) {
+                return candidate1.getAbsolutePath();
+            }
+            // Caso 2: siamo nella root del progetto o sopra (terminale IntelliJ)
+            File candidate2 = new File(cur, "BackEnd" + File.separator + "data");
+            if (candidate2.exists()) {
+                return candidate2.getAbsolutePath();
+            }
+            // Caso 3: BackEnd esiste come cartella figlia
+            File backendDir = new File(cur, "BackEnd");
+            if (backendDir.exists() && backendDir.isDirectory()) {
+                File dataDir = new File(backendDir, "data");
+                dataDir.mkdirs();
+                return dataDir.getAbsolutePath();
+            }
+            if (cur.getParentFile() == null) break;
+            cur = cur.getParentFile();
+        }
+        // Fallback assoluto: cerca BetCenterNL nel percorso
+        File abs = new File("").getAbsoluteFile();
+        while (abs != null) {
+            if (abs.getName().equalsIgnoreCase("BetCenterNL")) {
+                File dataDir = new File(abs, "BackEnd" + File.separator + "data");
+                dataDir.mkdirs();
+                return dataDir.getAbsolutePath();
+            }
+            abs = abs.getParentFile();
+        }
+        // Ultimo fallback
+        new File("data").mkdirs();
+        return new File("data").getAbsolutePath();
+    }
+
+    private static Map<String, User> users = new HashMap<>();
+    private static Map<String, List<GameRecord>> gameHistory = new HashMap<>();
     
     // ── USERS ──
     public static void saveUsers() {
-        // FIX: scrittura atomica tramite file temporaneo per evitare corruzione in caso di crash
         File tmpFile = new File(USERS_FILE + ".tmp");
-        File target = new File(USERS_FILE);
+        File target  = new File(USERS_FILE);
+        File backup  = new File(USERS_FILE + ".bak");
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(tmpFile))) {
             oos.writeObject(users);
         } catch (IOException e) {
@@ -27,17 +76,34 @@ public class Database {
             tmpFile.delete();
             return;
         }
-        if (!tmpFile.renameTo(target)) {
-            // fallback su sistemi che non supportano rename atomico
-            target.delete();
-            tmpFile.renameTo(target);
+        try {
+            // Backup del file corrente prima di sovrascrivere
+            if (target.exists()) {
+                Files.copy(target.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+            // Sostituzione atomica
+            Files.move(tmpFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            // ATOMIC_MOVE non supportato su tutti i filesystem — fallback
+            try {
+                Files.move(tmpFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e2) {
+                System.err.println("Errore critico nel salvataggio: " + e2.getMessage());
+            }
         }
     }
     
     @SuppressWarnings("unchecked")
     private static void loadUsers() {
         File file = new File(USERS_FILE);
-        if (!file.exists()) return;
+        if (!file.exists()) {
+            // Prova il backup
+            File backup = new File(USERS_FILE + ".bak");
+            if (backup.exists()) {
+                System.err.println("[DB] users.dat non trovato, ripristino dal backup...");
+                try { Files.copy(backup.toPath(), file.toPath()); } catch (IOException ignored) {}
+            } else return;
+        }
         
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             Map<String, User> loaded = (Map<String, User>) ois.readObject();
@@ -78,12 +144,20 @@ public class Database {
     public static Collection<User> getAllUsers() {
         return users.values();
     }
+
+    /** Ricarica il database dal disco — utile quando terminale e web condividono i file */
+    public static synchronized void reload() {
+        // Ricarica solo se il file è più recente dell'ultima lettura
+        File f = new File(USERS_FILE);
+        if (!f.exists()) return;
+        loadUsers();
+        loadGameHistory();
+    }
     
     // ── GAME HISTORY ──
     public static void saveGameHistory() {
-        // FIX: scrittura atomica tramite file temporaneo per evitare corruzione in caso di crash
         File tmpFile = new File(GAMES_FILE + ".tmp");
-        File target = new File(GAMES_FILE);
+        File target  = new File(GAMES_FILE);
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(tmpFile))) {
             oos.writeObject(gameHistory);
         } catch (IOException e) {
@@ -91,9 +165,14 @@ public class Database {
             tmpFile.delete();
             return;
         }
-        if (!tmpFile.renameTo(target)) {
-            target.delete();
-            tmpFile.renameTo(target);
+        try {
+            Files.move(tmpFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            try {
+                Files.move(tmpFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e2) {
+                System.err.println("Errore critico nel salvataggio cronologia: " + e2.getMessage());
+            }
         }
     }
     

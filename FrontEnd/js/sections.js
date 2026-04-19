@@ -83,14 +83,43 @@ const Sections = {
   },
 
   wallet() {
-    const wins   = State.history.filter(h => h.result==='win').length;
-    const loses  = State.history.filter(h => h.result==='lose').length;
+    // Carica dati aggiornati dal server in background, poi ri-renderizza
+    Promise.all([
+      API.getGameHistory(100),
+      API.getProfile()
+    ]).then(([histResult, profileResult]) => {
+      let changed = false;
+      if (histResult.ok && histResult.history) {
+        State.history = histResult.history.map(h => ({
+          id:        h.id,
+          timestamp: new Date(h.timestamp).toLocaleString('it-IT'),
+          game:      h.game, bet: h.bet, result: h.result, gain: h.gain
+        }));
+        changed = true;
+      }
+      if (profileResult.ok && profileResult.user) {
+        State.user = { ...State.user, ...profileResult.user };
+        changed = true;
+      }
+      // Aggiorna solo le stat card senza ricaricare tutto
+      if (changed && State.currentSection === 'wallet') {
+        Sections._updateWalletStats();
+      }
+    }).catch(() => {});
+
+    // Usa statistiche dal profilo utente (server) se disponibili, altrimenti da history locale
+    const user = State.user || {};
+    const wins   = user.gamesWon   ?? State.history.filter(h => h.result==='win').length;
+    const loses  = user.gamesLost  ?? State.history.filter(h => h.result==='lose').length;
+    const played = user.gamesPlayed ?? State.history.length;
+    const total  = user.totalGain  ?? State.history.reduce((s,h)=>s+(h.gain||0),0);
     const pushes = State.history.filter(h => h.result==='push').length;
-    const total  = State.history.reduce((s,h)=>s+(h.gain||0),0);
     const bet    = State.history.reduce((s,h)=>s+(h.bet||0),0);
-    const wr     = State.history.length ? ((wins/State.history.length)*100).toFixed(1) : '0.0';
+    const wr     = user.winRate != null
+      ? parseFloat(user.winRate).toFixed(1)
+      : (played ? ((wins/played)*100).toFixed(1) : '0.0');
     const avg    = State.history.length ? (bet/State.history.length).toFixed(2) : '0.00';
-    const xp     = LevelSystem.getTotalXP();
+    const xp     = user.xp ?? LevelSystem.getTotalXP();
     const level  = LevelSystem.getCurrentLevel(xp);
 
     const byGame = {};
@@ -114,9 +143,7 @@ const Sections = {
         <h2 class="page-title">💳 PORTAFOGLIO & STATISTICHE</h2>
         <p class="page-subtitle">Profilo completo del giocatore</p>
       </div>
-
       ${LevelSystem.getLevelWidget()}
-
       <div class="wallet-grid">
         <div class="stat-card">
           <div class="stat-label">Saldo Attuale</div>
@@ -125,7 +152,7 @@ const Sections = {
         </div>
         <div class="stat-card">
           <div class="stat-label">Partite Totali</div>
-          <div class="stat-value">${State.history.length}</div>
+          <div class="stat-value">${played}</div>
           <div style="color:var(--text-2);font-size:0.75rem;margin-top:0.25rem">Media puntata: ${formatCurrency(parseFloat(avg))}</div>
           ${miniChart}
         </div>
@@ -140,12 +167,10 @@ const Sections = {
           <div style="color:var(--text-2);font-size:0.75rem;margin-top:0.25rem">${level.icon} ${level.name} · Lv.${level.level}</div>
         </div>
       </div>
-
       <div class="game-btn-row" style="margin-bottom:1.5rem">
         <button class="btn-primary" style="max-width:200px" onclick="showDeposit()">+ Deposita Fondi</button>
         <button class="btn-ghost" style="max-width:200px" onclick="showToast('Prelievo disponibile in versione reale','info')">− Preleva</button>
       </div>
-
       ${Object.keys(byGame).length>0 ? `
         <div style="font-family:var(--font-display);font-size:1.4rem;letter-spacing:0.05em;margin-bottom:0.75rem">PER GIOCO</div>
         <div style="overflow-x:auto;margin-bottom:2rem">
@@ -163,9 +188,7 @@ const Sections = {
             </tbody>
           </table>
         </div>` : ''}
-
       ${LevelSystem.getAchievementsHTML()}
-
       <div class="section-divider"></div>
       <div class="info-box" style="margin-top:1rem">
         ⚠️ <strong>Gioco Responsabile:</strong> Sito dimostrativo — nessuna transazione reale.
@@ -174,16 +197,66 @@ const Sections = {
     </div>`;
   },
 
+  // Aggiorna le stat card del portafoglio senza ricaricare la pagina
+  _updateWalletStats() {
+    const user   = State.user || {};
+    const wins   = user.gamesWon   ?? State.history.filter(h => h.result==='win').length;
+    const loses  = user.gamesLost  ?? State.history.filter(h => h.result==='lose').length;
+    const played = user.gamesPlayed ?? State.history.length;
+    const total  = user.totalGain  ?? State.history.reduce((s,h)=>s+(h.gain||0),0);
+    const wr     = user.winRate != null
+      ? parseFloat(user.winRate).toFixed(1)
+      : (played ? ((wins/played)*100).toFixed(1) : '0.0');
+
+    // Aggiorna i valori nelle stat card se esistono nel DOM
+    const cards = document.querySelectorAll('.stat-card');
+    if (cards.length >= 3) {
+      // Saldo
+      const saldoVal = cards[0].querySelector('.stat-value');
+      if (saldoVal) saldoVal.textContent = formatCurrency(State.balance);
+      // Partite
+      const partiteVal = cards[1].querySelector('.stat-value');
+      if (partiteVal) partiteVal.textContent = played;
+      // Win rate
+      const wrVal = cards[2].querySelector('.stat-value');
+      if (wrVal) wrVal.textContent = wr + '%';
+      const wrSub = cards[2].querySelector('div[style]');
+      if (wrSub) wrSub.innerHTML = `✅ ${wins} &nbsp;❌ ${loses}`;
+    }
+  },
+
   history() {
-    const h = State.history.slice(0,100);
-    const total = State.history.reduce((s,h)=>s+(h.gain||0),0);
+    // Carica sempre storico aggiornato dal server
+    API.getGameHistory(100).then(result => {
+      if (!result.ok || !result.history) return;
+      const serverHistory = result.history.map(h => ({
+        id:        h.id,
+        timestamp: new Date(h.timestamp).toLocaleString('it-IT'),
+        game:      h.game,
+        bet:       h.bet,
+        result:    h.result,
+        gain:      h.gain
+      }));
+      State.history = serverHistory;
+      if (State.currentSection === 'history') {
+        const ca = document.getElementById('content-area');
+        if (ca) ca.innerHTML = Sections.historyHTML(serverHistory);
+      }
+    }).catch(() => {});
+
+    return Sections.historyHTML(State.history);
+  },
+
+  historyHTML(h) {
+    const total = h.reduce((s, item) => s + (item.gain || 0), 0);
     return `<div>
       <div class="page-header">
         <h2 class="page-title">📋 STORICO SCOMMESSE</h2>
         <p class="page-subtitle">Ultimi ${h.length} movimenti · Netto: <span class="${total>=0?'text-green':'text-red'}">${total>=0?'+':''}${formatCurrency(total)}</span></p>
       </div>
-      ${h.length===0 ? `<div class="info-box text-center">Nessuna scommessa ancora. Inizia a giocare!</div>` : `
-      <div style="overflow-x:auto">
+      ${h.length===0
+        ? `<div class="info-box text-center">⏳ Caricamento storico dal server...</div>`
+        : `<div style="overflow-x:auto">
         <table class="history-table">
           <thead><tr><th>Data/Ora</th><th>Gioco</th><th>Puntata</th><th>Esito</th><th>Guadagno</th></tr></thead>
           <tbody>

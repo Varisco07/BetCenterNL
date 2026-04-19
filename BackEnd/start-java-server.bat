@@ -1,22 +1,25 @@
 @echo off
-echo 🔧 Compilazione Backend Java...
+echo Compilazione Backend Java...
 
-:: Crea cartella output se non esiste
 if not exist "out" mkdir out
 
-:: Compila tutti i file Java
-javac -d out -cp src src/server/WebServer.java src/core/*.java src/games/*/*.java src/games/*/*/*.java
+:: Trova tutti i file .java ricorsivamente e salvali in un file temporaneo
+dir /s /b src\*.java > sources.txt
+
+:: Compila tutti i file trovati
+javac -encoding UTF-8 -d out -cp src @sources.txt
 
 if %errorlevel% neq 0 (
-    echo ❌ Errore di compilazione!
+    echo Errore di compilazione!
+    del sources.txt
     pause
     exit /b 1
 )
 
-echo ✅ Compilazione completata!
-echo 🚀 Avvio server web...
+del sources.txt
+echo Compilazione completata!
+echo Avvio server Java su porta 8080...
 
-:: Avvia il server
-java -cp out server.WebServer
+java -Dfile.encoding=UTF-8 -cp out server.WebServer
 
 pause

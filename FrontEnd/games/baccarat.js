@@ -1,39 +1,21 @@
 // =============================================
-// BetCenterNL — BACCARAT
+// BetCenterNL — BACCARAT (collegato al backend)
 // =============================================
 
 const BaccaratGame = (() => {
-  const SUITS = ['♠','♥','♦','♣'];
-  const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-  let selectedBet = null; // 'player' | 'banker' | 'tie'
+  let selectedBet = null;
   let playing = false;
-
-  function newDeck() {
-    const d = [];
-    for (const s of SUITS) for (const r of RANKS) d.push({ rank: r, suit: s });
-    for (let i = d.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [d[i], d[j]] = [d[j], d[i]];
-    }
-    return d;
-  }
-
-  function cardVal(card) {
-    if (['10','J','Q','K'].includes(card.rank)) return 0;
-    if (card.rank === 'A') return 1;
-    return parseInt(card.rank);
-  }
-
-  function handVal(hand) {
-    return hand.reduce((s, c) => s + cardVal(c), 0) % 10;
-  }
 
   function isRed(suit) { return suit === '♥' || suit === '♦'; }
 
   function cardHTML(card) {
+    if (!card) return '';
     const color = isRed(card.suit) ? 'red' : 'black';
     return `<div class="playing-card ${color}">
-      <div class="card-inner"><div class="card-rank">${card.rank}</div><div class="card-suit">${card.suit}</div></div>
+      <div class="card-inner">
+        <div class="card-rank">${card.rank}</div>
+        <div class="card-suit">${card.suit}</div>
+      </div>
     </div>`;
   }
 
@@ -76,18 +58,17 @@ const BaccaratGame = (() => {
           <button class="btn-game btn-deal" onclick="BaccaratGame.play()">🃏 GIOCA</button>
         </div>
         <div class="info-box mt-2">
-          <strong>Regole:</strong> Il valore delle carte 10/J/Q/K = 0, Asso = 1. La mano più vicina a 9 vince.
-          Terza carta automatica secondo le regole standard. Commissione del 5% sul banco.
+          <strong>Regole:</strong> 10/J/Q/K = 0, Asso = 1. La mano più vicina a 9 vince.
+          Commissione del 5% sul banco.
         </div>
       </div>`;
   }
 
   function selectBet(type) {
     selectedBet = type;
-    document.querySelectorAll('.bacc-bet-btn').forEach(el => el.classList.remove('selected'));
     document.querySelectorAll('.bacc-bet-btn').forEach(el => {
-      const t = { player: 'GIOCATORE', tie: 'PAREGGIO', banker: 'BANCO' }[type];
-      if (el.textContent.includes(t)) el.classList.add('selected');
+      const map = { player:'GIOCATORE', tie:'PAREGGIO', banker:'BANCO' };
+      el.classList.toggle('selected', el.querySelector('strong')?.textContent === map[type]);
     });
   }
 
@@ -96,7 +77,7 @@ const BaccaratGame = (() => {
     if (!selectedBet) { showToast('Scegli su chi scommettere!', 'info'); return; }
     const bet = getBet('bc');
     if (!bet || bet < 1) { showToast('Inserisci una puntata', 'info'); return; }
-    if (!State.deductBalance(bet)) { showToast('Saldo insufficiente!', 'lose'); return; }
+    if (State.balance < bet) { showToast('Saldo insufficiente!', 'lose'); return; }
 
     playing = true;
     document.getElementById('bc-result').innerHTML = '';
@@ -107,78 +88,48 @@ const BaccaratGame = (() => {
     document.getElementById('bc-player-score').textContent = '—';
     document.getElementById('bc-banker-score').textContent = '—';
 
-    const deck = newDeck();
-    let player = [deck.pop(), deck.pop()];
-    let banker = [deck.pop(), deck.pop()];
+    let result;
+    try {
+      result = await API.playBaccarat(bet, selectedBet);
+    } catch (err) {
+      showToast('Errore di connessione al server', 'lose');
+      playing = false;
+      return;
+    }
 
-    // Animate cards
-    for (const c of player) {
+    // Anima le carte
+    for (const c of result.playerHand) {
       await delay(200);
       if (playerCards) playerCards.innerHTML += cardHTML(c);
     }
-    for (const c of banker) {
+    for (const c of result.bankerHand) {
       await delay(200);
       if (bankerCards) bankerCards.innerHTML += cardHTML(c);
     }
 
-    let pv = handVal(player);
-    let bv = handVal(banker);
+    document.getElementById('bc-player-score').textContent = result.playerValue;
+    document.getElementById('bc-banker-score').textContent = result.bankerValue;
 
-    document.getElementById('bc-player-score').textContent = pv;
-    document.getElementById('bc-banker-score').textContent = bv;
+    State.syncFromServer(result.newBalance);
 
-    // Natural check
-    if (pv < 8 && bv < 8) {
-      // Player third card rule
-      if (pv <= 5) {
-        await delay(500);
-        player.push(deck.pop());
-        if (playerCards) playerCards.innerHTML += cardHTML(player[2]);
-        pv = handVal(player);
-        document.getElementById('bc-player-score').textContent = pv;
-      }
-      // Banker third card rule (simplified)
-      if (bv <= 5) {
-        await delay(500);
-        banker.push(deck.pop());
-        if (bankerCards) bankerCards.innerHTML += cardHTML(banker[2]);
-        bv = handVal(banker);
-        document.getElementById('bc-banker-score').textContent = bv;
-      }
+    const labels = { player:'GIOCATORE', banker:'BANCO', tie:'PAREGGIO' };
+    let msg = '', type = 'lose';
+
+    if (result.resultType === 'win') {
+      msg  = `✅ ${labels[result.winner]} VINCE! +${formatCurrency(result.gain)}`;
+      type = 'win';
+      try { VFX.celebrate(); } catch (_) {}
+    } else if (result.resultType === 'push') {
+      msg  = '🤝 PAREGGIO — Puntata restituita';
+      type = 'push';
+    } else {
+      msg = `❌ ${labels[result.winner]} VINCE`;
     }
 
-    await delay(400);
-    pv = handVal(player);
-    bv = handVal(banker);
-
-    let winner = pv > bv ? 'player' : bv > pv ? 'banker' : 'tie';
-    let winAmt = 0;
-    let resultType = 'lose';
-
-    if (selectedBet === winner) {
-      const payouts = { player: 2, banker: 1.95, tie: 9 };
-      winAmt = parseFloat((bet * payouts[winner]).toFixed(2));
-      State.addBalance(winAmt);
-      resultType = 'win';
-    } else if (winner === 'tie' && selectedBet !== 'tie') {
-      State.addBalance(bet); // Push on tie (non-tie bets)
-      resultType = 'push';
-    }
-
-    const labels = { player: 'GIOCATORE', banker: 'BANCO', tie: 'PAREGGIO' };
-    let resultMsg = '';
-    if (resultType === 'win') resultMsg = `✅ ${labels[winner]} VINCE! +${formatCurrency(winAmt - bet)}`;
-    else if (resultType === 'push') resultMsg = `🤝 PAREGGIO — Puntata restituita`;
-    else resultMsg = `❌ ${labels[winner]} VINCE`;
-
-    document.getElementById('bc-result').innerHTML = `<div class="result-banner result-${resultType}">${resultMsg}</div>`;
-    showToast(resultMsg.replace(/✅|❌|🤝/g,'').trim(), resultType === 'win' ? 'win' : resultType === 'push' ? 'info' : 'lose');
-
-    State.recordHistory({
-      game: 'Baccarat', bet,
-      result: resultType,
-      gain: resultType === 'win' ? winAmt - bet : resultType === 'push' ? 0 : -bet
-    });
+    document.getElementById('bc-result').innerHTML =
+      `<div class="result-banner result-${type}">${msg}</div>`;
+    showToast(msg.replace(/[✅❌🤝]/g,'').trim(), type==='win'?'win':type==='push'?'info':'lose');
+    State.recordHistory({ game:'Baccarat', bet, result:result.resultType, gain:result.gain });
 
     const balEl = document.getElementById('bc-bal');
     if (balEl) balEl.textContent = formatCurrency(State.balance);

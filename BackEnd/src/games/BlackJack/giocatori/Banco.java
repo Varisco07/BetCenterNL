@@ -14,7 +14,7 @@ public class Banco extends Giocatore {
     public void mostraManoConCartaCoperta() {
         System.out.println("Carte del Banco:");
         if (!manoCarte.isEmpty()) {
-            System.out.println("  " + manoCarte.getFirst().toString());
+            System.out.println("  " + manoCarte.get(0).toString());
         }
         for (int i = 1; i < manoCarte.size(); i++) {
             System.out.println("  [Carta coperta]");

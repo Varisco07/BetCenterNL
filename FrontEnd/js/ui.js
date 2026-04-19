@@ -43,19 +43,19 @@ function setDepositAmount(amount) {
   document.getElementById('deposit-amount').value = amount;
 }
 
-function processDeposit() {
+async function processDeposit() {
   const amount = parseFloat(document.getElementById('deposit-amount').value);
-  if (!amount || amount < 1) {
-    showToast('Inserisci un importo valido', 'info');
-    return;
+  if (!amount || amount < 1) { showToast('Inserisci un importo valido', 'info'); return; }
+  if (amount > 10000)        { showToast('Importo massimo: €10.000', 'info'); return; }
+
+  try {
+    const result = await API.deposit(amount);
+    State.syncBalance(result.newBalance);
+    closeDeposit();
+    showToast(`💳 Deposito di ${formatCurrency(amount)} effettuato!`, 'win');
+  } catch (err) {
+    showToast('Errore nel deposito. Riprova.', 'lose');
   }
-  if (amount > 10000) {
-    showToast('Importo massimo: €10.000', 'info');
-    return;
-  }
-  State.addBalance(amount);
-  closeDeposit();
-  showToast(`💳 Deposito di ${formatCurrency(amount)} effettuato!`, 'win');
 }
 
 // Close sidebar on outside click (mobile)

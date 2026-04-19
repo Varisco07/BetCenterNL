@@ -36,23 +36,29 @@ const DailyBonus = (() => {
     return diffDays > 1;
   }
 
-  function claim() {
+  async function claim() {
     if (!canClaim()) {
       showToast('Hai già ritirato il bonus oggi! Torna domani.', 'info');
       return;
     }
-    const data = getData();
-    if (isStreakBroken()) data.streak = 0;
-    data.streak = Math.min(data.streak + 1, 7);
-    data.lastClaim = new Date().toISOString();
 
-    const amount = BONUSES[data.streak - 1];
-    State.addBalance(amount);
-    saveData(data);
-    closeDailyModal();
-    AudioEngine.play('bigWin');
-    showToast(`🎁 Bonus giornaliero ritirato: +${formatCurrency(amount)}! (Giorno ${data.streak}/7)`, 'win', 5000);
-    State.recordHistory({ game: 'Bonus Giornaliero', bet: 0, result: 'win', gain: amount });
+    try {
+      const result = await API.claimDailyBonus();
+      if (!result.ok) throw new Error(result.error);
+
+      State.syncBalance(result.newBalance);
+      closeDailyModal();
+      try { AudioEngine.play('bigWin'); } catch (_) {}
+      showToast(`🎁 Bonus giornaliero: +${formatCurrency(result.bonusAmount)}! (Giorno ${result.streak}/7)`, 'win', 5000);
+      State.recordHistory({ game: 'Bonus Giornaliero', bet: 0, result: 'win', gain: result.bonusAmount });
+    } catch (err) {
+      if (err.message && err.message.includes('already')) {
+        showToast('Hai già ritirato il bonus oggi!', 'info');
+      } else {
+        showToast('Errore nel ritiro del bonus. Riprova.', 'lose');
+      }
+      closeDailyModal();
+    }
   }
 
   function showModal() {

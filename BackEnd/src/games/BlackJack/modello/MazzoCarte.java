@@ -47,7 +47,7 @@ public class MazzoCarte {
 
     public Carta pescaCarta() {
         if (!carte.isEmpty()) {
-            return carte.removeFirst();
+            return carte.remove(0);
         }
         return null;
     }

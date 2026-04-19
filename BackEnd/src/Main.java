@@ -97,8 +97,8 @@ public class Main {
                     continua = false;
                     user.setSaldo(State.getBalance());
                     System.out.println("\n╔════════════════════════════════════════╗");
-                    System.out.println("║     Grazie per aver giocato!           ║");
-                    System.out.println("║     Saldo: €" + String.format("%.2f", user.getSaldo()) + "                     ║");
+                    System.out.printf("║ %-38s ║%n", "Grazie per aver giocato!");
+                    System.out.printf("║ %-38s ║%n", "Saldo: €" + String.format("%.2f", user.getSaldo()));
                     System.out.println("╚════════════════════════════════════════╝");
                     break;
                 default:
@@ -320,11 +320,11 @@ public class Main {
         System.out.println("\n╔════════════════════════════════════════╗");
         System.out.println("║       🎁 BONUS GIORNALIERO             ║");
         System.out.println("╠════════════════════════════════════════╣");
-        
+
         java.time.LocalDate today = java.time.LocalDate.now();
-        java.time.LocalDate lastBonus = user.getLastBonusDate() != null ? 
+        java.time.LocalDate lastBonus = user.getLastBonusDate() != null ?
             user.getLastBonusDate().toLocalDate() : null;
-        
+
         if (lastBonus != null && lastBonus.equals(today)) {
             System.out.println("║ Hai già ritirato il bonus oggi!        ║");
             System.out.println("║ Torna domani per il prossimo bonus.    ║");
@@ -332,17 +332,28 @@ public class Main {
             int streak = user.getBonusStreak();
             int[] bonuses = {50, 75, 100, 150, 200, 300, 500};
             int bonus = bonuses[Math.min(streak, 6)];
-            
-            System.out.printf("║ Bonus disponibile: €%d                 ║%n", bonus);
-            System.out.printf("║ Serie: %d/7                             ║%n", (streak + 1));
+
+            System.out.printf( "║ Bonus disponibile: €%-19d║%n", bonus);
+            System.out.printf( "║ Serie: %d/7                             ║%n", (streak + 1));
             System.out.println("║                                        ║");
             System.out.println("║ Premi della serie:                     ║");
             for (int i = 0; i < bonuses.length; i++) {
                 String check = i < streak ? "✓" : " ";
-                System.out.printf("║ Giorno %d: €%-3d %s                     ║%n", (i+1), bonuses[i], check);
+                System.out.printf("║ Giorno %d: €%-3d %s                       ║%n", (i+1), bonuses[i], check);
             }
+            System.out.println("╠════════════════════════════════════════╣");
+
+            // Accredita il bonus
+            user.setSaldo(user.getSaldo() + bonus);
+            State.setBalance(user.getSaldo());
+            user.setLastBonusDate(java.time.LocalDateTime.now());
+            user.setBonusStreak(streak + 1);
+            Database.saveUsers();
+
+            System.out.printf( "║ ✅ Bonus di €%d accreditato!            ║%n", bonus);
+            System.out.printf( "║ 💰 Nuovo saldo: €%-21.2f║%n", user.getSaldo());
         }
-        
+
         System.out.println("╚════════════════════════════════════════╝\n");
     }
 

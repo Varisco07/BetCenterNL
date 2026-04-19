@@ -125,6 +125,9 @@ public class Auth {
         System.out.print("Password: ");
         String password = scanner.nextLine().trim();
         
+        // Ricarica il database per vedere utenti creati dal sito web
+        Database.reload();
+        
         User user = Database.getUserByEmail(email);
         if (user == null || !user.getPassword().equals(password)) {
             System.out.println("❌ Email o password non corretti!");

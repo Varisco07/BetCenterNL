@@ -36,32 +36,47 @@ public class SlotMachine {
         String[] result = new String[3];
 
         for (int i = 0; i < 3; i++) {
-
             for (int j = 0; j < 10; j++) {
                 result[i] = randomSymbol();
                 printRow(result);
                 sleep(80 + j * 10);
             }
-
             sleep(300);
         }
 
-        double win = calculateWin(result[0], result[1], result[2], bet);
+        boolean isJackpot = result[0].equals("🔔") && result[1].equals("🔔") && result[2].equals("🔔");
+        double win;
+
+        if (isJackpot) {
+            // Vinci il jackpot progressivo!
+            win = State.getJackpot();
+            State.addBalance(win);
+            State.resetJackpot();
+        } else {
+            win = calculateWin(result[0], result[1], result[2], bet);
+            if (win > 0) {
+                State.addBalance(win);
+            }
+            // Ogni spin contribuisce al jackpot
+            State.addToJackpot(bet);
+        }
 
         System.out.println("\n" + YELLOW + "--------------------" + RESET);
         System.out.println(BOLD + "🎰 RISULTATO FINALE:" + RESET);
         printRow(result);
         System.out.println("\n" + YELLOW + "--------------------" + RESET);
 
-        if (win > 0) {
-            State.addBalance(win);
-            System.out.println(GREEN + BOLD + "🎉 VINTO: " + win + RESET);
+        if (isJackpot) {
+            System.out.println(YELLOW + BOLD + "🏆🔔🔔🔔 JACKPOT! HAI VINTO €" + String.format("%.2f", win) + "! 🔔🔔🔔🏆" + RESET);
+        } else if (win > 0) {
+            System.out.println(GREEN + BOLD + "🎉 VINTO: €" + String.format("%.2f", win) + RESET);
         } else {
             System.out.println(RED + "❌ PERSO" + RESET);
         }
 
-        System.out.println(CYAN + "💰 Saldo: " + State.getBalance() + RESET);
-        
+        System.out.printf(CYAN + "💰 Saldo: €%.2f" + RESET + "%n", State.getBalance());
+        System.out.printf(YELLOW + "🏆 Jackpot attuale: €%.2f" + RESET + "%n", State.getJackpot());
+
         // Registra il risultato nel database
         User user = Auth.getCurrentUser();
         if (user != null) {

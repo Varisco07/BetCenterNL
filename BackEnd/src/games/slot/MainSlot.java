@@ -15,6 +15,7 @@ public class MainSlot {
         System.out.println("║           🎰 SLOT MACHINE              ║");
         System.out.println("╠════════════════════════════════════════╣");
         System.out.printf( "║ Saldo: €%-31s║%n", String.format("%.2f", State.getBalance()));
+        System.out.printf( "║ 🏆 JACKPOT: €%-26s║%n", String.format("%.2f", State.getJackpot()));
         System.out.println("╠════════════════════════════════════════╣");
         System.out.println("║ TABELLA VINCITE (3 uguali):            ║");
         System.out.println("║  🍒 Ciliegia .............. x5         ║");
@@ -24,7 +25,7 @@ public class MainSlot {
         System.out.println("║  ⭐ Stella ................. x25       ║");
         System.out.println("║  💎 Diamante .............. x50        ║");
         System.out.println("║  7️⃣  Sette ................. x100      ║");
-        System.out.println("║  🔔 Campana ............... x200       ║");
+        System.out.println("║  🔔 Campana ......... JACKPOT 🏆       ║");
         System.out.println("╠════════════════════════════════════════╣");
         System.out.println("║ 2x 🍒 in qualsiasi posizione .. x1.5   ║");
         System.out.println("╚════════════════════════════════════════╝\n");

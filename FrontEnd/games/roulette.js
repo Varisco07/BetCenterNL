@@ -1,77 +1,12 @@
 // =============================================
-// BetCenterNL — ROULETTE EUROPEA
+// BetCenterNL — ROULETTE (collegata al backend)
 // =============================================
 
 const RouletteGame = (() => {
   const RED_NUMS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-  const BLACK_NUMS = [2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35];
 
-  let selectedBets = []; // [{type, value, label, odds}]
+  let selectedBets = []; // [{type, value, label, odds, amount}]
   let spinning = false;
-  let lastResult = null;
-
-  // Helper functions
-  function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  function safeFormatCurrency(amount) {
-    if (typeof formatCurrency === 'function') {
-      return formatCurrency(amount);
-    }
-    return `€ ${Number(amount || 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  }
-
-  function safeGetBalance() {
-    return (typeof State !== 'undefined' && State.balance !== undefined) ? State.balance : 1000;
-  }
-
-  function safeDeductBalance(amount) {
-    if (typeof State !== 'undefined' && State.deductBalance) {
-      return State.deductBalance(amount);
-    }
-    return true; // Fallback per demo
-  }
-
-  function safeAddBalance(amount) {
-    if (typeof State !== 'undefined' && State.addBalance) {
-      State.addBalance(amount);
-    }
-  }
-
-  function safeRecordHistory(record) {
-    if (typeof State !== 'undefined' && State.recordHistory) {
-      State.recordHistory(record);
-    }
-  }
-
-  function safeGetBet(gameId) {
-    if (typeof getBet === 'function') {
-      return getBet(gameId);
-    }
-    const input = document.getElementById(`${gameId}-bet`);
-    return parseFloat(input ? input.value : 0) || 0;
-  }
-
-  function safeShowToast(msg, type, duration) {
-    if (typeof showToast === 'function') {
-      showToast(msg, type, duration);
-    } else {
-      console.log(`Toast: ${msg}`);
-    }
-  }
-
-  function safeCreateBetControls(gameId, defaultBet) {
-    if (typeof createBetControls === 'function') {
-      return createBetControls(gameId, defaultBet);
-    }
-    return `
-      <div class="bet-controls">
-        <label>Puntata (€)</label>
-        <input type="number" id="${gameId}-bet" value="${defaultBet}" min="1" max="1000" />
-      </div>
-    `;
-  }
 
   function getColor(n) {
     if (n === 0) return 'green';
@@ -80,12 +15,24 @@ const RouletteGame = (() => {
 
   function numbersGrid() {
     let html = '';
-    const allNums = [0,3,6,9,12,15,18,21,24,27,30,33,36,
-                     2,5,8,11,14,17,20,23,26,29,32,35,
-                     1,4,7,10,13,16,19,22,25,28,31,34];
-    for (const n of allNums) {
-      const col = getColor(n);
-      html += `<div class="roul-num ${col}" onclick="RouletteGame.betNum(${n})" title="${n}">${n}</div>`;
+    const nums = [0,3,6,9,12,15,18,21,24,27,30,33,36,
+                  2,5,8,11,14,17,20,23,26,29,32,35,
+                  1,4,7,10,13,16,19,22,25,28,31,34];
+    for (const n of nums) {
+      html += `<div class="roul-num ${getColor(n)}" onclick="RouletteGame.betNum(${n})" title="${n}">${n}</div>`;
+    }
+    return html;
+  }
+
+  function generateWheelStrip() {
+    const numbers = [0,26,3,35,12,28,7,29,18,22,9,31,14,20,1,33,16,24,5,34,17,6,27,13,36,11,30,8,23,10,32,15,19,4,21,2,25];
+    let html = '';
+    for (let r = 0; r < 4; r++) {
+      for (const num of numbers) {
+        const color = getColor(num);
+        const bg = color==='red'?'#e74c3c':color==='black'?'#000':'#1abc9c';
+        html += `<div class="strip-number" style="background:${bg}">${num}</div>`;
+      }
     }
     return html;
   }
@@ -95,15 +42,13 @@ const RouletteGame = (() => {
       <div class="game-section" style="max-width:1000px">
         <div class="game-header">
           <h2 class="game-title">⭕ ROULETTE EUROPEA</h2>
-          <div class="game-balance" id="rl-bal">${safeFormatCurrency(safeGetBalance())}</div>
+          <div class="game-balance" id="rl-bal">${formatCurrency(State.balance)}</div>
         </div>
         <div class="roulette-container">
           <div class="roulette-wheel-area">
             <div class="roulette-strip-wrapper">
               <div class="roulette-pointer-h"></div>
-              <div class="roulette-strip" id="rl-wheel">
-                ${generateWheelStrip()}
-              </div>
+              <div class="roulette-strip" id="rl-wheel">${generateWheelStrip()}</div>
             </div>
             <div class="roulette-result-num" id="rl-result-num">—</div>
             <div id="rl-result"></div>
@@ -124,74 +69,50 @@ const RouletteGame = (() => {
             </div>
             <div class="section-divider"></div>
             <div id="rl-bet-list" style="font-size:0.8rem;color:var(--text-1);min-height:40px;margin-bottom:0.5rem"></div>
-            ${safeCreateBetControls('rl', 5)}
+            ${createBetControls('rl', 5)}
             <div class="game-btn-row">
               <button class="btn-game btn-deal" id="rl-spin" onclick="RouletteGame.spin()">🎯 LANCIA!</button>
-              <button class="btn-game btn-clear" onclick="RouletteGame.clearBets()">Cancella Scommesse</button>
+              <button class="btn-game btn-clear" onclick="RouletteGame.clearBets()">Cancella</button>
             </div>
           </div>
         </div>
       </div>`;
   }
 
-  function generateWheelStrip() {
-    const numbers = [0,26,3,35,12,28,7,29,18,22,9,31,14,20,1,33,16,24,5,34,17,6,27,13,36,11,30,8,23,10,32,15,19,4,21,2,25];
-    let html = '';
-    
-    // Ripeti i numeri 4 volte per avere abbastanza spazio per l'animazione
-    for (let repeat = 0; repeat < 4; repeat++) {
-      for (let i = 0; i < numbers.length; i++) {
-        const num = numbers[i];
-        const color = getColor(num);
-        const bgColor = color === 'red' ? '#e74c3c' : color === 'black' ? '#000' : '#1abc9c';
-        html += `<div class="strip-number" style="background:${bgColor}">${num}</div>`;
-      }
-    }
-    return html;
-  }
-
   function updateBetList() {
     const el = document.getElementById('rl-bet-list');
     if (!el) return;
-    if (selectedBets.length === 0) {
-      el.textContent = 'Nessuna scommessa selezionata';
-      return;
-    }
+    if (!selectedBets.length) { el.textContent = 'Nessuna scommessa selezionata'; return; }
     el.innerHTML = selectedBets.map((b, i) =>
       `<span style="background:var(--bg-3);border:1px solid var(--border);border-radius:4px;padding:0.2rem 0.5rem;margin:2px;display:inline-block">
-        ${b.label} (${b.odds}x) <span onclick="RouletteGame.removeBet(${i})" style="cursor:pointer;color:var(--red);margin-left:4px">✕</span>
+        ${b.label} (${b.odds}x) €${b.amount}
+        <span onclick="RouletteGame.removeBet(${i})" style="cursor:pointer;color:var(--red);margin-left:4px">✕</span>
       </span>`
     ).join('');
   }
 
   function betNum(n) {
-    const bet = safeGetBet('rl');
-    if (!bet || bet < 1) { safeShowToast('Imposta la puntata prima', 'info'); return; }
+    const bet = getBet('rl');
+    if (!bet || bet < 1) { showToast('Imposta la puntata prima', 'info'); return; }
     selectedBets.push({ type: 'number', value: n, label: `Num ${n}`, odds: 36, amount: bet });
     updateBetList();
-    // Visual feedback
     document.querySelectorAll('.roul-num').forEach(el => {
       if (parseInt(el.title) === n) el.classList.toggle('selected');
     });
   }
 
   function betOutside(type, label, odds) {
-    const bet = safeGetBet('rl');
-    if (!bet || bet < 1) { safeShowToast('Imposta la puntata prima', 'info'); return; }
-    // Remove duplicate
+    const bet = getBet('rl');
+    if (!bet || bet < 1) { showToast('Imposta la puntata prima', 'info'); return; }
     selectedBets = selectedBets.filter(b => b.type !== type);
     selectedBets.push({ type, label, odds, amount: bet });
     updateBetList();
-    document.querySelectorAll('.outside-bet').forEach(el => el.classList.remove('selected'));
     document.querySelectorAll('.outside-bet').forEach(el => {
-      if (el.textContent.includes(label)) el.classList.add('selected');
+      el.classList.toggle('selected', el.textContent.includes(label));
     });
   }
 
-  function removeBet(idx) {
-    selectedBets.splice(idx, 1);
-    updateBetList();
-  }
+  function removeBet(idx) { selectedBets.splice(idx, 1); updateBetList(); }
 
   function clearBets() {
     selectedBets = [];
@@ -201,134 +122,94 @@ const RouletteGame = (() => {
 
   async function spin() {
     if (spinning) return;
-    if (selectedBets.length === 0) { safeShowToast('Piazza almeno una scommessa!', 'info'); return; }
+    if (!selectedBets.length) { showToast('Piazza almeno una scommessa!', 'info'); return; }
 
     const totalBet = selectedBets.reduce((s, b) => s + b.amount, 0);
-    if (!safeDeductBalance(totalBet)) { safeShowToast('Saldo insufficiente!', 'lose'); return; }
+    if (State.balance < totalBet) { showToast('Saldo insufficiente!', 'lose'); return; }
 
     spinning = true;
     document.getElementById('rl-spin').disabled = true;
-    if (typeof AudioEngine !== 'undefined') AudioEngine.play('rouletteSpin');
+    try { AudioEngine.play('rouletteSpin'); } catch (_) {}
 
-    // Reset wheel position first
+    // Animazione ruota
     const wheel = document.getElementById('rl-wheel');
-    const result = Math.floor(Math.random() * 37); // 0-36
     const numbers = [0,26,3,35,12,28,7,29,18,22,9,31,14,20,1,33,16,24,5,34,17,6,27,13,36,11,30,8,23,10,32,15,19,4,21,2,25];
-    const resultIndex = numbers.indexOf(result);
-    
     if (wheel) {
-      // Reset position instantly
       wheel.style.transition = 'none';
-      wheel.style.transform = 'translateX(0px)';
-      
-      // Force reflow
+      wheel.style.transform  = 'translateX(0px)';
       wheel.offsetHeight;
-      
-      // Start spinning animation
-      const numberWidth = 60; // Width of each number
-      const centerOffset = 300; // Offset to center the result
-      const totalNumbers = numbers.length; // 37 numbers
-      
-      // Usa il secondo set di numeri (ripetizione 1) per il risultato finale
-      // Questo assicura che ci siano numeri prima e dopo
-      const targetIndex = totalNumbers + resultIndex; // Secondo set
-      const finalPosition = -(targetIndex * numberWidth) + centerOffset;
-      
-      // Apply animation
       setTimeout(() => {
-        wheel.style.transition = 'transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)';
-        wheel.style.transform = `translateX(${finalPosition}px)`;
+        wheel.style.transition = 'transform 3s cubic-bezier(0.25,0.1,0.25,1)';
+        wheel.style.transform  = `translateX(-${numbers.length * 60 * 2}px)`;
       }, 50);
     }
 
-    // Show spinning indicator
     const resultNumEl = document.getElementById('rl-result-num');
-    resultNumEl.innerHTML = '<span class="spinning-indicator">🎰 Girando...</span>';
+    if (resultNumEl) resultNumEl.innerHTML = '<span class="spinning-indicator">🎰 Girando...</span>';
+
+    // Chiama il server
+    let serverResult;
+    try {
+      serverResult = await API.spinRoulette(selectedBets);
+    } catch (err) {
+      showToast('Errore di connessione al server', 'lose');
+      spinning = false;
+      document.getElementById('rl-spin').disabled = false;
+      return;
+    }
 
     await delay(3200);
 
-    // Calculate wins
-    let totalWin = 0;
-    const winBets = [];
-    for (const b of selectedBets) {
-      if (checkBetWin(b, result)) {
-        const win = parseFloat((b.amount * b.odds).toFixed(2));
-        totalWin += win;
-        winBets.push(b.label);
-      }
+    const { spin: spinResult, betResults, totalWin, gain, newBalance } = serverResult;
+    const { number, color } = spinResult;
+    const colorEmoji = { red:'🔴', black:'⚫', green:'🟢' }[color];
+
+    // Ferma ruota sul numero corretto
+    if (wheel) {
+      const idx = numbers.indexOf(number);
+      const finalPos = -(numbers.length * 60 + idx * 60) + 300;
+      wheel.style.transition = 'transform 0.5s ease-out';
+      wheel.style.transform  = `translateX(${finalPos}px)`;
     }
 
-    // Update result with animation
-    const color = getColor(result);
-    const colorEmoji = { red: '🔴', black: '⚫', green: '🟢' }[color];
-    
-    resultNumEl.innerHTML = `<span class="result-number-animate">${colorEmoji} ${result}</span>`;
-    resultNumEl.classList.add('result-pop');
+    if (resultNumEl) resultNumEl.innerHTML = `<span class="result-number-animate">${colorEmoji} ${number}</span>`;
 
-    await delay(500);
+    State.syncBalance(newBalance);
 
     const resultEl = document.getElementById('rl-result');
     if (totalWin > 0) {
-      safeAddBalance(totalWin);
-      resultEl.innerHTML = `<div class="result-banner result-win">✅ VINCI ${safeFormatCurrency(totalWin)}!</div>`;
-      safeShowToast(`🎯 Numero ${result} — Vinto ${safeFormatCurrency(totalWin)}!`, 'win');
-      if (totalWin > 50 && typeof VFX !== 'undefined') VFX.celebrate();
-      safeRecordHistory({ game: 'Roulette', bet: totalBet, result: 'win', gain: totalWin - totalBet });
+      if (resultEl) resultEl.innerHTML = `<div class="result-banner result-win">✅ VINCI ${formatCurrency(totalWin)}!</div>`;
+      showToast(`🎯 Numero ${number} — Vinto ${formatCurrency(totalWin)}!`, 'win');
+      if (totalWin > 50) try { VFX.celebrate(); } catch (_) {}
+      State.recordHistory({ game: 'Roulette', bet: totalBet, result: 'win', gain });
     } else {
-      resultEl.innerHTML = `<div class="result-banner result-lose">❌ Numero ${result} — Nessuna vincita</div>`;
-      safeShowToast(`⭕ Numero ${result} — Perso`, 'lose');
-      if (typeof VFX !== 'undefined') VFX.screenShake();
-      safeRecordHistory({ game: 'Roulette', bet: totalBet, result: 'lose', gain: -totalBet });
+      if (resultEl) resultEl.innerHTML = `<div class="result-banner result-lose">❌ Numero ${number} — Nessuna vincita</div>`;
+      showToast(`⭕ Numero ${number} — Perso`, 'lose');
+      try { VFX.screenShake(); } catch (_) {}
+      State.recordHistory({ game: 'Roulette', bet: totalBet, result: 'lose', gain });
     }
 
     const balEl = document.getElementById('rl-bal');
-    if (balEl) balEl.textContent = safeFormatCurrency(safeGetBalance());
+    if (balEl) balEl.textContent = formatCurrency(State.balance);
 
     spinning = false;
     clearBets();
     document.getElementById('rl-spin').disabled = false;
-    
-    // Reset wheel smoothly after showing results
-    await delay(2000);
-    if (wheel) {
-      wheel.style.transition = 'transform 0.8s ease-out';
-      wheel.style.transform = 'translateX(0px)';
-    }
-    
-    // Clear animations
-    await delay(800);
-    if (resultNumEl) resultNumEl.classList.remove('result-pop');
-    
-    // Clear result after a while
-    setTimeout(() => {
-      if (resultEl) resultEl.innerHTML = '';
-      if (resultNumEl) resultNumEl.innerHTML = '—';
-    }, 3000);
-  }
 
-  function checkBetWin(bet, result) {
-    const color = getColor(result);
-    switch (bet.type) {
-      case 'number': return bet.value === result;
-      case 'red': return color === 'red';
-      case 'black': return color === 'black';
-      case 'even': return result > 0 && result % 2 === 0;
-      case 'odd': return result > 0 && result % 2 !== 0;
-      case 'low': return result >= 1 && result <= 18;
-      case 'high': return result >= 19 && result <= 36;
-      case 'dozen1': return result >= 1 && result <= 12;
-      case 'dozen2': return result >= 13 && result <= 24;
-      case 'dozen3': return result >= 25 && result <= 36;
-      default: return false;
-    }
+    setTimeout(() => {
+      if (wheel) { wheel.style.transition='transform 0.8s ease-out'; wheel.style.transform='translateX(0px)'; }
+    }, 3000);
+    setTimeout(() => {
+      if (resultEl)    resultEl.innerHTML = '';
+      if (resultNumEl) resultNumEl.innerHTML = '—';
+    }, 5000);
   }
 
   return { render, betNum, betOutside, removeBet, clearBets, spin };
 })();
 
-// Verifica che il modulo sia stato caricato correttamente
 if (typeof RouletteGame === 'undefined') {
-  console.error('❌ RouletteGame non è stato caricato correttamente');
+  console.error('❌ RouletteGame non caricato');
 } else {
-  console.log('✅ RouletteGame caricato con successo');
+  console.log('✅ RouletteGame caricato');
 }
