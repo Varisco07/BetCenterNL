@@ -179,13 +179,13 @@ public class VirtualCavalli {
 
     public static void printGameRules() {
         System.out.println("\n╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║            🐎 VIRTUAL CORSE CAVALLI - REGOLE                 ║");
+        System.out.println("║            🐎 VIRTUAL CORSE CAVALLI - REGOLE               ║");
         System.out.println("╠════════════════════════════════════════════════════════════╣");
-        System.out.println("║  1. C'è una sola corsa per round                             ║");
-        System.out.println("║  2. Scegli un solo cavallo vincente                          ║");
-        System.out.println("║  3. Nessuna schedina multipla                                ║");
-        System.out.println("║  4. Vinci se il tuo cavallo arriva primo                     ║");
-        System.out.println("║  5. La gara viene simulata live nel terminale                ║");
+        System.out.println("║  1. C'è una sola corsa per round                           ║");
+        System.out.println("║  2. Scegli un solo cavallo vincente                        ║");
+        System.out.println("║  3. Nessuna schedina multipla                              ║");
+        System.out.println("║  4. Vinci se il tuo cavallo arriva primo                   ║");
+        System.out.println("║  5. La gara viene simulata live nel terminale              ║");
         System.out.println("╚════════════════════════════════════════════════════════════╝");
     }
 }

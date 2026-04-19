@@ -16,14 +16,19 @@ public class BaccaratMain {
         
         boolean continua = true;
         
+        // Prima conferma prima di iniziare
+        if (!chiediConfermaGioco(scanner)) {
+            user.setSaldo(State.getBalance());
+            Database.saveUsers();
+            System.out.println("\n👋 Grazie per aver giocato a Baccarat!");
+            return;
+        }
+        
         while (continua) {
-            if (!chiediConfermaGioco(scanner)) {
-                break;
-            }
             System.out.println("\n╔════════════════════════════════════════╗");
             System.out.println("║          💎 BACCARAT                   ║");
             System.out.println("╠════════════════════════════════════════╣");
-            System.out.println("║ Saldo: €" + String.format("%.2f", State.getBalance()));
+            System.out.printf( "║ Saldo: €%-31s║%n", String.format("%.2f", State.getBalance()));
             System.out.println("╠════════════════════════════════════════╣");
             System.out.println("║ Regole:                                ║");
             System.out.println("║ - Giocatore vs Banco                   ║");
@@ -79,8 +84,8 @@ public class BaccaratMain {
             System.out.println("\n╔════════════════════════════════════════╗");
             System.out.println("║           🎴 RISULTATO                 ║");
             System.out.println("╠════════════════════════════════════════╣");
-            System.out.println("║ GIOCATORE: " + formatHand(result.playerHand) + " = " + result.playerValue);
-            System.out.println("║ BANCO:     " + formatHand(result.bankerHand) + " = " + result.bankerValue);
+            System.out.printf( "║ GIOCATORE: %-28s║%n", formatHand(result.playerHand) + " = " + result.playerValue);
+            System.out.printf( "║ BANCO:     %-28s║%n", formatHand(result.bankerHand) + " = " + result.bankerValue);
             System.out.println("╠════════════════════════════════════════╣");
             
             double gain = -bet;
@@ -90,26 +95,32 @@ public class BaccaratMain {
                 gain = bet * result.payout - bet;
                 win = true;
                 State.addBalance(bet * result.payout);
-                System.out.println("║ ✅ HAI VINTO! +" + String.format("%.2f", gain) + "€");
+                System.out.printf("║ ✅ HAI VINTO! +%-24s║%n", String.format("%.2f", gain) + "€");
             } else if (result.winner.equals("tie") && betType.equals("tie")) {
                 gain = bet * result.payout - bet;
                 win = true;
                 State.addBalance(bet * result.payout);
-                System.out.println("║ ✅ PAREGGIO! +" + String.format("%.2f", gain) + "€");
+                System.out.printf("║ ✅ PAREGGIO! +%-25s║%n", String.format("%.2f", gain) + "€");
             } else {
-                System.out.println("║ ❌ HAI PERSO! -" + String.format("%.2f", bet) + "€");
+                System.out.printf("║ ❌ HAI PERSO! -%-24s║%n", String.format("%.2f", bet) + "€");
             }
             
-            System.out.println("║ Nuovo saldo: €" + String.format("%.2f", State.getBalance()));
+            System.out.printf( "║ Nuovo saldo: €%-25s║%n", String.format("%.2f", State.getBalance()));
             System.out.println("╚════════════════════════════════════════╝");
             
             // Registra il risultato
             GameRecord record = new GameRecord("Baccarat", bet, gain, win);
             Database.recordGameResult(user.getId(), record);
             
-            System.out.print("\nVuoi giocare ancora? (s/n): ");
-            String risposta = scanner.nextLine().trim().toLowerCase();
-            if (!risposta.equals("s")) continua = false;
+            while (true) {
+                System.out.println("\nVuoi giocare ancora?");
+                System.out.println("1 - Si");
+                System.out.println("2 - No");
+                String risposta = scanner.nextLine().trim();
+                if (risposta.equals("1")) { continua = true; break; }
+                if (risposta.equals("2")) { continua = false; break; }
+                System.out.println("❌ Scelta non valida! Inserisci 1 o 2.");
+            }
         }
         
         user.setSaldo(State.getBalance());

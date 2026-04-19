@@ -15,9 +15,9 @@ public class BasketMain {
 
     public void start() {
         VirtualNBA.printGameRules();
-        System.out.println("\n=================================");
-        System.out.println("      🏀 VIRTUAL BASKETBALL");
-        System.out.println("=================================");
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║        🏀 VIRTUAL BASKETBALL           ║");
+        System.out.println("╚════════════════════════════════════════╝");
 
         game.generateEvents();
 

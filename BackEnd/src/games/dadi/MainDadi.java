@@ -12,15 +12,15 @@ public class MainDadi {
         Scanner sc = new Scanner(System.in);
         dadi game = new dadi();
 
-        System.out.println("=================================");
-        System.out.println("        🎲 CRAPS / DADI");
-        System.out.println("=================================");
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║           🎲 CRAPS / DADI              ║");
+        System.out.println("╚════════════════════════════════════════╝");
 
         while (State.getBalance() > 0) {
 
-            System.out.println("\n-----------------------------");
-            System.out.println("💰 Saldo: " + State.getBalance());
-            System.out.println("-----------------------------");
+            System.out.println("\n╔════════════════════════════════════════╗");
+            System.out.printf( "║ 💰 Saldo: €%-28s║%n", String.format("%.2f", State.getBalance()));
+            System.out.println("╚════════════════════════════════════════╝");
 
             System.out.println("\nVuoi giocare?");
             System.out.println("1 - Si");
@@ -38,7 +38,10 @@ public class MainDadi {
             game.start();
         }
 
-        System.out.println("\n🏁 GIOCO TERMINATO");
-        System.out.println("💰 Saldo finale: " + State.getBalance());
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║           🏁 GIOCO TERMINATO           ║");
+        System.out.println("╠════════════════════════════════════════╣");
+        System.out.printf( "║ 💰 Saldo finale: €%-21s║%n", String.format("%.2f", State.getBalance()));
+        System.out.println("╚════════════════════════════════════════╝");
     }
 }

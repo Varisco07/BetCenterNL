@@ -15,9 +15,9 @@ public class CaniMain {
 
     public void start() {
         VirtualCani.printGameRules();
-        System.out.println("\n=================================");
-        System.out.println("      🐕 VIRTUAL CORSE CANI");
-        System.out.println("=================================");
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║        🐕 VIRTUAL CORSE CANI           ║");
+        System.out.println("╚════════════════════════════════════════╝");
 
         game.generateEvents();
         boolean continua = true;

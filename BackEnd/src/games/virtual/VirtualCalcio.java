@@ -213,7 +213,7 @@ public class VirtualCalcio {
         core.User user = core.Auth.getCurrentUser();
         if (user != null) {
             double gain = win ? (amount * totalOdds - amount) : -amount;
-            core.GameRecord record = new core.GameRecord("⚽ Virtual", amount, gain, win);
+            core.GameRecord record = new core.GameRecord("🥅 Virtual", amount, gain, win);
             core.Database.recordGameResult(user.getId(), record);
         }
 

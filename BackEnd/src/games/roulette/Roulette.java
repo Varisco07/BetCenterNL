@@ -70,18 +70,18 @@ public class Roulette {
         }
 
         System.out.println("├─────────────────────────────────────────┤");
-        System.out.printf("│ TOTALE PUNTATO: " + CYAN + "€%.2f" + RESET + "%n", totalBet);
-        System.out.printf("│ TOTALE VINTO: " + (totalWin > 0 ? GREEN : RED) + "€%.2f" + RESET + "%n", totalWin);
+        System.out.printf("│ TOTALE PUNTATO:  €%-21.2f │%n", totalBet);
+        System.out.printf("│ TOTALE VINTO:    €%-21.2f │%n", totalWin);
         
         double netGain = totalWin - totalBet;
         if (netGain > 0) {
             State.addBalance(totalWin);
-            System.out.printf("│ " + GREEN + BOLD + "🎉 GUADAGNO NETTO: +€%.2f" + RESET + "%n", netGain);
+            System.out.printf("│ 🎉 GUADAGNO NETTO: +€%-18.2f │%n", netGain);
         } else {
-            System.out.printf("│ " + RED + "💸 PERDITA NETTA: €%.2f" + RESET + "%n", Math.abs(netGain));
+            System.out.printf("│ 💸 PERDITA NETTA:   €%-18.2f │%n", Math.abs(netGain));
         }
         
-        System.out.printf("│ " + CYAN + "💰 SALDO ATTUALE: €%.2f" + RESET + "%n", State.getBalance());
+        System.out.printf("│ 💰 SALDO ATTUALE:   €%-18.2f │%n", State.getBalance());
         System.out.println("└─────────────────────────────────────────┘");
 
         // Registra il risultato nel database
@@ -128,7 +128,7 @@ public class Roulette {
         
         System.out.println("\n╔" + border + "╗");
         System.out.printf("║     🎯 RISULTATO: " + bgColor + " %2d " + RESET + "  ║%n", number);
-        System.out.printf("║        (%s)          ║%n", colorDisplay);
+        System.out.printf("║        (%s)           ║%n", colorDisplay);
         System.out.println("╚" + border + "╝");
         
         // Mostra info aggiuntive sul numero
@@ -222,17 +222,19 @@ public class Roulette {
     }
 
     public void showBettingOptions() {
-        System.out.println("\n🎯 OPZIONI DI PUNTATA ROULETTE:");
-        System.out.println("┌─────────────────────────────────────────┐");
-        System.out.println("│ PUNTATE SEMPLICI (Payout 1:1)          │");
-        System.out.println("│ • Rosso/Nero • Pari/Dispari            │");
-        System.out.println("│ • Basso (1-18) • Alto (19-36)          │");
+        System.out.println("\n┌─────────────────────────────────────────┐");
+        System.out.println("│  🎯 OPZIONI DI PUNTATA ROULETTE         │");
         System.out.println("├─────────────────────────────────────────┤");
-        System.out.println("│ DOZZINE E COLONNE (Payout 2:1)         │");
-        System.out.println("│ • 1ª/2ª/3ª Dozzina • 1ª/2ª/3ª Colonna │");
+        System.out.println("│ PUNTATE SEMPLICI (Payout 1:1)           │");
+        System.out.println("│  • Rosso/Nero  • Pari/Dispari           │");
+        System.out.println("│  • Basso (1-18)  • Alto (19-36)         │");
         System.out.println("├─────────────────────────────────────────┤");
-        System.out.println("│ NUMERO SINGOLO (Payout 35:1)           │");
-        System.out.println("│ • Qualsiasi numero da 0 a 36           │");
+        System.out.println("│ DOZZINE E COLONNE (Payout 2:1)          │");
+        System.out.println("│  • 1ª/2ª/3ª Dozzina                     │");
+        System.out.println("│  • 1ª/2ª/3ª Colonna                     │");
+        System.out.println("├─────────────────────────────────────────┤");
+        System.out.println("│ NUMERO SINGOLO (Payout 35:1)            │");
+        System.out.println("│  • Qualsiasi numero da 0 a 36           │");
         System.out.println("└─────────────────────────────────────────┘");
     }
 }

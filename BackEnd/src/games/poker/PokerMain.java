@@ -20,14 +20,19 @@ public class PokerMain {
         
         boolean continua = true;
         
+        // Prima conferma prima di iniziare
+        if (!chiediConfermaGioco(scanner)) {
+            user.setSaldo(State.getBalance());
+            Database.saveUsers();
+            System.out.println("\n👋 Grazie per aver giocato a Video Poker!");
+            return;
+        }
+        
         while (continua) {
-            if (!chiediConfermaGioco(scanner)) {
-                break;
-            }
             System.out.println("\n╔════════════════════════════════════════╗");
             System.out.println("║        ♠ VIDEO POKER (Jacks+)          ║");
             System.out.println("╠════════════════════════════════════════╣");
-            System.out.println("║ Saldo: €" + String.format("%.2f", State.getBalance()));
+            System.out.printf( "║ Saldo: €%-31s║%n", String.format("%.2f", State.getBalance()));
             System.out.println("╠════════════════════════════════════════╣");
             System.out.println("║ TABELLA PAGAMENTI:                     ║");
             System.out.println("║ Royal Flush ............ 800x          ║");
@@ -100,9 +105,9 @@ public class PokerMain {
             System.out.println("\n╔════════════════════════════════════════╗");
             System.out.println("║           🎴 RISULTATO                 ║");
             System.out.println("╠════════════════════════════════════════╣");
-            System.out.println("║ Mano: " + formatHand(hand));
-            System.out.println("║ Combinazione: " + result.handName);
-            System.out.println("║ Moltiplicatore: " + result.multiplier + "x");
+            System.out.printf( "║ Mano: %-33s║%n", formatHand(hand));
+            System.out.printf( "║ Combinazione: %-25s║%n", result.handName);
+            System.out.printf( "║ Moltiplicatore: %-23s║%n", result.multiplier + "x");
             System.out.println("╠════════════════════════════════════════╣");
             
             double gain = -bet;
@@ -113,12 +118,12 @@ public class PokerMain {
                 State.addBalance(winAmount);
                 gain = winAmount - bet;
                 win = true;
-                System.out.println("║ ✅ HAI VINTO! +" + String.format("%.2f", gain) + "€");
+                System.out.printf("║ ✅ HAI VINTO! +%-24s║%n", String.format("%.2f", gain) + "€");
             } else {
-                System.out.println("║ ❌ NESSUNA VINCITA!");
+                System.out.println("║ ❌ NESSUNA VINCITA!                    ║");
             }
             
-            System.out.println("║ Nuovo saldo: €" + String.format("%.2f", State.getBalance()));
+            System.out.printf( "║ Nuovo saldo: €%-25s║%n", String.format("%.2f", State.getBalance()));
             System.out.println("╚════════════════════════════════════════╝");
             
             // Registra il risultato
@@ -126,9 +131,15 @@ public class PokerMain {
             record.setDetails(result.handName);
             Database.recordGameResult(user.getId(), record);
             
-            System.out.print("\nVuoi giocare ancora? (s/n): ");
-            String risposta = scanner.nextLine().trim().toLowerCase();
-            if (!risposta.equals("s")) continua = false;
+            while (true) {
+                System.out.println("\nVuoi giocare ancora?");
+                System.out.println("1 - Si");
+                System.out.println("2 - No");
+                String risposta = scanner.nextLine().trim();
+                if (risposta.equals("1")) { continua = true; break; }
+                if (risposta.equals("2")) { continua = false; break; }
+                System.out.println("❌ Scelta non valida! Inserisci 1 o 2.");
+            }
         }
         
         user.setSaldo(State.getBalance());

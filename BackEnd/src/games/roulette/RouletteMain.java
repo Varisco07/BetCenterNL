@@ -120,12 +120,15 @@ public class RouletteMain {
     }
 
     private boolean chiediContinua() {
-        System.out.println("\nVuoi continuare?");
-        System.out.println("1 - Si");
-        System.out.println("2 - No");
-
-        String s = tastiera.nextLine();
-        return s.equals("1");
+        while (true) {
+            System.out.println("\nVuoi continuare?");
+            System.out.println("1 - Si");
+            System.out.println("2 - No");
+            String s = tastiera.nextLine().trim();
+            if (s.equals("1")) return true;
+            if (s.equals("2")) return false;
+            System.out.println("❌ Scelta non valida! Inserisci 1 o 2.");
+        }
     }
     
     private boolean chiediConfermaGioco() {
@@ -141,9 +144,9 @@ public class RouletteMain {
     }
 
     private void stampaBenvenuto() {
-        System.out.println("=================================");
-        System.out.println("        🎰 ROULETTE GAME");
-        System.out.println("=================================");
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║           🎰 ROULETTE GAME             ║");
+        System.out.println("╚════════════════════════════════════════╝");
     }
 
     private void aspetta(int ms) {

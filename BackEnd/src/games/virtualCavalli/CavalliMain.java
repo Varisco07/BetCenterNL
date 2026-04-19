@@ -15,9 +15,9 @@ public class CavalliMain {
 
     public void start() {
         VirtualCavalli.printGameRules();
-        System.out.println("\n=================================");
-        System.out.println("     🐎 VIRTUAL CORSE CAVALLI");
-        System.out.println("=================================");
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║       🐎 VIRTUAL CORSE CAVALLI         ║");
+        System.out.println("╚════════════════════════════════════════╝");
 
         game.generateEvents();
         boolean continua = true;

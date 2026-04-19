@@ -91,6 +91,9 @@ public class Main {
                     mostraGiocoResponsabile();
                     break;
                 case "19":
+                    Simulazione.avvia();
+                    break;
+                case "20":
                     continua = false;
                     user.setSaldo(State.getBalance());
                     System.out.println("\n╔════════════════════════════════════════╗");
@@ -125,7 +128,7 @@ public class Main {
         System.out.println("│ 5. 💎 BACCARAT                         │");
         System.out.println("│ 6. ♠ VIDEO POKER                       │");
         System.out.println("│ 7. 🐔 CHICKEN ROAD                     │");
-        System.out.println("│ 8. ⚽ VIRTUAL FOOTBALL                 │");
+        System.out.println("│ 8. 🥅 VIRTUAL FOOTBALL                 │");
         System.out.println("│ 9. 🏀 VIRTUAL BASKETBALL               │");
         System.out.println("│ 10. 🎾 VIRTUAL TENNIS                  │");
         System.out.println("│ 11. 🐎 VIRTUAL CORSE CAVALLI           │");
@@ -138,7 +141,8 @@ public class Main {
         System.out.println("│ 16. 🏆 CLASSIFICA                      │");
         System.out.println("│ 17. 🏅 TRAGUARDI                       │");
         System.out.println("│ 18. ⚠️  GIOCO RESPONSABILE             │");
-        System.out.println("│ 19. 🚪 ESCI                            │");
+        System.out.println("│ 19. 📊 SIMULAZIONE                     │");
+        System.out.println("│ 20. 🚪 ESCI                            │");
         System.out.println("└────────────────────────────────────────┘");
     }
 

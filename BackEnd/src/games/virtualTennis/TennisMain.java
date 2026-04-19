@@ -15,9 +15,9 @@ public class TennisMain {
 
     public void start() {
         VirtualTennis.printGameRules();
-        System.out.println("\n=================================");
-        System.out.println("        🎾 VIRTUAL TENNIS");
-        System.out.println("=================================");
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║           🎾 VIRTUAL TENNIS            ║");
+        System.out.println("╚════════════════════════════════════════╝");
 
         game.generateEvents();
         boolean continua = true;

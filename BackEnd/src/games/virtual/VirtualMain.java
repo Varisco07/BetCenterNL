@@ -179,9 +179,9 @@ public class VirtualMain {
 
     private void stampaBenvenuto() {
         VirtualCalcio.printGameRules();
-        System.out.println("\n=================================");
-        System.out.println("      ⚽ VIRTUAL FOOTBALL");
-        System.out.println("=================================");
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║         ⚽ VIRTUAL FOOTBALL            ║");
+        System.out.println("╚════════════════════════════════════════╝");
     }
 
     private void aspetta(int ms) {
