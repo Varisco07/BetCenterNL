@@ -24,12 +24,16 @@ public class MainDadi {
 
             System.out.println("\nVuoi giocare?");
             System.out.println("1 - Si");
-            System.out.println("0 - Esci");
+            System.out.println("2 - No");
             System.out.print("Scelta: ");
 
-            String input = sc.nextLine();
+            String input = sc.nextLine().trim();
 
-            if (input.equals("0")) break;
+            if (input.equals("2")) break;
+            if (!input.equals("1")) {
+                System.out.println("❌ Scelta non valida! Inserisci 1 o 2.");
+                continue;
+            }
 
             game.start();
         }

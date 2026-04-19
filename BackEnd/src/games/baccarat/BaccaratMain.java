@@ -17,6 +17,9 @@ public class BaccaratMain {
         boolean continua = true;
         
         while (continua) {
+            if (!chiediConfermaGioco(scanner)) {
+                break;
+            }
             System.out.println("\n╔════════════════════════════════════════╗");
             System.out.println("║          💎 BACCARAT                   ║");
             System.out.println("╠════════════════════════════════════════╣");
@@ -74,7 +77,7 @@ public class BaccaratMain {
             Baccarat.BaccaratResult result = Baccarat.play(betType);
             
             System.out.println("\n╔════════════════════════════════════════╗");
-            System.out.println("║           🎴 RISULTATO                ║");
+            System.out.println("║           🎴 RISULTATO                 ║");
             System.out.println("╠════════════════════════════════════════╣");
             System.out.println("║ GIOCATORE: " + formatHand(result.playerHand) + " = " + result.playerValue);
             System.out.println("║ BANCO:     " + formatHand(result.bankerHand) + " = " + result.bankerValue);
@@ -112,6 +115,18 @@ public class BaccaratMain {
         user.setSaldo(State.getBalance());
         Database.saveUsers();
         System.out.println("\n👋 Grazie per aver giocato a Baccarat!");
+    }
+    
+    private static boolean chiediConfermaGioco(Scanner scanner) {
+        while (true) {
+            System.out.println("\nVuoi giocare?");
+            System.out.println("1 - Si");
+            System.out.println("2 - No");
+            String scelta = scanner.nextLine().trim();
+            if (scelta.equals("1")) return true;
+            if (scelta.equals("2")) return false;
+            System.out.println("❌ Scelta non valida! Inserisci 1 o 2.");
+        }
     }
     
     private static String formatHand(java.util.List<Baccarat.Card> hand) {

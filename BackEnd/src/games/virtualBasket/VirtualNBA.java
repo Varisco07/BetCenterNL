@@ -1,10 +1,21 @@
 package games.virtualBasket;
 
 import core.State;
+import core.Auth;
+import core.Database;
+import core.GameRecord;
+import core.User;
 
 import java.util.*;
 
 public class VirtualNBA {
+    
+    private static final String RED = "\u001B[31m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String CYAN = "\u001B[36m";
+    private static final String RESET = "\u001B[0m";
+    private static final String BOLD = "\u001B[1m";
 
     private List<EventiNBA> events = new ArrayList<>();
 
@@ -19,9 +30,10 @@ public class VirtualNBA {
         events.clear();
 
         List<String> teams = List.of(
-                "Lakers", "Bulls", "Celtics", "Heat", "Warriors",
-                "Nuggets", "Spurs", "Mavericks", "Raptors", "Knicks",
-                "Suns", "Clippers", "76ers", "Bucks", "Hawks"
+                "Boston Celtics", "Denver Nuggets", "Milwaukee Bucks", "Golden State Warriors",
+                "Phoenix Suns", "Los Angeles Lakers", "Los Angeles Clippers", "Philadelphia 76ers",
+                "Miami Heat", "Dallas Mavericks", "New York Knicks", "Toronto Raptors",
+                "Chicago Bulls", "San Antonio Spurs", "Atlanta Hawks"
         );
 
         for (int i = 0; i < 5; i++) {
@@ -33,8 +45,9 @@ public class VirtualNBA {
                 away = teams.get(rand.nextInt(teams.size()));
             } while (away.equals(home));
 
-            double homeOdd = Math.round((1.70 + rand.nextDouble()) * 100.0) / 100.0;
-            double awayOdd = Math.round((1.70 + rand.nextDouble()) * 100.0) / 100.0;
+            double[] odds = betNBA.generate(home, away);
+            double homeOdd = odds[0];
+            double awayOdd = odds[1];
 
             events.add(new EventiNBA("NBA", home, away, homeOdd, awayOdd));
         }
@@ -48,6 +61,10 @@ public class VirtualNBA {
         schedinaEvents.add(e);
         schedinaOdds.add(odd);
         schedinaChoices.add(choice);
+    }
+    
+    public boolean hasEventInSchedina(EventiNBA e) {
+        return schedinaEvents.contains(e);
     }
 
     public void clearSchedina() {
@@ -68,7 +85,7 @@ public class VirtualNBA {
             return;
         }
 
-        System.out.println("\n🏀 SIMULAZIONE PARTITE...\n");
+        System.out.println("\n━━━━━━━━━━ 🏀 " + CYAN + BOLD + "SIMULAZIONE PARTITE" + RESET + " ━━━━━━━━━━\n");
 
         double totalOdds = 1;
         boolean win = true;
@@ -77,26 +94,29 @@ public class VirtualNBA {
 
             EventiNBA e = schedinaEvents.get(i);
 
-            int homeScore = rand.nextInt(130);
-            int awayScore = rand.nextInt(130);
+            int winner = simulateWinner(e); // 1 casa, 2 trasferta
+            int[] scores = generateScoreline(winner);
+            int homeScore = scores[0];
+            int awayScore = scores[1];
 
             int choice = schedinaChoices.get(i);
 
             boolean result;
 
             // SOLO 1 o 2
-            if (homeScore > awayScore) {
+            if (winner == 1) {
                 result = (choice == 1);
             } else {
                 result = (choice == 2);
             }
 
-            String outcome = homeScore > awayScore ? "1" : "2";
+            String outcome = winner == 1 ? "1" : "2";
+            String coloredOutcome = outcome.equals("1") ? GREEN + "1" + RESET : RED + "2" + RESET;
 
             System.out.println(
-                    e.home + " " + homeScore + " - " + awayScore + " " + e.away +
-                            "  👉 " + outcome +
-                            (result ? " ✔" : " ❌")
+                    BOLD + e.home + RESET + " " + homeScore + " - " + awayScore + " " + BOLD + e.away + RESET +
+                            "  👉 " + coloredOutcome +
+                            (result ? " " + GREEN + "✔" + RESET : " " + RED + "❌" + RESET)
             );
 
             totalOdds *= schedinaOdds.get(i);
@@ -104,23 +124,85 @@ public class VirtualNBA {
             if (!result) win = false;
         }
 
-        System.out.println("\n━━━━━━━━━━ RISULTATO SCHEDINA ━━━━━━━━━━");
+        System.out.println("\n━━━━━━━━━━ " + CYAN + BOLD + "RISULTATO SCHEDINA" + RESET + " ━━━━━━━━━━");
 
         if (win) {
             double payout = amount * totalOdds;
             State.addBalance(payout);
 
-            System.out.println("🎫 VINCENTE!");
-            System.out.println("Quota totale: " + totalOdds);
-            System.out.println("Vincita: " + payout);
+            System.out.println(GREEN + BOLD + "🎫 VINCENTE!" + RESET);
+            System.out.println("Quota totale: " + YELLOW + round(totalOdds) + RESET);
+            System.out.println("Vincita: " + GREEN + round(payout) + RESET);
 
         } else {
-            System.out.println("💀 PERSA");
+            System.out.println(RED + BOLD + "💀 PERSA" + RESET);
         }
 
-        System.out.println("💳 Saldo: " + State.getBalance());
+        System.out.println(CYAN + "💳 Saldo: " + round(State.getBalance()) + RESET);
+        
+        // Storico: registra l'esito come negli altri giochi virtual
+        User user = Auth.getCurrentUser();
+        if (user != null) {
+            double gain = win ? (amount * totalOdds - amount) : -amount;
+            GameRecord record = new GameRecord("🏀 Virtual", amount, gain, win);
+            Database.recordGameResult(user.getId(), record);
+        }
 
         clearSchedina();
         generateEvents();
+    }
+    
+    private int simulateWinner(EventiNBA e) {
+        int homeStrength = forzaNBA.get(e.home);
+        int awayStrength = forzaNBA.get(e.away);
+        double diff = homeStrength - awayStrength;
+        double homeWinProb = clamp(0.50 + (diff * 0.006), 0.20, 0.80);
+        return rand.nextDouble() < homeWinProb ? 1 : 2;
+    }
+    
+    private int[] generateScoreline(int winner) {
+        int loserScore = 80 + rand.nextInt(31);   // 80-110
+        int margin = 1 + rand.nextInt(21);        // 1-21
+        int winnerScore = Math.min(140, loserScore + margin);
+        if (winner == 1) {
+            return new int[]{winnerScore, loserScore};
+        }
+        return new int[]{loserScore, winnerScore};
+    }
+    
+    private double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
+    }
+    
+    private double round(double v) {
+        return Math.round(v * 100.0) / 100.0;
+    }
+    
+    public static void printGameRules() {
+        System.out.println("\n╔════════════════════════════════════════════════════════════╗");
+        System.out.println("║          " + CYAN + BOLD + "🏀 VIRTUAL BASKETBALL - REGOLE" + RESET + "                    ║");
+        System.out.println("╠════════════════════════════════════════════════════════════╣");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + YELLOW + "COME SI GIOCA:" + RESET + "                                            ║");
+        System.out.println("║  1. Scegli uno o più match NBA virtuali                    ║");
+        System.out.println("║  2. Per ogni match scegli 1 (casa) oppure 2 (trasferta)    ║");
+        System.out.println("║  3. Crea una schedina multipla (quote moltiplicate)        ║");
+        System.out.println("║  4. Inserisci la puntata e simula le partite               ║");
+        System.out.println("║  5. Vinci solo se indovini tutti i pronostici              ║");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + GREEN + "TIPI DI SCOMMESSA:" + RESET + "                                        ║");
+        System.out.println("║  • 1 (Casa)      → Vince la squadra di casa                ║");
+        System.out.println("║  • 2 (Trasferta) → Vince la squadra ospite                 ║");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + GREEN + "SCHEDINA MULTIPLA:" + RESET + "                                        ║");
+        System.out.println("║  • Quota totale = Quota1 × Quota2 × Quota3 × ...           ║");
+        System.out.println("║  • Vincita = Puntata × Quota totale                        ║");
+        System.out.println("║                                                            ║");
+        System.out.println("║  " + YELLOW + "⚠️  GIOCO RESPONSABILE:" + RESET + "                                   ║");
+        System.out.println("║  • Stabilisci un budget e rispetta i tuoi limiti           ║");
+        System.out.println("║  • Non rincorrere le perdite                               ║");
+        System.out.println("║  • Gioca per divertimento                                  ║");
+        System.out.println("║                                                            ║");
+        System.out.println("╚════════════════════════════════════════════════════════════╝");
     }
 }

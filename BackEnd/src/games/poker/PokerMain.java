@@ -21,21 +21,24 @@ public class PokerMain {
         boolean continua = true;
         
         while (continua) {
+            if (!chiediConfermaGioco(scanner)) {
+                break;
+            }
             System.out.println("\n╔════════════════════════════════════════╗");
-            System.out.println("║        ♠ VIDEO POKER (Jacks+)         ║");
+            System.out.println("║        ♠ VIDEO POKER (Jacks+)          ║");
             System.out.println("╠════════════════════════════════════════╣");
             System.out.println("║ Saldo: €" + String.format("%.2f", State.getBalance()));
             System.out.println("╠════════════════════════════════════════╣");
             System.out.println("║ TABELLA PAGAMENTI:                     ║");
-            System.out.println("║ Royal Flush ............ 800x           ║");
+            System.out.println("║ Royal Flush ............ 800x          ║");
             System.out.println("║ Straight Flush ........ 50x            ║");
             System.out.println("║ Poker (4 uguali) ...... 25x            ║");
             System.out.println("║ Full House ............ 9x             ║");
             System.out.println("║ Colore (Flush) ........ 6x             ║");
             System.out.println("║ Scala (Straight) ...... 4x             ║");
-            System.out.println("║ Tris ................. 3x             ║");
+            System.out.println("║ Tris ................. 3x              ║");
             System.out.println("║ Doppia Coppia ......... 2x             ║");
-            System.out.println("║ Coppia J+ ............ 1x             ║");
+            System.out.println("║ Coppia J+ ............ 1x              ║");
             System.out.println("╚════════════════════════════════════════╝\n");
             
             System.out.print("Inserisci la puntata (€): ");
@@ -61,7 +64,7 @@ public class PokerMain {
             List<VideoPoker.Card> hand = VideoPoker.dealHand();
             
             System.out.println("\n╔════════════════════════════════════════╗");
-            System.out.println("║           🃏 LA TUA MANO              ║");
+            System.out.println("║           🃏 LA TUA MANO               ║");
             System.out.println("╠════════════════════════════════════════╣");
             for (int i = 0; i < hand.size(); i++) {
                 System.out.println("║ " + (i+1) + ". " + hand.get(i).toString());
@@ -95,7 +98,7 @@ public class PokerMain {
             VideoPoker.PokerResult result = VideoPoker.evaluateHand(hand);
             
             System.out.println("\n╔════════════════════════════════════════╗");
-            System.out.println("║           🎴 RISULTATO                ║");
+            System.out.println("║           🎴 RISULTATO                 ║");
             System.out.println("╠════════════════════════════════════════╣");
             System.out.println("║ Mano: " + formatHand(hand));
             System.out.println("║ Combinazione: " + result.handName);
@@ -131,6 +134,18 @@ public class PokerMain {
         user.setSaldo(State.getBalance());
         Database.saveUsers();
         System.out.println("\n👋 Grazie per aver giocato a Video Poker!");
+    }
+    
+    private static boolean chiediConfermaGioco(Scanner scanner) {
+        while (true) {
+            System.out.println("\nVuoi giocare?");
+            System.out.println("1 - Si");
+            System.out.println("2 - No");
+            String scelta = scanner.nextLine().trim();
+            if (scelta.equals("1")) return true;
+            if (scelta.equals("2")) return false;
+            System.out.println("❌ Scelta non valida! Inserisci 1 o 2.");
+        }
     }
     
     private static String formatHand(List<VideoPoker.Card> hand) {

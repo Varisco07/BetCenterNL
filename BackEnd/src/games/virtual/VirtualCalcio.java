@@ -16,8 +16,20 @@ public class VirtualCalcio {
     private static final String BOLD = "\u001B[1m";
 
     private List<Eventi> events = new ArrayList<>();
-    private List<Double> bets = new ArrayList<>();
+    private List<BetSelection> selections = new ArrayList<>();
     private Random rand = new Random();
+    
+    private static class BetSelection {
+        final Eventi event;
+        final int pick; // 1=home, 2=draw, 3=away
+        final double odd;
+        
+        BetSelection(Eventi event, int pick, double odd) {
+            this.event = event;
+            this.pick = pick;
+            this.odd = odd;
+        }
+    }
 
     public void generateEvents() {
 
@@ -50,11 +62,21 @@ public class VirtualCalcio {
         return events;
     }
 
-    public void addBet(double odds) {
-        bets.add(odds);
+    public void addBet(Eventi event, int pick, double odd) {
+        selections.add(new BetSelection(event, pick, odd));
     }
+    
+    public boolean hasBetForEvent(Eventi event) {
+        for (BetSelection s : selections) {
+            if (s.event == event) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public void clearBets() {
-        bets.clear();
+        selections.clear();
     }
     private int generateGoals() {
         // calcio realistico: 0-3 gol, più probabilità su 0-1-2
@@ -65,6 +87,47 @@ public class VirtualCalcio {
         if (r < 90) return 2;
         return 3;
     }
+    
+    private String simulateOutcome(Eventi e) {
+        int homeStrength = ForzaSquadra.get(e.home);
+        int awayStrength = ForzaSquadra.get(e.away);
+        double diff = homeStrength - awayStrength;
+        
+        double homeProb = 0.40 + (diff * 0.006);
+        double awayProb = 0.32 - (diff * 0.006);
+        double drawProb = 0.28;
+        
+        homeProb = clamp(homeProb, 0.18, 0.70);
+        awayProb = clamp(awayProb, 0.15, 0.65);
+        
+        double sum = homeProb + awayProb + drawProb;
+        homeProb /= sum;
+        awayProb /= sum;
+        drawProb /= sum;
+        
+        double r = rand.nextDouble();
+        if (r < homeProb) return "1";
+        if (r < homeProb + drawProb) return "X";
+        return "2";
+    }
+    
+    private void applyScoreFromOutcome(Eventi e, String outcome) {
+        if (outcome.equals("1")) {
+            e.homeGoals = 1 + rand.nextInt(3);
+            e.awayGoals = rand.nextInt(Math.max(1, e.homeGoals));
+        } else if (outcome.equals("2")) {
+            e.awayGoals = 1 + rand.nextInt(3);
+            e.homeGoals = rand.nextInt(Math.max(1, e.awayGoals));
+        } else {
+            int g = generateGoals();
+            e.homeGoals = g;
+            e.awayGoals = g;
+        }
+    }
+    
+    private double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
+    }
 
     private double round(double v) {
         return Math.round(v * 100.0) / 100.0;
@@ -72,7 +135,7 @@ public class VirtualCalcio {
 
     public void play(double amount) {
 
-        if (bets.isEmpty()) {
+        if (selections.isEmpty()) {
             System.out.println("❌ Nessuna puntata!");
             return;
         }
@@ -83,18 +146,17 @@ public class VirtualCalcio {
         }
 
         double totalOdds = 1;
-        for (double o : bets) totalOdds *= o;
-
-        double chance = (1.0 / totalOdds) * 0.92;
-        boolean win = rand.nextDouble() < chance;
+        for (BetSelection s : selections) totalOdds *= s.odd;
 
         System.out.println("\n━━━━━━━━━━ ⚽ " + CYAN + BOLD + "RISULTATI PARTITE" + RESET + " ━━━━━━━━━━");
 
-        // 🔥 risultati più realistici (pochi gol, stile calcio vero)
-        for (Eventi e : events) {
-
-            e.homeGoals = generateGoals();
-            e.awayGoals = generateGoals();
+        boolean win = true;
+        
+        // risultati per le sole partite scelte in schedina
+        for (BetSelection s : selections) {
+            Eventi e = s.event;
+            String outcome = simulateOutcome(e);
+            applyScoreFromOutcome(e, outcome);
 
             System.out.printf(
                     BOLD + "%s" + RESET + " %s%d" + RESET + " - %s%d" + RESET + " " + BOLD + "%s" + RESET,
@@ -104,12 +166,15 @@ public class VirtualCalcio {
                     e.away
             );
 
-            if (e.homeGoals > e.awayGoals) {
+            if (outcome.equals("1")) {
                 System.out.println("  👉 " + GREEN + "1" + RESET);
-            } else if (e.homeGoals < e.awayGoals) {
+                if (s.pick != 1) win = false;
+            } else if (outcome.equals("2")) {
                 System.out.println("  👉 " + RED + "2" + RESET);
+                if (s.pick != 3) win = false;
             } else {
                 System.out.println("  👉 " + YELLOW + "X" + RESET);
+                if (s.pick != 2) win = false;
             }
         }
 
@@ -117,8 +182,12 @@ public class VirtualCalcio {
 
         System.out.println("\n🎫 " + CYAN + "SCHEDINA" + RESET);
 
-        for (double o : bets) {
-            System.out.println("Quota: " + YELLOW + o + RESET);
+        for (BetSelection s : selections) {
+            String pickLabel = (s.pick == 1) ? "1" : (s.pick == 2) ? "X" : "2";
+            System.out.println(
+                    s.event.home + " vs " + s.event.away +
+                    "  [" + pickLabel + "]  Quota: " + YELLOW + s.odd + RESET
+            );
         }
 
         System.out.println("Totale quote: " + BOLD + YELLOW + round(totalOdds) + RESET);
@@ -144,12 +213,11 @@ public class VirtualCalcio {
         core.User user = core.Auth.getCurrentUser();
         if (user != null) {
             double gain = win ? (amount * totalOdds - amount) : -amount;
-            core.GameRecord record = new core.GameRecord("Virtual Sports", amount, gain, win);
+            core.GameRecord record = new core.GameRecord("⚽ Virtual", amount, gain, win);
             core.Database.recordGameResult(user.getId(), record);
         }
 
-        bets.clear();
-        generateEvents();
+        selections.clear();
     }
     
     public static void printGameRules() {
@@ -161,12 +229,12 @@ public class VirtualCalcio {
         final String BOLD = "\u001B[1m";
         
         System.out.println("\n╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║          " + CYAN + BOLD + "⚽ VIRTUAL SPORTS - REGOLE DEL GIOCO" + RESET + "         ║");
+        System.out.println("║          " + CYAN + BOLD + "⚽ VIRTUAL FOOTBALL - REGOLE DEL GIOCO" + RESET + "            ║");
         System.out.println("╠════════════════════════════════════════════════════════════╣");
         System.out.println("║                                                            ║");
         System.out.println("║  " + YELLOW + "COME SI GIOCA:" + RESET + "                                            ║");
         System.out.println("║  1. Scegli uno o più eventi sportivi virtuali              ║");
-        System.out.println("║  2. Per ogni evento, scommetti su 1 (casa), X (pareggio)  ║");
+        System.out.println("║  2. Per ogni evento, scommetti su 1 (casa), X (pareggio)   ║");
         System.out.println("║     o 2 (trasferta)                                        ║");
         System.out.println("║  3. Crea una schedina multipla (le quote si moltiplicano)  ║");
         System.out.println("║  4. Piazza la tua puntata                                  ║");
@@ -178,10 +246,10 @@ public class VirtualCalcio {
         System.out.println("║  • 2 (Trasferta) → La squadra ospite vince                 ║");
         System.out.println("║                                                            ║");
         System.out.println("║  " + GREEN + "SCHEDINA MULTIPLA:" + RESET + "                                        ║");
-        System.out.println("║  • Quota totale = Quota1 × Quota2 × Quota3 × ...          ║");
+        System.out.println("║  • Quota totale = Quota1 × Quota2 × Quota3 × ...           ║");
         System.out.println("║  • Vincita = Puntata × Quota totale                        ║");
-        System.out.println("║  • Esempio: 3 eventi con quote 2.0, 1.5, 3.0              ║");
-        System.out.println("║    → Quota totale = 2.0 × 1.5 × 3.0 = 9.0                 ║");
+        System.out.println("║  • Esempio: 3 eventi con quote 2.0, 1.5, 3.0               ║");
+        System.out.println("║    → Quota totale = 2.0 × 1.5 × 3.0 = 9.0                  ║");
         System.out.println("║    → Con €10 vinci €90 se indovini tutto                   ║");
         System.out.println("║                                                            ║");
         System.out.println("║  " + YELLOW + "⚠️  GIOCO RESPONSABILE:" + RESET + "                                   ║");

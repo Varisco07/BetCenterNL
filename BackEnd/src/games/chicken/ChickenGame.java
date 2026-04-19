@@ -86,10 +86,10 @@ public class ChickenGame {
     
     public void displayGrid() {
         System.out.println("\n╔════════════════════════════════════════╗");
-        System.out.println("║     " + YELLOW + BOLD + "🐔 CHICKEN CROSS THE ROAD" + RESET + "         ║");
+        System.out.println("║     " + YELLOW + BOLD + "🐔 CHICKEN CROSS THE ROAD" + RESET + "          ║");
         System.out.println("╠════════════════════════════════════════╣");
-        System.out.printf("║ " + CYAN + "Livello: %d" + RESET + "  │  " + GREEN + "Moltiplicatore: %.2fx" + RESET + "  ║%n", level, currentMultiplier);
-        System.out.printf("║ " + YELLOW + "Puntata: €%.2f" + RESET + "  │  " + GREEN + "Vincita: €%.2f" + RESET + "      ║%n", bet, bet * currentMultiplier);
+        System.out.printf("║ " + CYAN + "Livello: %d" + RESET + "  │  " + GREEN + "Moltiplicatore: %.2fx" + RESET + "   ║%n", level, currentMultiplier);
+        System.out.printf("║ " + YELLOW + "Puntata: €%.2f" + RESET + "  │  " + GREEN + "Vincita: €%.2f" + RESET + "    ║%n", bet, bet * currentMultiplier);
         System.out.println("╠════════════════════════════════════════╣");
         
         // Mostra la griglia
@@ -103,7 +103,7 @@ public class ChickenGame {
                     System.out.print("    ");
                 }
             }
-            System.out.println("    ║");
+            System.out.println("               ║");
         }
         System.out.println("║                                        ║");
         System.out.println("╚════════════════════════════════════════╝");

@@ -20,6 +20,9 @@ public class RouletteMain {
         while (continua && State.getBalance() > 0) {
 
             System.out.println("\nSaldo attuale: " + State.getBalance());
+            if (!chiediConfermaGioco()) {
+                break;
+            }
 
             double puntata = chiediPuntata();
 
@@ -123,6 +126,18 @@ public class RouletteMain {
 
         String s = tastiera.nextLine();
         return s.equals("1");
+    }
+    
+    private boolean chiediConfermaGioco() {
+        while (true) {
+            System.out.println("\nVuoi giocare?");
+            System.out.println("1 - Si");
+            System.out.println("2 - No");
+            String s = tastiera.nextLine().trim();
+            if (s.equals("1")) return true;
+            if (s.equals("2")) return false;
+            System.out.println("❌ Scelta non valida! Inserisci 1 o 2.");
+        }
     }
 
     private void stampaBenvenuto() {

@@ -166,7 +166,7 @@ public class dadi {
     
     public static void printGameRules() {
         System.out.println("\n╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║              " + CYAN + BOLD + "🎲 CRAPS - REGOLE DEL GIOCO" + RESET + "              ║");
+        System.out.println("║              " + CYAN + BOLD + "🎲 CRAPS - REGOLE DEL GIOCO" + RESET + "                   ║");
         System.out.println("╠════════════════════════════════════════════════════════════╣");
         System.out.println("║                                                            ║");
         System.out.println("║  " + YELLOW + "COME SI GIOCA:" + RESET + "                                            ║");

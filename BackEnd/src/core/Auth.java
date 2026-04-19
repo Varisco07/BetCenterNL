@@ -18,7 +18,7 @@ public class Auth {
             System.out.println("║ 1. 📝 Registrati                       ║");
             System.out.println("║ 2. 🔑 Accedi                           ║");
             System.out.println("║ 3. 🎮 Demo (senza registrazione)       ║");
-            System.out.println("║ 4. 🚪 Esci                            ║");
+            System.out.println("║ 4. 🚪 Esci                             ║");
             System.out.println("╚════════════════════════════════════════╝");
             System.out.print("Scegli un'opzione: ");
             
@@ -51,18 +51,34 @@ public class Auth {
         
         System.out.print("Nome: ");
         String nome = scanner.nextLine().trim();
+        if (nome.length() < 3) {
+            System.out.println("❌ Nome non valido");
+            return;
+        }
         
         System.out.print("Cognome: ");
         String cognome = scanner.nextLine().trim();
+        if (cognome.length() < 3) {
+            System.out.println("❌ Cognome non valido");
+            return;
+        }
         
         System.out.print("Username: ");
         String username = scanner.nextLine().trim();
+        if (username.isEmpty()) {
+            System.out.println("❌ Username non valido");
+            return;
+        }
         
         System.out.print("Email: ");
         String email = scanner.nextLine().trim();
         
         if (Database.userExists(email)) {
             System.out.println("❌ Email già registrata!");
+            return;
+        }
+        if (!email.contains("@") || !email.contains(".")) {
+            System.out.println("❌ Email non valida!");
             return;
         }
         

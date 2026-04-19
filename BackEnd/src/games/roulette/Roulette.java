@@ -127,8 +127,8 @@ public class Roulette {
         String border = "═".repeat(25);
         
         System.out.println("\n╔" + border + "╗");
-        System.out.printf("║     🎯 RISULTATO: " + bgColor + " %2d " + RESET + "     ║%n", number);
-        System.out.printf("║        (%s)        ║%n", colorDisplay);
+        System.out.printf("║     🎯 RISULTATO: " + bgColor + " %2d " + RESET + "  ║%n", number);
+        System.out.printf("║        (%s)          ║%n", colorDisplay);
         System.out.println("╚" + border + "╝");
         
         // Mostra info aggiuntive sul numero

@@ -19,6 +19,7 @@ public class VirtualMain {
         game.generateEvents();
 
         while (State.getBalance() > 0) {
+            if (!chiediConfermaGioco()) break;
 
             mostraEventi();
 
@@ -73,6 +74,10 @@ public class VirtualMain {
             }
 
             Eventi e = game.getEvents().get(scelta);
+            if (game.hasBetForEvent(e)) {
+                System.out.println("❌ Evento già presente in schedina!");
+                continue;
+            }
 
             System.out.println("1 - " + e.home);
             System.out.println("2 - Pareggio");
@@ -88,17 +93,17 @@ public class VirtualMain {
 
             switch (tipo) {
                 case 1:
-                    game.addBet(e.homeOdd);
+                    game.addBet(e, 1, e.homeOdd);
                     System.out.println("✔ aggiunto: " + e.home);
                     break;
 
                 case 2:
-                    game.addBet(e.drawOdd);
+                    game.addBet(e, 2, e.drawOdd);
                     System.out.println("✔ aggiunto: X");
                     break;
 
                 case 3:
-                    game.addBet(e.awayOdd);
+                    game.addBet(e, 3, e.awayOdd);
                     System.out.println("✔ aggiunto: " + e.away);
                     break;
 
@@ -107,9 +112,13 @@ public class VirtualMain {
                     continue;
             }
 
-            System.out.print("Aggiungere altra partita? (1 sì / 2 no): ");
-            String risposta = tastiera.nextLine();
-            continua = risposta.equals("1");
+            while (true) {
+                System.out.print("Aggiungere altra partita? (1 sì / 2 no): ");
+                String risposta = tastiera.nextLine().trim();
+                if (risposta.equals("1")) { continua = true; break; }
+                if (risposta.equals("2")) { continua = false; break; }
+                System.out.println("❌ Scelta non valida! Inserisci 1 o 2.");
+            }
         }
     }
 
@@ -145,17 +154,33 @@ public class VirtualMain {
 
     private boolean chiediContinua() {
 
-        System.out.println("\nContinuare?");
-        System.out.println("1 - Si");
-        System.out.println("2 - No");
-
-        return tastiera.nextLine().equals("1");
+        while (true) {
+            System.out.println("\nContinuare?");
+            System.out.println("1 - Si");
+            System.out.println("2 - No");
+            String scelta = tastiera.nextLine().trim();
+            if (scelta.equals("1")) return true;
+            if (scelta.equals("2")) return false;
+            System.out.println("❌ Scelta non valida! Inserisci 1 o 2.");
+        }
+    }
+    
+    private boolean chiediConfermaGioco() {
+        while (true) {
+            System.out.println("\nVuoi giocare?");
+            System.out.println("1 - Si");
+            System.out.println("2 - No");
+            String scelta = tastiera.nextLine().trim();
+            if (scelta.equals("1")) return true;
+            if (scelta.equals("2")) return false;
+            System.out.println("❌ Scelta non valida! Inserisci 1 o 2.");
+        }
     }
 
     private void stampaBenvenuto() {
         VirtualCalcio.printGameRules();
         System.out.println("\n=================================");
-        System.out.println("      ⚽ VIRTUAL SPORTS");
+        System.out.println("      ⚽ VIRTUAL FOOTBALL");
         System.out.println("=================================");
     }
 
