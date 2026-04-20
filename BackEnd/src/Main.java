@@ -365,8 +365,7 @@ public class Main {
         System.out.println("║ dipendenza. Gioca responsabilmente.    ║");
         System.out.println("║                                        ║");
         System.out.println("║ 📞 Numeri di aiuto:                    ║");
-        System.out.println("║ • Telefono Azzardo: 1-800-GAMBLER      ║");
-        System.out.println("║ • Gamblers Anonymous: 1-800-GA-HELP    ║");
+        System.out.println("║ • Numero Verde: 800 558822             ║");
         System.out.println("║                                        ║");
         System.out.println("║ 💡 Consigli:                           ║");
         System.out.println("║ • Gioca solo per divertimento          ║");
