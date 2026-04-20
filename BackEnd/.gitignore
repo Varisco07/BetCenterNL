@@ -21,7 +21,7 @@ out/
 
 # IDE
 .idea/
-*.iml
+# *.iml - commentato perché IntelliJ ne ha bisogno
 
 # Database e backup
 data/*.dat
