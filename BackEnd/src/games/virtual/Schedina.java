@@ -33,17 +33,17 @@ public class Schedina {
             totalOdds *= o;
         }
 
-        Random rand = new Random();
+        Random casuale = new Random();
 
         // piccolo margine bookmaker
-        double winChance = 1.0 / totalOdds * 0.90;
+        double probabilitaVincita = 1.0 / totalOdds * 0.90;
 
-        boolean win = rand.nextDouble() < winChance;
+        boolean haVinto = casuale.nextDouble() < probabilitaVincita;
 
-        if (win) {
-            double payout = amount * totalOdds;
-            State.addBalance(payout);
-            System.out.println("🎉 SCHEDINA VINCENTE: " + payout);
+        if (haVinto) {
+            double pagamento = amount * totalOdds;
+            State.addBalance(pagamento);
+            System.out.println("🎉 SCHEDINA VINCENTE: " + pagamento);
         } else {
             System.out.println("❌ SCHEDINA PERSA");
         }

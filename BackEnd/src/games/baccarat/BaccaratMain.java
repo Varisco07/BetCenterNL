@@ -7,9 +7,9 @@ public class BaccaratMain {
     
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        User user = Auth.getCurrentUser();
+        User utente = Auth.getCurrentUser();
         
-        if (user == null) {
+        if (utente == null) {
             System.out.println("❌ Devi essere autenticato!");
             return;
         }
@@ -18,7 +18,7 @@ public class BaccaratMain {
         
         // Prima conferma prima di iniziare
         if (!chiediConfermaGioco(scanner)) {
-            user.setSaldo(State.getBalance());
+            utente.setSaldo(State.getBalance());
             Database.saveUsers();
             System.out.println("\n👋 Grazie per aver giocato a Baccarat!");
             return;
@@ -88,19 +88,19 @@ public class BaccaratMain {
             System.out.printf( "║ BANCO:     %-28s║%n", formatHand(result.bankerHand) + " = " + result.bankerValue);
             System.out.println("╠════════════════════════════════════════╣");
             
-            double gain = -bet;
-            boolean win = false;
+            double guadagno = -bet;
+            boolean haVinto = false;
             
             if (betType.equals(result.winner)) {
-                gain = bet * result.payout - bet;
-                win = true;
+                guadagno = bet * result.payout - bet;
+                haVinto = true;
                 State.addBalance(bet * result.payout);
-                System.out.printf("║ ✅ HAI VINTO! +%-24s║%n", String.format("%.2f", gain) + "€");
+                System.out.printf("║ ✅ HAI VINTO! +%-24s║%n", String.format("%.2f", guadagno) + "€");
             } else if (result.winner.equals("tie") && betType.equals("tie")) {
-                gain = bet * result.payout - bet;
-                win = true;
+                guadagno = bet * result.payout - bet;
+                haVinto = true;
                 State.addBalance(bet * result.payout);
-                System.out.printf("║ ✅ PAREGGIO! +%-25s║%n", String.format("%.2f", gain) + "€");
+                System.out.printf("║ ✅ PAREGGIO! +%-25s║%n", String.format("%.2f", guadagno) + "€");
             } else {
                 System.out.printf("║ ❌ HAI PERSO! -%-24s║%n", String.format("%.2f", bet) + "€");
             }
@@ -109,8 +109,8 @@ public class BaccaratMain {
             System.out.println("╚════════════════════════════════════════╝");
             
             // Registra il risultato
-            GameRecord record = new GameRecord("Baccarat", bet, gain, win);
-            Database.recordGameResult(user.getId(), record);
+            GameRecord registrazione = new GameRecord("Baccarat", bet, guadagno, haVinto);
+            Database.recordGameResult(utente.getId(), registrazione);
             
             while (true) {
                 System.out.println("\nVuoi giocare ancora?");
@@ -123,7 +123,7 @@ public class BaccaratMain {
             }
         }
         
-        user.setSaldo(State.getBalance());
+        utente.setSaldo(State.getBalance());
         Database.saveUsers();
         System.out.println("\n👋 Grazie per aver giocato a Baccarat!");
     }

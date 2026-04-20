@@ -10,22 +10,22 @@ public class Quote {
         double diff = homeStr - awayStr;
 
         // probabilità base
-        double homeProb = 0.45 + (diff * 0.01);
-        double awayProb = 0.45 - (diff * 0.01);
-        double drawProb = 0.25;
+        double probCasa = 0.45 + (diff * 0.01);
+        double probTrasferta = 0.45 - (diff * 0.01);
+        double probPareggio = 0.25;
 
         // normalizza
-        double sum = homeProb + awayProb + drawProb;
-        homeProb /= sum;
-        awayProb /= sum;
-        drawProb /= sum;
+        double somma = probCasa + probTrasferta + probPareggio;
+        probCasa /= somma;
+        probTrasferta /= somma;
+        probPareggio /= somma;
 
         // converte in quote
-        double homeOdd = round(1 / homeProb);
-        double drawOdd = round(1 / drawProb);
-        double awayOdd = round(1 / awayProb);
+        double quotaCasa = round(1 / probCasa);
+        double quotaPareggio = round(1 / probPareggio);
+        double quotaTrasferta = round(1 / probTrasferta);
 
-        return new double[]{homeOdd, drawOdd, awayOdd};
+        return new double[]{quotaCasa, quotaPareggio, quotaTrasferta};
     }
 
     private static double round(double v) {

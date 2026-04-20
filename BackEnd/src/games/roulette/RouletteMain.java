@@ -45,10 +45,10 @@ public class RouletteMain {
 
                 case 1:
                     System.out.print("Numero (0-36): ");
-                    int num = -1;
+                    int numero = -1;
                     try {
-                        num = Integer.parseInt(tastiera.nextLine());
-                        if (num < 0 || num > 36) {
+                        numero = Integer.parseInt(tastiera.nextLine());
+                        if (numero < 0 || numero > 36) {
                             System.out.println("❌ Numero non valido! Scegli tra 0 e 36.");
                             continue;
                         }
@@ -56,7 +56,7 @@ public class RouletteMain {
                         System.out.println("❌ Inserisci un numero valido!");
                         continue;
                     }
-                    game.addBet(new Bet("number", num, puntata, 36));
+                    game.addBet(new Bet("number", numero, puntata, 36));
                     break;
 
                 case 2:

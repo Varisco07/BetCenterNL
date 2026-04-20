@@ -34,17 +34,17 @@ public class dadi {
             System.out.println("6 - Hardway 6 (9x)");
             System.out.println("0 - Esci");
 
-            int choice = -1;
+            int scelta = -1;
             try {
-                choice = Integer.parseInt(sc.nextLine());
+                scelta = Integer.parseInt(sc.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("❌ Inserisci un numero valido!");
                 continue;
             }
 
-            if (choice == 0) break;
+            if (scelta == 0) break;
 
-            if (choice < 1 || choice > 6) {
+            if (scelta < 1 || scelta > 6) {
                 System.out.println("❌ Scelta non valida! Scegli tra 1 e 6.");
                 continue;
             }
@@ -63,68 +63,68 @@ public class dadi {
                 continue;
             }
 
-            play(choice, bet);
+            play(scelta, bet);
         }
     }
 
-    private void play(int choice, double bet) {
+    private void play(int scelta, double bet) {
 
         if (!State.deductBalance(bet)) {
             System.out.println("Saldo insufficiente!");
             return;
         }
 
-        int d1 = roll();
-        int d2 = roll();
-        int sum = d1 + d2;
+        int dado1 = roll();
+        int dado2 = roll();
+        int somma = dado1 + dado2;
 
-        animate(d1, d2);
+        animate(dado1, dado2);
 
-        System.out.println("🎲 Risultato: " + d1 + " + " + d2 + " = " + sum);
+        System.out.println("🎲 Risultato: " + dado1 + " + " + dado2 + " = " + somma);
 
-        boolean win = false;
-        double mult = 1;
+        boolean haVinto = false;
+        double moltiplicatore = 1;
 
-        switch (choice) {
+        switch (scelta) {
 
             case 1: // Pass Line
-                if (sum == 7 || sum == 11) win = true;
-                if (sum == 2 || sum == 3 || sum == 12) win = false;
-                mult = 1;
+                if (somma == 7 || somma == 11) haVinto = true;
+                if (somma == 2 || somma == 3 || somma == 12) haVinto = false;
+                moltiplicatore = 1;
                 break;
 
             case 2: // Don't Pass
-                if (sum == 2 || sum == 3) win = true;
-                if (sum == 7 || sum == 11) win = false;
-                mult = 1;
+                if (somma == 2 || somma == 3) haVinto = true;
+                if (somma == 7 || somma == 11) haVinto = false;
+                moltiplicatore = 1;
                 break;
 
             case 3: // Field Bet
-                if (sum == 2 || sum == 3 || sum == 4 || sum == 9 || sum == 10 || sum == 11 || sum == 12)
-                    win = true;
-                mult = 1.5;
+                if (somma == 2 || somma == 3 || somma == 4 || somma == 9 || somma == 10 || somma == 11 || somma == 12)
+                    haVinto = true;
+                moltiplicatore = 1.5;
                 break;
 
             case 4: // Any 7
-                win = (sum == 7);
-                mult = 4;
+                haVinto = (somma == 7);
+                moltiplicatore = 4;
                 break;
 
             case 5: // Hard 8
-                win = (d1 == 4 && d2 == 4);
-                mult = 9;
+                haVinto = (dado1 == 4 && dado2 == 4);
+                moltiplicatore = 9;
                 break;
 
             case 6: // Hard 6
-                win = (d1 == 3 && d2 == 3);
-                mult = 9;
+                haVinto = (dado1 == 3 && dado2 == 3);
+                moltiplicatore = 9;
                 break;
         }
 
-        if (win) {
-            double payout = bet * mult;
-            State.addBalance(payout);
-            System.out.println("🎉 VINTO: " + payout);
+        if (haVinto) {
+            double pagamento = bet * moltiplicatore;
+            State.addBalance(pagamento);
+            System.out.println("🎉 VINTO: " + pagamento);
         } else {
             System.out.println("❌ PERSO");
         }
@@ -132,11 +132,11 @@ public class dadi {
         System.out.println("💰 Saldo: " + State.getBalance());
         
         // Registra il risultato nel database
-        core.User user = core.Auth.getCurrentUser();
-        if (user != null) {
-            double gain = win ? (bet * mult - bet) : -bet;
-            core.GameRecord record = new core.GameRecord("Dadi", bet, gain, win);
-            core.Database.recordGameResult(user.getId(), record);
+        core.User utente = core.Auth.getCurrentUser();
+        if (utente != null) {
+            double guadagno = haVinto ? (bet * moltiplicatore - bet) : -bet;
+            core.GameRecord registrazione = new core.GameRecord("Dadi", bet, guadagno, haVinto);
+            core.Database.recordGameResult(utente.getId(), registrazione);
         }
     }
 
@@ -144,7 +144,7 @@ public class dadi {
         return random.randomInt(1, 6);
     }
 
-    private void animate(int d1, int d2) {
+    private void animate(int dado1, int dado2) {
 
         System.out.println("\n🎲 " + CYAN + "LANCIO DADI..." + RESET);
 
@@ -155,7 +155,7 @@ public class dadi {
             sleep(80 + i * 10);
         }
 
-        System.out.print("\r🎲 " + BOLD + GREEN + d1 + RESET + " | " + BOLD + GREEN + d2 + RESET + "   \n");
+        System.out.print("\r🎲 " + BOLD + GREEN + dado1 + RESET + " | " + BOLD + GREEN + dado2 + RESET + "   \n");
     }
 
     private void sleep(int ms) {

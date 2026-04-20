@@ -48,3 +48,4 @@ public class GameRecord implements Serializable {
                 win ? "✅ VINTO" : "❌ PERSO");
     }
 }
+ 

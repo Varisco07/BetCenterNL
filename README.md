@@ -10,13 +10,38 @@ Centro scommesse virtuale con backend Java, frontend web e gioco da terminale.
 - **Java JDK 17+** — [Scarica da Adoptium](https://adoptium.net/temurin/releases/?version=17)
 - **Node.js** — solo per il frontend web
 
-### 1. Backend Java (porta 8080)
+### Prima installazione (solo la prima volta)
+
+#### 1. Installa Java JDK 17
+1. Vai su https://adoptium.net/temurin/releases/?version=17
+2. Scegli: Windows → x64 → JDK → `.msi`
+3. Scarica e installa con le opzioni di default
+4. **Importante**: durante l'installazione assicurati che sia selezionata l'opzione "Add to PATH"
+5. Chiudi e riapri PowerShell
+6. Verifica: `javac -version` → deve mostrare `javac 17.x.x`
+
+#### 2. Installa Node.js
+1. Vai su https://nodejs.org e scarica la versione LTS
+2. Installa con le opzioni di default
+3. Verifica: `node -v` → deve mostrare `v18.x.x` o superiore
+
+### Avvio normale
+
+#### Backend Java (porta 8080)
 ```powershell
 cd BackEnd
 .\start-java-server.bat
 ```
+Deve apparire:
+```
+╔════════════════════════════════════════╗
+║   BetCenterNL — Java Backend Server    ║
+╠════════════════════════════════════════╣
+║  🚀  http://localhost:8080              ║
+╚════════════════════════════════════════╝
+```
 
-### 2. Frontend Web (porta 3000)
+#### Frontend Web (porta 3000)
 ```powershell
 cd FrontEnd
 node server.js
@@ -24,8 +49,33 @@ node server.js
 
 Apri il browser su **http://localhost:3000**
 
-### 3. Gioco da terminale (IntelliJ)
-Apri il progetto in IntelliJ IDEA e avvia `Main.java`.
+### Errori comuni
+
+**`javac non riconosciuto`**
+→ Java non è nel PATH. Riavvia PowerShell dopo l'installazione, oppure:
+```powershell
+# Trova dove è installato Java
+Get-ChildItem "C:\Program Files\Eclipse Adoptium" -Recurse -Filter "javac.exe"
+# Poi aggiungi al PATH manualmente
+$env:PATH += ";C:\Program Files\Eclipse Adoptium\jdk-17.x.x\bin"
+```
+
+**`Errore di compilazione`**
+→ Assicurati di essere nella cartella `BackEnd` prima di eseguire il bat:
+```powershell
+cd C:\percorso\al\progetto\BackEnd
+.\start-java-server.bat
+```
+
+**`Porta 8080 già in uso`**
+→ Un altro processo usa la porta. Trova e chiudi:
+```powershell
+netstat -ano | findstr :8080
+taskkill /PID <numero_pid> /F
+```
+
+**`Backend non raggiungibile` nel browser**
+→ Assicurati che entrambi i server siano avviati (backend su 8080 E frontend su 3000)
 
 ---
 

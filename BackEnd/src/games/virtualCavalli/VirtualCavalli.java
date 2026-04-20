@@ -29,14 +29,14 @@ public class VirtualCavalli {
     private EventoCorsa selectedEvent;
     private int selectedHorseIndex = -1;
     private double selectedOdd = 1.0;
-    private final Random rand = new Random();
+    private final Random casuale = new Random();
 
     public void generateEvents() {
         events.clear();
         List<String> all = ForzaCavalli.horses();
 
         List<String> shuffled = new ArrayList<>(all);
-        Collections.shuffle(shuffled, rand);
+        Collections.shuffle(shuffled, casuale);
         List<String> horses = new ArrayList<>(shuffled.subList(0, 6));
         List<Double> odds = generateOdds(horses);
         events.add(new EventoCorsa("Corsa Unica", horses, odds));
@@ -69,32 +69,32 @@ public class VirtualCavalli {
         }
 
         System.out.println("\n━━━━━━━━━━ 🐎 " + CYAN + BOLD + "SIMULAZIONE GARA" + RESET + " ━━━━━━━━━━");
-        int winnerIdx = runRaceLive(selectedEvent);
-        String winner = selectedEvent.horses.get(winnerIdx);
+        int indiceVincitore = runRaceLive(selectedEvent);
+        String winner = selectedEvent.horses.get(indiceVincitore);
         String picked = selectedEvent.horses.get(selectedHorseIndex);
-        boolean won = (winnerIdx == selectedHorseIndex);
+        boolean haVinto = (indiceVincitore == selectedHorseIndex);
 
         System.out.println("🎯 Tua scelta: " + picked + " | Vincitore: " + winner +
-                (won ? " " + GREEN + "✔" + RESET : " " + RED + "❌" + RESET));
+                (haVinto ? " " + GREEN + "✔" + RESET : " " + RED + "❌" + RESET));
         System.out.println("Quota giocata: " + selectedOdd);
 
-        if (won) {
-            double payout = amount * selectedOdd;
-            State.addBalance(payout);
+        if (haVinto) {
+            double pagamento = amount * selectedOdd;
+            State.addBalance(pagamento);
             System.out.println(GREEN + BOLD + "🎉 ESITO: VINCENTE" + RESET);
             System.out.println("Quota: " + YELLOW + round(selectedOdd) + RESET);
-            System.out.println("Vincita: " + GREEN + round(payout) + RESET);
+            System.out.println("Vincita: " + GREEN + round(pagamento) + RESET);
         } else {
             System.out.println(RED + BOLD + "❌ ESITO: PERSA" + RESET);
         }
 
         System.out.println(CYAN + "💳 Saldo: " + round(State.getBalance()) + RESET);
 
-        User user = Auth.getCurrentUser();
-        if (user != null) {
-            double gain = won ? (amount * selectedOdd - amount) : -amount;
-            GameRecord record = new GameRecord("🐎 Virtual", amount, gain, won);
-            Database.recordGameResult(user.getId(), record);
+        User utente = Auth.getCurrentUser();
+        if (utente != null) {
+            double guadagno = haVinto ? (amount * selectedOdd - amount) : -amount;
+            GameRecord registrazione = new GameRecord("🐎 Virtual", amount, guadagno, haVinto);
+            Database.recordGameResult(utente.getId(), registrazione);
         }
 
         clearBets();
@@ -131,7 +131,7 @@ public class VirtualCavalli {
 
             for (String h : horses) {
                 int strength = ForzaCavalli.get(h);
-                int step = 4 + rand.nextInt(5) + (strength - 86) / 6; // base + boost forza
+                int step = 4 + casuale.nextInt(5) + (strength - 86) / 6; // base + boost forza
                 int next = distance.get(h) + Math.max(1, step);
                 distance.put(h, next);
                 if (next > leadDistance) {

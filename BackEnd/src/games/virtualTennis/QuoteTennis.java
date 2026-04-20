@@ -3,18 +3,18 @@ package games.virtualTennis;
 public class QuoteTennis {
 
     public static double[] generate(String home, String away) {
-        int homeStrength = ForzaTennis.get(home);
-        int awayStrength = ForzaTennis.get(away);
+        int forzaCasa = ForzaTennis.get(home);
+        int forzaTrasferta = ForzaTennis.get(away);
 
-        double diff = homeStrength - awayStrength;
+        double diff = forzaCasa - forzaTrasferta;
 
-        double homeProb = 0.50 + (diff * 0.006);
-        homeProb = clamp(homeProb, 0.20, 0.80);
-        double awayProb = 1.0 - homeProb;
+        double probCasa = 0.50 + (diff * 0.006);
+        probCasa = clamp(probCasa, 0.20, 0.80);
+        double probTrasferta = 1.0 - probCasa;
 
-        double homeOdd = round(1.0 / homeProb);
-        double awayOdd = round(1.0 / awayProb);
-        return new double[]{homeOdd, awayOdd};
+        double quotaCasa = round(1.0 / probCasa);
+        double quotaTrasferta = round(1.0 / probTrasferta);
+        return new double[]{quotaCasa, quotaTrasferta};
     }
 
     private static double clamp(double value, double min, double max) {
