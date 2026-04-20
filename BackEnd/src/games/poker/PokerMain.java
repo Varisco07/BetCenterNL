@@ -11,9 +11,9 @@ public class PokerMain {
     
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        User user = Auth.getCurrentUser();
+        User utente = Auth.getCurrentUser();
         
-        if (user == null) {
+        if (utente == null) {
             System.out.println("❌ Devi essere autenticato!");
             return;
         }
@@ -22,7 +22,7 @@ public class PokerMain {
         
         // Prima conferma prima di iniziare
         if (!chiediConfermaGioco(scanner)) {
-            user.setSaldo(State.getBalance());
+            utente.setSaldo(State.getBalance());
             Database.saveUsers();
             System.out.println("\n👋 Grazie per aver giocato a Video Poker!");
             return;
@@ -110,15 +110,15 @@ public class PokerMain {
             System.out.printf( "║ Moltiplicatore: %-23s║%n", result.multiplier + "x");
             System.out.println("╠════════════════════════════════════════╣");
             
-            double gain = -bet;
-            boolean win = false;
+            double guadagno = -bet;
+            boolean haVinto = false;
             
             if (result.multiplier > 0) {
-                double winAmount = bet * result.multiplier;
-                State.addBalance(winAmount);
-                gain = winAmount - bet;
-                win = true;
-                System.out.printf("║ ✅ HAI VINTO! +%-24s║%n", String.format("%.2f", gain) + "€");
+                double importoVincita = bet * result.multiplier;
+                State.addBalance(importoVincita);
+                guadagno = importoVincita - bet;
+                haVinto = true;
+                System.out.printf("║ ✅ HAI VINTO! +%-24s║%n", String.format("%.2f", guadagno) + "€");
             } else {
                 System.out.println("║ ❌ NESSUNA VINCITA!                    ║");
             }
@@ -127,9 +127,9 @@ public class PokerMain {
             System.out.println("╚════════════════════════════════════════╝");
             
             // Registra il risultato
-            GameRecord record = new GameRecord("Video Poker", bet, gain, win);
-            record.setDetails(result.handName);
-            Database.recordGameResult(user.getId(), record);
+            GameRecord registrazione = new GameRecord("Video Poker", bet, guadagno, haVinto);
+            registrazione.setDetails(result.handName);
+            Database.recordGameResult(utente.getId(), registrazione);
             
             while (true) {
                 System.out.println("\nVuoi giocare ancora?");
@@ -142,7 +142,7 @@ public class PokerMain {
             }
         }
         
-        user.setSaldo(State.getBalance());
+        utente.setSaldo(State.getBalance());
         Database.saveUsers();
         System.out.println("\n👋 Grazie per aver giocato a Video Poker!");
     }

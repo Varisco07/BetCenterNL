@@ -80,8 +80,8 @@ public class ChickenGame {
         if (gameOver) return 0;
         
         cashOut = true;
-        double winAmount = bet * currentMultiplier;
-        return winAmount;
+        double importoVincita = bet * currentMultiplier;
+        return importoVincita;
     }
     
     public void displayGrid() {

@@ -29,13 +29,13 @@ public class VirtualCani {
     private EventoCani selectedEvent;
     private int selectedDogIndex = -1;
     private double selectedOdd = 1.0;
-    private final Random rand = new Random();
+    private final Random casuale = new Random();
 
     public void generateEvents() {
         events.clear();
         List<String> all = ForzaCani.dogs();
         List<String> shuffled = new ArrayList<>(all);
-        Collections.shuffle(shuffled, rand);
+        Collections.shuffle(shuffled, casuale);
 
         List<String> dogs = new ArrayList<>(shuffled.subList(0, 6));
         List<Double> odds = generateOdds(dogs);
@@ -69,32 +69,32 @@ public class VirtualCani {
         }
 
         System.out.println("\n━━━━━━━━━━ 🐕 " + CYAN + BOLD + "SIMULAZIONE GARA" + RESET + " ━━━━━━━━━━");
-        int winnerIdx = runRaceLive(selectedEvent);
-        String winner = selectedEvent.dogs.get(winnerIdx);
+        int indiceVincitore = runRaceLive(selectedEvent);
+        String winner = selectedEvent.dogs.get(indiceVincitore);
         String picked = selectedEvent.dogs.get(selectedDogIndex);
-        boolean won = (winnerIdx == selectedDogIndex);
+        boolean haVinto = (indiceVincitore == selectedDogIndex);
 
         System.out.println("🎯 Tua scelta: " + picked + " | Vincitore: " + winner +
-                (won ? " " + GREEN + "✔" + RESET : " " + RED + "❌" + RESET));
+                (haVinto ? " " + GREEN + "✔" + RESET : " " + RED + "❌" + RESET));
         System.out.println("Quota giocata: " + selectedOdd);
 
-        if (won) {
-            double payout = amount * selectedOdd;
-            State.addBalance(payout);
+        if (haVinto) {
+            double pagamento = amount * selectedOdd;
+            State.addBalance(pagamento);
             System.out.println(GREEN + BOLD + "🎉 ESITO: VINCENTE" + RESET);
             System.out.println("Quota: " + YELLOW + round(selectedOdd) + RESET);
-            System.out.println("Vincita: " + GREEN + round(payout) + RESET);
+            System.out.println("Vincita: " + GREEN + round(pagamento) + RESET);
         } else {
             System.out.println(RED + BOLD + "❌ ESITO: PERSA" + RESET);
         }
 
         System.out.println(CYAN + "💳 Saldo: " + round(State.getBalance()) + RESET);
 
-        User user = Auth.getCurrentUser();
-        if (user != null) {
-            double gain = won ? (amount * selectedOdd - amount) : -amount;
-            GameRecord record = new GameRecord("🐕 Virtual", amount, gain, won);
-            Database.recordGameResult(user.getId(), record);
+        User utente = Auth.getCurrentUser();
+        if (utente != null) {
+            double guadagno = haVinto ? (amount * selectedOdd - amount) : -amount;
+            GameRecord registrazione = new GameRecord("🐕 Virtual", amount, guadagno, haVinto);
+            Database.recordGameResult(utente.getId(), registrazione);
         }
 
         clearBets();
@@ -131,7 +131,7 @@ public class VirtualCani {
 
             for (String d : dogs) {
                 int strength = ForzaCani.get(d);
-                int step = 5 + rand.nextInt(6) + (strength - 84) / 6;
+                int step = 5 + casuale.nextInt(6) + (strength - 84) / 6;
                 int next = distance.get(d) + Math.max(1, step);
                 distance.put(d, next);
                 if (next > leadDistance) {

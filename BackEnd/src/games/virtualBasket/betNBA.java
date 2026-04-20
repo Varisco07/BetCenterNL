@@ -9,16 +9,16 @@ public class betNBA {
 
         double diff = h - a;
 
-        double homeProb = 0.52 + (diff * 0.005);
-        double awayProb = 1 - homeProb;
+        double probCasa = 0.52 + (diff * 0.005);
+        double probTrasferta = 1 - probCasa;
 
-        homeProb = clamp(homeProb, 0.15, 0.85);
-        awayProb = 1 - homeProb;
+        probCasa = clamp(probCasa, 0.15, 0.85);
+        probTrasferta = 1 - probCasa;
 
-        double homeOdd = round(1 / homeProb);
-        double awayOdd = round(1 / awayProb);
+        double quotaCasa = round(1 / probCasa);
+        double quotaTrasferta = round(1 / probTrasferta);
 
-        return new double[]{homeOdd, awayOdd};
+        return new double[]{quotaCasa, quotaTrasferta};
     }
 
     private static double clamp(double v, double min, double max) {

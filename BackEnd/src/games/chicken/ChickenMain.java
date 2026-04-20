@@ -50,19 +50,19 @@ public class ChickenMain {
             game.displayGrid();
             
             System.out.print("\nScegli posizione (1-5) o 0 per incassare: ");
-            int choice;
+            int posizione;
             
             try {
-                choice = Integer.parseInt(scanner.nextLine());
+                posizione = Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("❌ Input non valido!");
                 continue;
             }
             
-            if (choice == 0) {
+            if (posizione == 0) {
 
-                double winAmount = game.cashOut();
-                State.addBalance(winAmount);
+                double importoVincita = game.cashOut();
+                State.addBalance(importoVincita);
 
                 System.out.println("\n╔════════════════════════════════════════╗");
                 System.out.println("║          💰 HAI INCASSATO!             ║");
@@ -70,29 +70,29 @@ public class ChickenMain {
 
                 System.out.printf("║ %-38s ║%n", "Livelli completati: " + game.getLevel());
                 System.out.printf("║ %-38s ║%n", String.format("Moltiplicatore finale: %.2fx", game.getMultiplier()));
-                System.out.printf("║ %-38s ║%n", String.format("Vincita: €%.2f", winAmount));
-                System.out.printf("║ %-38s ║%n", String.format("Guadagno: €%.2f", winAmount - bet));
+                System.out.printf("║ %-38s ║%n", String.format("Vincita: €%.2f", importoVincita));
+                System.out.printf("║ %-38s ║%n", String.format("Guadagno: €%.2f", importoVincita - bet));
                 System.out.printf("║ %-38s ║%n", String.format("Nuovo saldo: €%.2f", State.getBalance()));
 
                 System.out.println("╚════════════════════════════════════════╝");
                 if (Auth.getCurrentUser() != null) {
-                    double gain = winAmount - bet;
-                    boolean win = gain > 0;
-                    GameRecord record = new GameRecord("Chicken Road", bet, gain, win);
-                    Database.recordGameResult(Auth.getCurrentUser().getId(), record);
+                    double guadagno = importoVincita - bet;
+                    boolean haVinto = guadagno > 0;
+                    GameRecord registrazione = new GameRecord("Chicken Road", bet, guadagno, haVinto);
+                    Database.recordGameResult(Auth.getCurrentUser().getId(), registrazione);
                 }
                 
                 break;
             }
             
-            if (choice < 1 || choice > 5) {
+            if (posizione < 1 || posizione > 5) {
                 System.out.println("❌ Posizione non valida! Scegli 1-5");
                 continue;
             }
             
-            boolean success = game.move(choice - 1);
+            boolean successo = game.move(posizione - 1);
             
-            if (!success) {
+            if (!successo) {
                 // Ha colpito un'auto!
                 System.out.println("\n╔════════════════════════════════════════╗");
                 System.out.println("║          🚗💥 GAME OVER!               ║");
@@ -106,8 +106,8 @@ public class ChickenMain {
                 System.out.println("╚════════════════════════════════════════╝");
                 
                 if (Auth.getCurrentUser() != null) {
-                    GameRecord record = new GameRecord("Chicken Road", bet, -bet, false);
-                    Database.recordGameResult(Auth.getCurrentUser().getId(), record);
+                    GameRecord registrazione = new GameRecord("Chicken Road", bet, -bet, false);
+                    Database.recordGameResult(Auth.getCurrentUser().getId(), registrazione);
                 }
                 
                 break;

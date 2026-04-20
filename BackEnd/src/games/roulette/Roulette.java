@@ -42,55 +42,55 @@ public class Roulette {
         System.out.println("\n🎰 La ruota sta girando...");
         animateSpinning();
 
-        int result = wheel.spin();
-        String color = wheel.getColor(result);
+        int risultato = wheel.spin();
+        String colore = wheel.getColor(risultato);
 
         // Mostra risultato con stile
-        displayResult(result, color);
+        displayResult(risultato, colore);
 
-        double totalWin = 0;
-        double totalBet = 0;
+        double vincitaTotale = 0;
+        double puntataTotale = 0;
 
         System.out.println("\n📊 RISULTATI PUNTATE:");
         System.out.println("┌─────────────────────────────────────────┐");
 
         for (Bet bet : bets) {
-            boolean vinto = checkWin(bet, result, color);
-            double winAmount = vinto ? bet.amount * bet.odds : 0;
-            totalWin += winAmount;
-            totalBet += bet.amount;
+            boolean vinto = checkWin(bet, risultato, colore);
+            double importoVincita = vinto ? bet.amount * bet.odds : 0;
+            vincitaTotale += importoVincita;
+            puntataTotale += bet.amount;
 
-            String status = vinto ? "✅ VINTA" : "❌ PERSA";
-            String betDesc = getBetDescription(bet);
+            String stato = vinto ? "✅ VINTA" : "❌ PERSA";
+            String descrizionePuntata = getBetDescription(bet);
             
-            System.out.printf("│ %-20s €%-6.2f %s%n", betDesc, bet.amount, status);
+            System.out.printf("│ %-20s €%-6.2f %s%n", descrizionePuntata, bet.amount, stato);
             if (vinto) {
-                System.out.printf("│   → Vincita: €%.2f (%.1fx)%n", winAmount, bet.odds);
+                System.out.printf("│   → Vincita: €%.2f (%.1fx)%n", importoVincita, bet.odds);
             }
         }
 
         System.out.println("├─────────────────────────────────────────┤");
-        System.out.printf("│ TOTALE PUNTATO:  €%-21.2f │%n", totalBet);
-        System.out.printf("│ TOTALE VINTO:    €%-21.2f │%n", totalWin);
+        System.out.printf("│ TOTALE PUNTATO:  €%-21.2f │%n", puntataTotale);
+        System.out.printf("│ TOTALE VINTO:    €%-21.2f │%n", vincitaTotale);
         
-        double netGain = totalWin - totalBet;
-        if (netGain > 0) {
-            State.addBalance(totalWin);
-            System.out.printf("│ 🎉 GUADAGNO NETTO: +€%-18.2f │%n", netGain);
+        double guadagnoNetto = vincitaTotale - puntataTotale;
+        if (guadagnoNetto > 0) {
+            State.addBalance(vincitaTotale);
+            System.out.printf("│ 🎉 GUADAGNO NETTO: +€%-18.2f │%n", guadagnoNetto);
         } else {
-            System.out.printf("│ 💸 PERDITA NETTA:   €%-18.2f │%n", Math.abs(netGain));
+            System.out.printf("│ 💸 PERDITA NETTA:   €%-18.2f │%n", Math.abs(guadagnoNetto));
         }
         
         System.out.printf("│ 💰 SALDO ATTUALE:   €%-18.2f │%n", State.getBalance());
         System.out.println("└─────────────────────────────────────────┘");
 
         // Registra il risultato nel database
-        core.User user = core.Auth.getCurrentUser();
-        if (user != null) {
-            netGain = totalWin - totalBet;
-            boolean win = netGain > 0;
-            core.GameRecord record = new core.GameRecord("Roulette", totalBet, netGain, win);
-            core.Database.recordGameResult(user.getId(), record);
+        core.User utente = core.Auth.getCurrentUser();
+        if (utente != null) {
+            guadagnoNetto = vincitaTotale - puntataTotale;
+            boolean haVinto = guadagnoNetto > 0;
+            core.GameRecord registrazione = new core.GameRecord("Roulette", puntataTotale, guadagnoNetto, haVinto);
+            core.Database.recordGameResult(utente.getId(), registrazione);
         }
 
         bets.clear();
@@ -109,14 +109,14 @@ public class Roulette {
         }
     }
 
-    private void displayResult(int number, String color) {
+    private void displayResult(int numero, String colore) {
         String colorDisplay = "";
         String bgColor = "";
         
-        if (color.equals("red")) {
+        if (colore.equals("red")) {
             colorDisplay = RED + "ROSSO" + RESET;
             bgColor = BG_RED + WHITE + BOLD;
-        } else if (color.equals("black")) {
+        } else if (colore.equals("black")) {
             colorDisplay = "NERO";
             bgColor = BG_BLACK + WHITE + BOLD;
         } else {
@@ -127,18 +127,18 @@ public class Roulette {
         String border = "═".repeat(25);
         
         System.out.println("\n╔" + border + "╗");
-        System.out.printf("║     🎯 RISULTATO: " + bgColor + " %2d " + RESET + "  ║%n", number);
+        System.out.printf("║     🎯 RISULTATO: " + bgColor + " %2d " + RESET + "  ║%n", numero);
         System.out.printf("║        (%s)           ║%n", colorDisplay);
         System.out.println("╚" + border + "╝");
         
         // Mostra info aggiuntive sul numero
-        if (number == 0) {
+        if (numero == 0) {
             System.out.println(YELLOW + "🍀 ZERO! La casa vince su pari/dispari, rosso/nero" + RESET);
         } else {
-            String parity = (number % 2 == 0) ? CYAN + "PARI" + RESET : MAGENTA + "DISPARI" + RESET;
-            String range = (number <= 18) ? "BASSO (1-18)" : "ALTO (19-36)";
-            String dozen = getDozens(number);
-            String column = getColumn(number);
+            String parity = (numero % 2 == 0) ? CYAN + "PARI" + RESET : MAGENTA + "DISPARI" + RESET;
+            String range = (numero <= 18) ? "BASSO (1-18)" : "ALTO (19-36)";
+            String dozen = getDozens(numero);
+            String column = getColumn(numero);
             
             System.out.println(CYAN + "📋 Proprietà del numero:" + RESET);
             System.out.println("   • " + parity + " • " + range);
@@ -146,8 +146,8 @@ public class Roulette {
         }
     }
 
-    private String getColorEmoji(String color) {
-        switch (color) {
+    private String getColorEmoji(String colore) {
+        switch (colore) {
             case "red": return "🔴";
             case "black": return "⚫";
             case "green": return "🟢";
@@ -169,34 +169,34 @@ public class Roulette {
         return "";
     }
 
-    private boolean checkWin(Bet bet, int result, String color) {
+    private boolean checkWin(Bet bet, int risultato, String colore) {
         switch (bet.type.toLowerCase()) {
             case "number": 
-                return bet.number == result;
+                return bet.number == risultato;
             case "red": 
-                return color.equals("red");
+                return colore.equals("red");
             case "black": 
-                return color.equals("black");
+                return colore.equals("black");
             case "even": 
-                return result > 0 && result % 2 == 0;
+                return risultato > 0 && risultato % 2 == 0;
             case "odd": 
-                return result > 0 && result % 2 != 0;
+                return risultato > 0 && risultato % 2 != 0;
             case "low": 
-                return result >= 1 && result <= 18;
+                return risultato >= 1 && risultato <= 18;
             case "high": 
-                return result >= 19 && result <= 36;
+                return risultato >= 19 && risultato <= 36;
             case "dozen1": 
-                return result >= 1 && result <= 12;
+                return risultato >= 1 && risultato <= 12;
             case "dozen2": 
-                return result >= 13 && result <= 24;
+                return risultato >= 13 && risultato <= 24;
             case "dozen3": 
-                return result >= 25 && result <= 36;
+                return risultato >= 25 && risultato <= 36;
             case "column1": 
-                return result > 0 && result % 3 == 1;
+                return risultato > 0 && risultato % 3 == 1;
             case "column2": 
-                return result > 0 && result % 3 == 2;
+                return risultato > 0 && risultato % 3 == 2;
             case "column3": 
-                return result > 0 && result % 3 == 0;
+                return risultato > 0 && risultato % 3 == 0;
             default: 
                 return false;
         }

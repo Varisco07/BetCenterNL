@@ -67,61 +67,61 @@ public class Baccarat {
     }
     
     public static BaccaratResult play(String betType) {
-        List<Card> deck = createDeck();
-        List<Card> playerHand = new ArrayList<>();
-        List<Card> bankerHand = new ArrayList<>();
+        List<Card> mazzo = createDeck();
+        List<Card> manoGiocatore = new ArrayList<>();
+        List<Card> manoBanco = new ArrayList<>();
         
         // Deal initial cards
-        playerHand.add(deck.remove(0));
-        bankerHand.add(deck.remove(0));
-        playerHand.add(deck.remove(0));
-        bankerHand.add(deck.remove(0));
+        manoGiocatore.add(mazzo.remove(0));
+        manoBanco.add(mazzo.remove(0));
+        manoGiocatore.add(mazzo.remove(0));
+        manoBanco.add(mazzo.remove(0));
         
-        int playerValue = calculateValue(playerHand);
-        int bankerValue = calculateValue(bankerHand);
+        int punteggioGiocatore = calculateValue(manoGiocatore);
+        int puntataBanco = calculateValue(manoBanco);
         
         // Natural check
-        if (playerValue < 8 && bankerValue < 8) {
+        if (punteggioGiocatore < 8 && puntataBanco < 8) {
             // Player third card rule
-            if (playerValue <= 5) {
-                playerHand.add(deck.remove(0));
-                playerValue = calculateValue(playerHand);
+            if (punteggioGiocatore <= 5) {
+                manoGiocatore.add(mazzo.remove(0));
+                punteggioGiocatore = calculateValue(manoGiocatore);
             }
             
             // Banker third card rule (simplified)
-            if (bankerValue <= 5) {
-                bankerHand.add(deck.remove(0));
-                bankerValue = calculateValue(bankerHand);
+            if (puntataBanco <= 5) {
+                manoBanco.add(mazzo.remove(0));
+                puntataBanco = calculateValue(manoBanco);
             }
         }
         
-        playerValue = calculateValue(playerHand);
-        bankerValue = calculateValue(bankerHand);
+        punteggioGiocatore = calculateValue(manoGiocatore);
+        puntataBanco = calculateValue(manoBanco);
         
-        String winner = "tie";
-        if (playerValue > bankerValue) winner = "player";
-        else if (bankerValue > playerValue) winner = "banker";
+        String vincitore = "tie";
+        if (punteggioGiocatore > puntataBanco) vincitore = "player";
+        else if (puntataBanco > punteggioGiocatore) vincitore = "banker";
         
-        return new BaccaratResult(playerHand, bankerHand, winner);
+        return new BaccaratResult(manoGiocatore, manoBanco, vincitore);
     }
     
-    private static int calculateValue(List<Card> hand) {
-        int value = 0;
-        for (Card card : hand) {
-            value += card.getValue();
+    private static int calculateValue(List<Card> mano) {
+        int valore = 0;
+        for (Card card : mano) {
+            valore += card.getValue();
         }
-        return value % 10;
+        return valore % 10;
     }
     
     private static List<Card> createDeck() {
-        List<Card> deck = new ArrayList<>();
+        List<Card> mazzo = new ArrayList<>();
         for (String suit : SUITS) {
             for (String rank : RANKS) {
-                deck.add(new Card(rank, suit));
+                mazzo.add(new Card(rank, suit));
             }
         }
-        Collections.shuffle(deck);
-        return deck;
+        Collections.shuffle(mazzo);
+        return mazzo;
     }
     
     public static void printGameRules() {

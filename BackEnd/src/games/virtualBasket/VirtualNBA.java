@@ -23,7 +23,7 @@ public class VirtualNBA {
     private List<Double> schedinaOdds = new ArrayList<>();
     private List<Integer> schedinaChoices = new ArrayList<>();
 
-    private Random rand = new Random();
+    private Random casuale = new Random();
 
     public void generateEvents() {
 
@@ -38,11 +38,11 @@ public class VirtualNBA {
 
         for (int i = 0; i < 5; i++) {
 
-            String home = teams.get(rand.nextInt(teams.size()));
+            String home = teams.get(casuale.nextInt(teams.size()));
             String away;
 
             do {
-                away = teams.get(rand.nextInt(teams.size()));
+                away = teams.get(casuale.nextInt(teams.size()));
             } while (away.equals(home));
 
             double[] odds = betNBA.generate(home, away);
@@ -88,7 +88,7 @@ public class VirtualNBA {
         System.out.println("\n━━━━━━━━━━ 🏀 " + CYAN + BOLD + "SIMULAZIONE PARTITE" + RESET + " ━━━━━━━━━━\n");
 
         double totalOdds = 1;
-        boolean win = true;
+        boolean haVinto = true;
 
         for (int i = 0; i < schedinaEvents.size(); i++) {
 
@@ -99,15 +99,15 @@ public class VirtualNBA {
             int homeScore = scores[0];
             int awayScore = scores[1];
 
-            int choice = schedinaChoices.get(i);
+            int scelta = schedinaChoices.get(i);
 
-            boolean result;
+            boolean esito;
 
             // SOLO 1 o 2
             if (winner == 1) {
-                result = (choice == 1);
+                esito = (scelta == 1);
             } else {
-                result = (choice == 2);
+                esito = (scelta == 2);
             }
 
             String outcome = winner == 1 ? "1" : "2";
@@ -116,23 +116,23 @@ public class VirtualNBA {
             System.out.println(
                     BOLD + e.home + RESET + " " + homeScore + " - " + awayScore + " " + BOLD + e.away + RESET +
                             "  👉 " + coloredOutcome +
-                            (result ? " " + GREEN + "✔" + RESET : " " + RED + "❌" + RESET)
+                            (esito ? " " + GREEN + "✔" + RESET : " " + RED + "❌" + RESET)
             );
 
             totalOdds *= schedinaOdds.get(i);
 
-            if (!result) win = false;
+            if (!esito) haVinto = false;
         }
 
         System.out.println("\n━━━━━━━━━━ " + CYAN + BOLD + "RISULTATO SCHEDINA" + RESET + " ━━━━━━━━━━");
 
-        if (win) {
-            double payout = amount * totalOdds;
-            State.addBalance(payout);
+        if (haVinto) {
+            double pagamento = amount * totalOdds;
+            State.addBalance(pagamento);
 
             System.out.println(GREEN + BOLD + "🎫 VINCENTE!" + RESET);
             System.out.println("Quota totale: " + YELLOW + round(totalOdds) + RESET);
-            System.out.println("Vincita: " + GREEN + round(payout) + RESET);
+            System.out.println("Vincita: " + GREEN + round(pagamento) + RESET);
 
         } else {
             System.out.println(RED + BOLD + "💀 PERSA" + RESET);
@@ -141,11 +141,11 @@ public class VirtualNBA {
         System.out.println(CYAN + "💳 Saldo: " + round(State.getBalance()) + RESET);
         
         // Storico: registra l'esito come negli altri giochi virtual
-        User user = Auth.getCurrentUser();
-        if (user != null) {
-            double gain = win ? (amount * totalOdds - amount) : -amount;
-            GameRecord record = new GameRecord("🏀 Virtual", amount, gain, win);
-            Database.recordGameResult(user.getId(), record);
+        User utente = Auth.getCurrentUser();
+        if (utente != null) {
+            double guadagno = haVinto ? (amount * totalOdds - amount) : -amount;
+            GameRecord registrazione = new GameRecord("🏀 Virtual", amount, guadagno, haVinto);
+            Database.recordGameResult(utente.getId(), registrazione);
         }
 
         clearSchedina();
@@ -157,12 +157,12 @@ public class VirtualNBA {
         int awayStrength = forzaNBA.get(e.away);
         double diff = homeStrength - awayStrength;
         double homeWinProb = clamp(0.50 + (diff * 0.006), 0.20, 0.80);
-        return rand.nextDouble() < homeWinProb ? 1 : 2;
+        return casuale.nextDouble() < homeWinProb ? 1 : 2;
     }
     
     private int[] generateScoreline(int winner) {
-        int loserScore = 80 + rand.nextInt(31);   // 80-110
-        int margin = 1 + rand.nextInt(21);        // 1-21
+        int loserScore = 80 + casuale.nextInt(31);   // 80-110
+        int margin = 1 + casuale.nextInt(21);        // 1-21
         int winnerScore = Math.min(140, loserScore + margin);
         if (winner == 1) {
             return new int[]{winnerScore, loserScore};

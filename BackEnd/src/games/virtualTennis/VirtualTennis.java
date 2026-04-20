@@ -23,17 +23,17 @@ public class VirtualTennis {
     private final List<EventiTennis> schedinaEvents = new ArrayList<>();
     private final List<Double> schedinaOdds = new ArrayList<>();
     private final List<Integer> schedinaChoices = new ArrayList<>();
-    private final Random rand = new Random();
+    private final Random casuale = new Random();
 
     public void generateEvents() {
         events.clear();
         List<String> players = ForzaTennis.players();
 
         for (int i = 0; i < 5; i++) {
-            String home = players.get(rand.nextInt(players.size()));
+            String home = players.get(casuale.nextInt(players.size()));
             String away;
             do {
-                away = players.get(rand.nextInt(players.size()));
+                away = players.get(casuale.nextInt(players.size()));
             } while (away.equals(home));
 
             double[] odds = QuoteTennis.generate(home, away);
@@ -75,7 +75,7 @@ public class VirtualTennis {
         System.out.println("\n━━━━━━━━━━ 🎾 " + CYAN + BOLD + "SIMULAZIONE MATCH" + RESET + " ━━━━━━━━━━\n");
 
         double totalOdds = 1;
-        boolean win = true;
+        boolean haVinto = true;
 
         for (int i = 0; i < schedinaEvents.size(); i++) {
             EventiTennis e = schedinaEvents.get(i);
@@ -84,47 +84,47 @@ public class VirtualTennis {
             int awaySets = 0;
             double homeSetWinProb = computeHomeSetWinProbability(e.home, e.away);
             while (homeSets < 2 && awaySets < 2) {
-                if (rand.nextDouble() < homeSetWinProb) {
+                if (casuale.nextDouble() < homeSetWinProb) {
                     homeSets++;
                 } else {
                     awaySets++;
                 }
             }
 
-            int choice = schedinaChoices.get(i);
-            boolean result = (homeSets > awaySets) ? (choice == 1) : (choice == 2);
+            int scelta = schedinaChoices.get(i);
+            boolean esito = (homeSets > awaySets) ? (scelta == 1) : (scelta == 2);
             String outcome = (homeSets > awaySets) ? "1" : "2";
             String coloredOutcome = outcome.equals("1") ? GREEN + "1" + RESET : RED + "2" + RESET;
 
             System.out.println(
                     BOLD + e.home + RESET + " " + homeSets + "-" + awaySets + " " + BOLD + e.away + RESET +
                             "  👉 " + coloredOutcome +
-                            (result ? " " + GREEN + "✔" + RESET : " " + RED + "❌" + RESET)
+                            (esito ? " " + GREEN + "✔" + RESET : " " + RED + "❌" + RESET)
             );
 
             totalOdds *= schedinaOdds.get(i);
-            if (!result) win = false;
+            if (!esito) haVinto = false;
         }
 
         System.out.println("\n━━━━━━━━━━ " + CYAN + BOLD + "RISULTATO SCHEDINA" + RESET + " ━━━━━━━━━━");
 
-        if (win) {
-            double payout = amount * totalOdds;
-            State.addBalance(payout);
+        if (haVinto) {
+            double pagamento = amount * totalOdds;
+            State.addBalance(pagamento);
             System.out.println(GREEN + BOLD + "🎫 VINCENTE!" + RESET);
             System.out.println("Quota totale: " + YELLOW + round(totalOdds) + RESET);
-            System.out.println("Vincita: " + GREEN + round(payout) + RESET);
+            System.out.println("Vincita: " + GREEN + round(pagamento) + RESET);
         } else {
             System.out.println(RED + BOLD + "💀 PERSA" + RESET);
         }
 
         System.out.println(CYAN + "💳 Saldo: " + round(State.getBalance()) + RESET);
 
-        User user = Auth.getCurrentUser();
-        if (user != null) {
-            double gain = win ? (amount * totalOdds - amount) : -amount;
-            GameRecord record = new GameRecord("🎾 Virtual", amount, gain, win);
-            Database.recordGameResult(user.getId(), record);
+        User utente = Auth.getCurrentUser();
+        if (utente != null) {
+            double guadagno = haVinto ? (amount * totalOdds - amount) : -amount;
+            GameRecord registrazione = new GameRecord("🎾 Virtual", amount, guadagno, haVinto);
+            Database.recordGameResult(utente.getId(), registrazione);
         }
 
         clearSchedina();

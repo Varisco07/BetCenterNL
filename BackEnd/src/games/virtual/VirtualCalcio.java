@@ -17,7 +17,7 @@ public class VirtualCalcio {
 
     private List<Eventi> events = new ArrayList<>();
     private List<BetSelection> selections = new ArrayList<>();
-    private Random rand = new Random();
+    private Random casuale = new Random();
     
     private static class BetSelection {
         final Eventi event;
@@ -39,14 +39,14 @@ public class VirtualCalcio {
 
         for (int i = 0; i < 5; i++) {
 
-            String league = leagues.get(rand.nextInt(leagues.size()));
+            String league = leagues.get(casuale.nextInt(leagues.size()));
             List<String> teams = Competizioni.LEAGUES.get(league);
 
-            String home = teams.get(rand.nextInt(teams.size()));
+            String home = teams.get(casuale.nextInt(teams.size()));
             String away;
 
             do {
-                away = teams.get(rand.nextInt(teams.size()));
+                away = teams.get(casuale.nextInt(teams.size()));
             } while (away.equals(home));
 
             double[] odds = Quote.generate(home, away);
@@ -80,7 +80,7 @@ public class VirtualCalcio {
     }
     private int generateGoals() {
         // calcio realistico: 0-3 gol, più probabilità su 0-1-2
-        int r = rand.nextInt(100);
+        int r = casuale.nextInt(100);
 
         if (r < 35) return 0;
         if (r < 70) return 1;
@@ -105,7 +105,7 @@ public class VirtualCalcio {
         awayProb /= sum;
         drawProb /= sum;
         
-        double r = rand.nextDouble();
+        double r = casuale.nextDouble();
         if (r < homeProb) return "1";
         if (r < homeProb + drawProb) return "X";
         return "2";
@@ -113,11 +113,11 @@ public class VirtualCalcio {
     
     private void applyScoreFromOutcome(Eventi e, String outcome) {
         if (outcome.equals("1")) {
-            e.homeGoals = 1 + rand.nextInt(3);
-            e.awayGoals = rand.nextInt(Math.max(1, e.homeGoals));
+            e.homeGoals = 1 + casuale.nextInt(3);
+            e.awayGoals = casuale.nextInt(Math.max(1, e.homeGoals));
         } else if (outcome.equals("2")) {
-            e.awayGoals = 1 + rand.nextInt(3);
-            e.homeGoals = rand.nextInt(Math.max(1, e.awayGoals));
+            e.awayGoals = 1 + casuale.nextInt(3);
+            e.homeGoals = casuale.nextInt(Math.max(1, e.awayGoals));
         } else {
             int g = generateGoals();
             e.homeGoals = g;
@@ -150,7 +150,7 @@ public class VirtualCalcio {
 
         System.out.println("\n━━━━━━━━━━ ⚽ " + CYAN + BOLD + "RISULTATI PARTITE" + RESET + " ━━━━━━━━━━");
 
-        boolean win = true;
+        boolean haVinto = true;
         
         // risultati per le sole partite scelte in schedina
         for (BetSelection s : selections) {
@@ -168,13 +168,13 @@ public class VirtualCalcio {
 
             if (outcome.equals("1")) {
                 System.out.println("  👉 " + GREEN + "1" + RESET);
-                if (s.pick != 1) win = false;
+                if (s.pick != 1) haVinto = false;
             } else if (outcome.equals("2")) {
                 System.out.println("  👉 " + RED + "2" + RESET);
-                if (s.pick != 3) win = false;
+                if (s.pick != 3) haVinto = false;
             } else {
                 System.out.println("  👉 " + YELLOW + "X" + RESET);
-                if (s.pick != 2) win = false;
+                if (s.pick != 2) haVinto = false;
             }
         }
 
@@ -194,12 +194,12 @@ public class VirtualCalcio {
 
         System.out.println("\n💰 Puntata: " + CYAN + amount + RESET);
 
-        if (win) {
-            double payout = amount * totalOdds;
-            State.addBalance(payout);
+        if (haVinto) {
+            double pagamento = amount * totalOdds;
+            State.addBalance(pagamento);
 
             System.out.println(GREEN + BOLD + "🎉 ESITO: VINTO" + RESET);
-            System.out.println(GREEN + "💵 Vincita: " + round(payout) + RESET);
+            System.out.println(GREEN + "💵 Vincita: " + round(pagamento) + RESET);
 
         } else {
             System.out.println(RED + BOLD + "❌ ESITO: PERSO" + RESET);
@@ -210,11 +210,11 @@ public class VirtualCalcio {
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         // Registra il risultato nel database
-        core.User user = core.Auth.getCurrentUser();
-        if (user != null) {
-            double gain = win ? (amount * totalOdds - amount) : -amount;
-            core.GameRecord record = new core.GameRecord("🥅 Virtual", amount, gain, win);
-            core.Database.recordGameResult(user.getId(), record);
+        core.User utente = core.Auth.getCurrentUser();
+        if (utente != null) {
+            double guadagno = haVinto ? (amount * totalOdds - amount) : -amount;
+            core.GameRecord registrazione = new core.GameRecord("🥅 Virtual", amount, guadagno, haVinto);
+            core.Database.recordGameResult(utente.getId(), registrazione);
         }
 
         selections.clear();

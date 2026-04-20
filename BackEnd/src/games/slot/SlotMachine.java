@@ -33,29 +33,29 @@ public class SlotMachine {
 
         System.out.println("\n" + CYAN + BOLD + "🎰 SPINNING..." + RESET + "\n");
 
-        String[] result = new String[3];
+        String[] risultato = new String[3];
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 10; j++) {
-                result[i] = randomSymbol();
-                printRow(result);
+                risultato[i] = randomSymbol();
+                printRow(risultato);
                 sleep(80 + j * 10);
             }
             sleep(300);
         }
 
-        boolean isJackpot = result[0].equals("🔔") && result[1].equals("🔔") && result[2].equals("🔔");
-        double win;
+        boolean isJackpot = risultato[0].equals("🔔") && risultato[1].equals("🔔") && risultato[2].equals("🔔");
+        double vincita;
 
         if (isJackpot) {
             // Vinci il jackpot progressivo!
-            win = State.getJackpot();
-            State.addBalance(win);
+            vincita = State.getJackpot();
+            State.addBalance(vincita);
             State.resetJackpot();
         } else {
-            win = calculateWin(result[0], result[1], result[2], bet);
-            if (win > 0) {
-                State.addBalance(win);
+            vincita = calculateWin(risultato[0], risultato[1], risultato[2], bet);
+            if (vincita > 0) {
+                State.addBalance(vincita);
             }
             // Ogni spin contribuisce al jackpot
             State.addToJackpot(bet);
@@ -63,13 +63,13 @@ public class SlotMachine {
 
         System.out.println("\n" + YELLOW + "--------------------" + RESET);
         System.out.println(BOLD + "🎰 RISULTATO FINALE:" + RESET);
-        printRow(result);
+        printRow(risultato);
         System.out.println("\n" + YELLOW + "--------------------" + RESET);
 
         if (isJackpot) {
-            System.out.println(YELLOW + BOLD + "🏆🔔🔔🔔 JACKPOT! HAI VINTO €" + String.format("%.2f", win) + "! 🔔🔔🔔🏆" + RESET);
-        } else if (win > 0) {
-            System.out.println(GREEN + BOLD + "🎉 VINTO: €" + String.format("%.2f", win) + RESET);
+            System.out.println(YELLOW + BOLD + "🏆🔔🔔🔔 JACKPOT! HAI VINTO €" + String.format("%.2f", vincita) + "! 🔔🔔🔔🏆" + RESET);
+        } else if (vincita > 0) {
+            System.out.println(GREEN + BOLD + "🎉 VINTO: €" + String.format("%.2f", vincita) + RESET);
         } else {
             System.out.println(RED + "❌ PERSO" + RESET);
         }
@@ -78,18 +78,18 @@ public class SlotMachine {
         System.out.printf(YELLOW + "🏆 Jackpot attuale: €%.2f" + RESET + "%n", State.getJackpot());
 
         // Registra il risultato nel database
-        User user = Auth.getCurrentUser();
-        if (user != null) {
-            double gain = win > 0 ? (win - bet) : -bet;
-            boolean winFlag = win > 0;
-            GameRecord record = new GameRecord("Slot Machine", bet, gain, winFlag);
-            Database.recordGameResult(user.getId(), record);
+        User utente = Auth.getCurrentUser();
+        if (utente != null) {
+            double guadagno = vincita > 0 ? (vincita - bet) : -bet;
+            boolean haVinto = vincita > 0;
+            GameRecord registrazione = new GameRecord("Slot Machine", bet, guadagno, haVinto);
+            Database.recordGameResult(utente.getId(), registrazione);
         }
     }
 
-    private void printRow(String[] r) {
+    private void printRow(String[] risultato) {
         System.out.print("\r");
-        System.out.print(BOLD + "🎰 " + YELLOW + r[0] + RESET + " | " + YELLOW + r[1] + RESET + " | " + YELLOW + r[2] + RESET);
+        System.out.print(BOLD + "🎰 " + YELLOW + risultato[0] + RESET + " | " + YELLOW + risultato[1] + RESET + " | " + YELLOW + risultato[2] + RESET);
         System.out.flush();
     }
 
