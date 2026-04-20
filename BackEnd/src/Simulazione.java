@@ -32,105 +32,214 @@ public class Simulazione {
     private static final AtomicLong    rouCents   = new AtomicLong();
 
     public static void avvia() {
-        bjVinte.set(0);   bjPerse.set(0);   bjPari.set(0);   bjCents.set(0);
-        dadiVinte.set(0); dadiPerse.set(0); dadiCents.set(0);
-        rouVinte.set(0);  rouPerse.set(0);  rouCents.set(0);
+        // Reset dei contatori
+        bjVinte.set(0);
+        bjPerse.set(0);
+        bjPari.set(0);
+        bjCents.set(0);
+        
+        dadiVinte.set(0);
+        dadiPerse.set(0);
+        dadiCents.set(0);
+        
+        rouVinte.set(0);
+        rouPerse.set(0);
+        rouCents.set(0);
 
         System.out.println("\n╔════════════════════════════════════════╗");
         System.out.println("║       📊 SIMULAZIONE IN CORSO...       ║");
-        System.out.printf( "║  %d partite per gioco · puntata €%d   ║%n", NUM_PARTITE, BET_INT);
+        System.out.printf("║  %d partite per gioco · puntata €%d   ║%n", NUM_PARTITE, BET_INT);
         System.out.println("╚════════════════════════════════════════╝");
 
         CountDownLatch latch = new CountDownLatch(3);
-        new Thread(() -> { simulaBlackjack(); latch.countDown(); }, "sim-bj").start();
-        new Thread(() -> { simulaDadi();      latch.countDown(); }, "sim-dadi").start();
-        new Thread(() -> { simulaRoulette();  latch.countDown(); }, "sim-rou").start();
+        
+        // Avvio dei thread per ogni gioco
+        new Thread(() -> {
+            simulaBlackjack();
+            latch.countDown();
+        }, "sim-bj").start();
+        
+        new Thread(() -> {
+            simulaDadi();
+            latch.countDown();
+        }, "sim-dadi").start();
+        
+        new Thread(() -> {
+            simulaRoulette();
+            latch.countDown();
+        }, "sim-rou").start();
 
-        try { latch.await(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
         mostraRisultati();
     }
 
     private static void simulaBlackjack() {
         MazzoCarte mazzo = new MazzoCarte();
+        
         for (int i = 0; i < NUM_PARTITE; i++) {
-            if (mazzo.carteRimaste() < 15) mazzo.ricreaMazzo();
-            GiocatoreUmano g = new GiocatoreUmano("Sim", 100_000);
-            Banco b = new Banco();
-            g.aggiungiCarta(mazzo.pescaCarta()); b.aggiungiCarta(mazzo.pescaCarta());
-            g.aggiungiCarta(mazzo.pescaCarta()); b.aggiungiCarta(mazzo.pescaCarta());
-            if (g.haBlackjack() && b.haBlackjack()) { bjPari.incrementAndGet(); continue; }
-            if (g.haBlackjack()) { bjVinte.incrementAndGet(); bjCents.addAndGet(Math.round(BET_INT * 1.5 * 100)); continue; }
-            if (b.haBlackjack()) { bjPerse.incrementAndGet(); bjCents.addAndGet(-BET_INT * 100L); continue; }
-            while (g.valoreMano() < 17 && !g.haSballato()) g.aggiungiCarta(mazzo.pescaCarta());
-            if (g.haSballato()) { bjPerse.incrementAndGet(); bjCents.addAndGet(-BET_INT * 100L); continue; }
-            while (b.devePescare()) b.aggiungiCarta(mazzo.pescaCarta());
-            int pv = g.valoreMano(), dv = b.valoreMano();
-            if (dv > 21 || pv > dv)      { bjVinte.incrementAndGet(); bjCents.addAndGet(BET_INT * 100L); }
-            else if (pv < dv)             { bjPerse.incrementAndGet(); bjCents.addAndGet(-BET_INT * 100L); }
-            else                          { bjPari.incrementAndGet(); }
+            // Ricrea il mazzo se le carte sono poche
+            if (mazzo.carteRimaste() < 15) {
+                mazzo.ricreaMazzo();
+            }
+            
+            // Inizializza giocatori
+            GiocatoreUmano giocatore = new GiocatoreUmano("Sim", 100_000);
+            Banco banco = new Banco();
+            
+            // Distribuisci le carte iniziali
+            giocatore.aggiungiCarta(mazzo.pescaCarta());
+            banco.aggiungiCarta(mazzo.pescaCarta());
+            giocatore.aggiungiCarta(mazzo.pescaCarta());
+            banco.aggiungiCarta(mazzo.pescaCarta());
+            
+            // Controlla blackjack naturali
+            if (giocatore.haBlackjack() && banco.haBlackjack()) {
+                bjPari.incrementAndGet();
+                continue;
+            }
+            
+            if (giocatore.haBlackjack()) {
+                bjVinte.incrementAndGet();
+                bjCents.addAndGet(Math.round(BET_INT * 1.5 * 100));
+                continue;
+            }
+            
+            if (banco.haBlackjack()) {
+                bjPerse.incrementAndGet();
+                bjCents.addAndGet(-BET_INT * 100L);
+                continue;
+            }
+            
+            // Giocatore pesca fino a 17 o sballato
+            while (giocatore.valoreMano() < 17 && !giocatore.haSballato()) {
+                giocatore.aggiungiCarta(mazzo.pescaCarta());
+            }
+            
+            if (giocatore.haSballato()) {
+                bjPerse.incrementAndGet();
+                bjCents.addAndGet(-BET_INT * 100L);
+                continue;
+            }
+            
+            // Banco pesca secondo le regole
+            while (banco.devePescare()) {
+                banco.aggiungiCarta(mazzo.pescaCarta());
+            }
+            
+            // Determina il vincitore
+            int valoreGiocatore = giocatore.valoreMano();
+            int valoreBanco = banco.valoreMano();
+            
+            if (valoreBanco > 21 || valoreGiocatore > valoreBanco) {
+                bjVinte.incrementAndGet();
+                bjCents.addAndGet(BET_INT * 100L);
+            } else if (valoreGiocatore < valoreBanco) {
+                bjPerse.incrementAndGet();
+                bjCents.addAndGet(-BET_INT * 100L);
+            } else {
+                bjPari.incrementAndGet();
+            }
         }
     }
 
     private static void simulaDadi() {
         for (int i = 0; i < NUM_PARTITE; i++) {
-            int sum = random.randomInt(1, 6) + random.randomInt(1, 6);
-            if (sum == 7 || sum == 11) { dadiVinte.incrementAndGet(); dadiCents.addAndGet(Math.round(BET * 100)); }
-            else                       { dadiPerse.incrementAndGet(); dadiCents.addAndGet(-Math.round(BET * 100)); }
+            // Lancia due dadi
+            int dado1 = random.randomInt(1, 6);
+            int dado2 = random.randomInt(1, 6);
+            int somma = dado1 + dado2;
+            
+            // Pass Line: vinci con 7 o 11
+            if (somma == 7 || somma == 11) {
+                dadiVinte.incrementAndGet();
+                dadiCents.addAndGet(Math.round(BET * 100));
+            } else {
+                dadiPerse.incrementAndGet();
+                dadiCents.addAndGet(-Math.round(BET * 100));
+            }
         }
     }
 
     private static void simulaRoulette() {
-        ruotaRoulette wheel = new ruotaRoulette();
+        ruotaRoulette ruota = new ruotaRoulette();
+        
         for (int i = 0; i < NUM_PARTITE; i++) {
-            String color = wheel.getColor(wheel.spin());
-            if (color.equals("red")) { rouVinte.incrementAndGet(); rouCents.addAndGet(Math.round(BET * 0.9 * 100)); }
-            else                     { rouPerse.incrementAndGet(); rouCents.addAndGet(-Math.round(BET * 100)); }
+            // Gira la ruota e ottieni il colore
+            int numero = ruota.spin();
+            String colore = ruota.getColor(numero);
+            
+            // Punta sul rosso con payout 1.9x
+            if (colore.equals("red")) {
+                rouVinte.incrementAndGet();
+                rouCents.addAndGet(Math.round(BET * 0.9 * 100));
+            } else {
+                rouPerse.incrementAndGet();
+                rouCents.addAndGet(-Math.round(BET * 100));
+            }
         }
     }
 
     private static void mostraRisultati() {
-        double bjGain   = bjCents.get()   / 100.0;
-        double dadiGain = dadiCents.get() / 100.0;
-        double rouGain  = rouCents.get()  / 100.0;
-        double totale   = bjGain + dadiGain + rouGain;
-        double investito = NUM_PARTITE * BET * 3;
-        double roi       = (totale / investito) * 100;
+        // Calcola i guadagni
+        double bjGuadagno = bjCents.get() / 100.0;
+        double dadiGuadagno = dadiCents.get() / 100.0;
+        double rouGuadagno = rouCents.get() / 100.0;
+        double totaleGuadagno = bjGuadagno + dadiGuadagno + rouGuadagno;
+        
+        // Calcola statistiche
+        double totaleInvestito = NUM_PARTITE * BET * 3;
+        double roi = (totaleGuadagno / totaleInvestito) * 100;
 
-        String sBjGain   = String.format("%s€%.2f", bjGain   >= 0 ? "+" : "", bjGain);
-        String sDadiGain = String.format("%s€%.2f", dadiGain >= 0 ? "+" : "", dadiGain);
-        String sRouGain  = String.format("%s€%.2f", rouGain  >= 0 ? "+" : "", rouGain);
-        String sTotale   = String.format("%s€%.2f", totale   >= 0 ? "+" : "-", Math.abs(totale));
-        String sInv      = String.format("€%.2f", investito);
-        String sRoi      = String.format("%.2f%%", roi);
-        String sPart     = NUM_PARTITE + " partite per gioco  ·  puntata fissa €" + BET_INT;
+        // Formatta i valori per la visualizzazione
+        String sBjGuadagno = String.format("%s€%.2f", bjGuadagno >= 0 ? "+" : "", bjGuadagno);
+        String sDadiGuadagno = String.format("%s€%.2f", dadiGuadagno >= 0 ? "+" : "", dadiGuadagno);
+        String sRouGuadagno = String.format("%s€%.2f", rouGuadagno >= 0 ? "+" : "", rouGuadagno);
+        String sTotaleGuadagno = String.format("%s€%.2f", totaleGuadagno >= 0 ? "+" : "-", Math.abs(totaleGuadagno));
+        String sInvestito = String.format("€%.2f", totaleInvestito);
+        String sRoi = String.format("%.2f%%", roi);
+        String sPartite = NUM_PARTITE + " partite per gioco  ·  puntata fissa €" + BET_INT;
 
+        // Mostra i risultati
         System.out.println("\n╔══════════════════════════════════════════════════╗");
-        System.out.printf( "║       📊 RISULTATI SIMULAZIONE                   ║%n");
-        System.out.printf( "║  %-48s║%n", sPart);
+        System.out.printf("║       📊 RISULTATI SIMULAZIONE                   ║%n");
+        System.out.printf("║  %-48s║%n", sPartite);
         System.out.println("╠══════════════════════════════════════════════════╣");
         System.out.println("║                                                  ║");
-        System.out.printf( "║  🎰 BLACKJACK  (strategia: stai su 17+)   %-7s║%n", "");
-        System.out.printf( "║    Vinte: %-3d  Perse: %-3d  Pari: %-3d             ║%n",
+        
+        // Risultati Blackjack
+        System.out.printf("║  🎰 BLACKJACK  (strategia: stai su 17+)   %-7s║%n", "");
+        System.out.printf("║    Vinte: %-3d  Perse: %-3d  Pari: %-3d             ║%n",
                 bjVinte.get(), bjPerse.get(), bjPari.get());
-        System.out.printf( "║    Guadagno netto: %-30s║%n", sBjGain);
+        System.out.printf("║    Guadagno netto: %-30s║%n", sBjGuadagno);
         System.out.println("║                                                  ║");
-        System.out.printf( "║  🎲 DADI  (Pass Line: vinci con 7 o 11)   %-7s║%n", "");
-        System.out.printf( "║    Vinte: %-3d  Perse: %-3d                        ║%n",
+        
+        // Risultati Dadi
+        System.out.printf("║  🎲 DADI  (Pass Line: vinci con 7 o 11)   %-7s║%n", "");
+        System.out.printf("║    Vinte: %-3d  Perse: %-3d                        ║%n",
                 dadiVinte.get(), dadiPerse.get());
-        System.out.printf( "║    Guadagno netto: %-30s║%n", sDadiGain);
+        System.out.printf("║    Guadagno netto: %-30s║%n", sDadiGuadagno);
         System.out.println("║                                                  ║");
-        System.out.printf( "║  ⭕ ROULETTE  (rosso, payout 1.9x)        %-7s║%n", "");
-        System.out.printf( "║    Vinte: %-3d  Perse: %-3d                        ║%n",
+        
+        // Risultati Roulette
+        System.out.printf("║  ⭕ ROULETTE  (rosso, payout 1.9x)        %-7s║%n", "");
+        System.out.printf("║    Vinte: %-3d  Perse: %-3d                        ║%n",
                 rouVinte.get(), rouPerse.get());
-        System.out.printf( "║    Guadagno netto: %-30s║%n", sRouGain);
+        System.out.printf("║    Guadagno netto: %-30s║%n", sRouGuadagno);
         System.out.println("║                                                  ║");
+        
+        // Totali
         System.out.println("╠══════════════════════════════════════════════════╣");
-        System.out.printf( "║  💸 Totale investito:   %-25s║%n", sInv);
-        System.out.printf( "║  💰 Guadagno/Perdita:   %-25s║%n", sTotale);
-        System.out.printf( "║  📉 ROI:                %-25s║%n", sRoi);
+        System.out.printf("║  💸 Totale investito:   %-25s║%n", sInvestito);
+        System.out.printf("║  💰 Guadagno/Perdita:   %-25s║%n", sTotaleGuadagno);
+        System.out.printf("║  📉 ROI:                %-25s║%n", sRoi);
         System.out.println("╠══════════════════════════════════════════════════╣");
-        System.out.printf( "║  ⚠️  Alla lunga il banco vince sempre.    %-7s║%n", "");
-        System.out.printf( "║     Gioca solo per divertimento.          %-7s║%n", "");
+        System.out.printf("║  ⚠️  Alla lunga il banco vince sempre.    %-7s║%n", "");
+        System.out.printf("║     Gioca solo per divertimento.          %-7s║%n", "");
         System.out.println("╚══════════════════════════════════════════════════╝");
     }
 }

@@ -43,49 +43,60 @@ public class WebServer {
     public static void startServer() throws IOException {
         // Forza il locale US per evitare virgola decimale italiana nel JSON
         java.util.Locale.setDefault(java.util.Locale.US);
+        
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 
-        // Health
-        server.createContext("/api/health",                    new HealthHandler());
-        server.createContext("/api/jackpot",                   new JackpotHandler());
+        // ═══════════════════════════════════════════════════════════════
+        // REGISTRAZIONE ENDPOINT API
+        // ═══════════════════════════════════════════════════════════════
+        
+        // Health & System
+        server.createContext("/api/health", new HealthHandler());
+        server.createContext("/api/jackpot", new JackpotHandler());
 
-        // Auth
-        server.createContext("/api/auth/register",             new RegisterHandler());
-        server.createContext("/api/auth/login",                new LoginHandler());
-        server.createContext("/api/auth/verify",               new VerifyHandler());
+        // Authentication
+        server.createContext("/api/auth/register", new RegisterHandler());
+        server.createContext("/api/auth/login", new LoginHandler());
+        server.createContext("/api/auth/verify", new VerifyHandler());
 
-        // User
-        server.createContext("/api/user/profile",              new ProfileHandler());
+        // User Management
+        server.createContext("/api/user/profile", new ProfileHandler());
 
-        // Wallet
-        server.createContext("/api/wallet/balance",            new BalanceHandler());
-        server.createContext("/api/wallet/deposit",            new DepositHandler());
-        server.createContext("/api/wallet/daily-bonus",        new DailyBonusHandler());
+        // Wallet Operations
+        server.createContext("/api/wallet/balance", new BalanceHandler());
+        server.createContext("/api/wallet/deposit", new DepositHandler());
+        server.createContext("/api/wallet/daily-bonus", new DailyBonusHandler());
 
-        // Games
-        server.createContext("/api/games/slots/spin",          new SlotsHandler());
-        server.createContext("/api/games/blackjack/deal",      new BlackjackDealHandler());
-        server.createContext("/api/games/blackjack/resolve",   new BlackjackResolveHandler());
-        server.createContext("/api/games/roulette/spin",       new RouletteHandler());
-        server.createContext("/api/games/dadi/roll",           new DadiHandler());
-        server.createContext("/api/games/baccarat/play",       new BaccaratHandler());
-        server.createContext("/api/games/poker/deal",          new PokerDealHandler());
-        server.createContext("/api/games/poker/draw",          new PokerDrawHandler());
-        server.createContext("/api/games/chicken/move",        new ChickenMoveHandler());
-        server.createContext("/api/games/chicken/cashout",     new ChickenCashoutHandler());
-        server.createContext("/api/games/chicken/gameover",    new ChickenGameoverHandler());
+        // Casino Games
+        server.createContext("/api/games/slots/spin", new SlotsHandler());
+        server.createContext("/api/games/blackjack/deal", new BlackjackDealHandler());
+        server.createContext("/api/games/blackjack/resolve", new BlackjackResolveHandler());
+        server.createContext("/api/games/roulette/spin", new RouletteHandler());
+        server.createContext("/api/games/dadi/roll", new DadiHandler());
+        server.createContext("/api/games/baccarat/play", new BaccaratHandler());
+        server.createContext("/api/games/poker/deal", new PokerDealHandler());
+        server.createContext("/api/games/poker/draw", new PokerDrawHandler());
+        server.createContext("/api/games/chicken/move", new ChickenMoveHandler());
+        server.createContext("/api/games/chicken/cashout", new ChickenCashoutHandler());
+        server.createContext("/api/games/chicken/gameover", new ChickenGameoverHandler());
+        
+        // Virtual Sports & Racing
         server.createContext("/api/games/virtual/race/simulate", new VirtualRaceSimulateHandler());
-        server.createContext("/api/games/virtual/race/preview",  new VirtualRacePreviewHandler());
-        server.createContext("/api/games/virtual/",              new VirtualSportHandler());
+        server.createContext("/api/games/virtual/race/preview", new VirtualRacePreviewHandler());
+        server.createContext("/api/games/virtual/", new VirtualSportHandler());
 
-        // History & Leaderboard & Simulation
-        server.createContext("/api/games/history",             new HistoryHandler());
-        server.createContext("/api/leaderboard",               new LeaderboardHandler());
-        server.createContext("/api/simulation/run",            new SimulationHandler());
+        // Statistics & Data
+        server.createContext("/api/games/history", new HistoryHandler());
+        server.createContext("/api/leaderboard", new LeaderboardHandler());
+        server.createContext("/api/simulation/run", new SimulationHandler());
 
+        // Configura thread pool per gestire richieste concorrenti
         server.setExecutor(java.util.concurrent.Executors.newFixedThreadPool(8));
+        
+        // Avvia il server
         server.start();
 
+        // Messaggio di avvio
         System.out.println("\n╔════════════════════════════════════════╗");
         System.out.println("║   BetCenterNL — Java Backend Server    ║");
         System.out.println("╠════════════════════════════════════════╣");
@@ -94,10 +105,13 @@ public class WebServer {
         System.out.println("╚════════════════════════════════════════╝\n");
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // UTILITIES
-    // ─────────────────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // UTILITY METHODS
+    // ═══════════════════════════════════════════════════════════════════════════
 
+    /**
+     * Imposta gli header CORS per permettere richieste cross-origin
+     */
     private static void setCors(HttpExchange ex) {
         ex.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
         ex.getResponseHeaders().set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
@@ -105,6 +119,9 @@ public class WebServer {
         ex.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
     }
 
+    /**
+     * Gestisce le richieste OPTIONS per CORS preflight
+     */
     private static boolean handleOptions(HttpExchange ex) throws IOException {
         if ("OPTIONS".equalsIgnoreCase(ex.getRequestMethod())) {
             setCors(ex);
@@ -114,16 +131,25 @@ public class WebServer {
         return false;
     }
 
+    /**
+     * Legge il corpo della richiesta HTTP
+     */
     private static String readBody(HttpExchange ex) throws IOException {
         try (InputStream is = ex.getRequestBody();
              ByteArrayOutputStream buf = new ByteArrayOutputStream()) {
+            
             byte[] tmp = new byte[4096];
             int n;
-            while ((n = is.read(tmp)) != -1) buf.write(tmp, 0, n);
+            while ((n = is.read(tmp)) != -1) {
+                buf.write(tmp, 0, n);
+            }
             return buf.toString(StandardCharsets.UTF_8.name());
         }
     }
 
+    /**
+     * Invia una risposta HTTP con status code e JSON
+     */
     private static void send(HttpExchange ex, int status, String json) throws IOException {
         byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
         ex.sendResponseHeaders(status, bytes.length);
@@ -132,15 +158,23 @@ public class WebServer {
         }
     }
 
+    /**
+     * Invia una risposta di successo (200 OK)
+     */
     private static void ok(HttpExchange ex, String json) throws IOException {
         send(ex, 200, json);
     }
 
+    /**
+     * Invia una risposta di errore
+     */
     private static void err(HttpExchange ex, int status, String msg) throws IOException {
         send(ex, status, "{\"error\":\"" + esc(msg) + "\"}");
     }
 
-    /** Escape a string for embedding in a JSON string literal. */
+    /**
+     * Escape di una stringa per l'embedding in JSON
+     */
     private static String esc(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\")
@@ -150,18 +184,26 @@ public class WebServer {
                 .replace("\t", "\\t");
     }
 
-    /** Very simple JSON string-value extractor. Works for flat objects. */
+    /**
+     * Estrae un valore stringa da un JSON semplice
+     */
     private static String jsonStr(String json, String key) {
         String search = "\"" + key + "\"";
         int ki = json.indexOf(search);
         if (ki < 0) return null;
+        
         int colon = json.indexOf(':', ki + search.length());
         if (colon < 0) return null;
+        
         int start = colon + 1;
-        while (start < json.length() && (json.charAt(start) == ' ' || json.charAt(start) == '\t')) start++;
+        while (start < json.length() && (json.charAt(start) == ' ' || json.charAt(start) == '\t')) {
+            start++;
+        }
+        
         if (start >= json.length()) return null;
+        
         if (json.charAt(start) == '"') {
-            // string value
+            // Valore stringa
             int end = start + 1;
             while (end < json.length()) {
                 if (json.charAt(end) == '"' && json.charAt(end - 1) != '\\') break;
@@ -169,229 +211,390 @@ public class WebServer {
             }
             return json.substring(start + 1, end);
         } else {
-            // number / bool / null
+            // Valore numerico/booleano/null
             int end = start;
-            while (end < json.length() && ",}]\n\r ".indexOf(json.charAt(end)) < 0) end++;
+            while (end < json.length() && ",}]\n\r ".indexOf(json.charAt(end)) < 0) {
+                end++;
+            }
             return json.substring(start, end).trim();
         }
     }
 
+    /**
+     * Estrae un valore double da JSON con valore di default
+     */
     private static double jsonDouble(String json, String key, double def) {
         String v = jsonStr(json, key);
         if (v == null) return def;
-        try { return Double.parseDouble(v); } catch (Exception e) { return def; }
+        try {
+            return Double.parseDouble(v);
+        } catch (Exception e) {
+            return def;
+        }
     }
 
+    /**
+     * Estrae un valore int da JSON con valore di default
+     */
     private static int jsonInt(String json, String key, int def) {
         String v = jsonStr(json, key);
         if (v == null) return def;
-        try { return Integer.parseInt(v); } catch (Exception e) { return def; }
+        try {
+            return Integer.parseInt(v);
+        } catch (Exception e) {
+            return def;
+        }
     }
 
+    /**
+     * Estrae un valore boolean da JSON con valore di default
+     */
     private static boolean jsonBool(String json, String key, boolean def) {
         String v = jsonStr(json, key);
         if (v == null) return def;
         return "true".equalsIgnoreCase(v.trim());
     }
 
-    /** Extract the Authorization header and return the user, or null. */
+    /**
+     * Estrae l'utente dall'header Authorization, o null se non autenticato
+     */
     private static User authUser(HttpExchange ex) {
         String auth = ex.getRequestHeaders().getFirst("Authorization");
         if (auth == null) return null;
+        
         auth = auth.trim();
-        if (auth.startsWith("Bearer ")) auth = auth.substring(7).trim();
+        if (auth.startsWith("Bearer ")) {
+            auth = auth.substring(7).trim();
+        }
+        
         if (!auth.startsWith("betcenter-")) return null;
+        
         String id = auth.replace("betcenter-", "");
         return Database.getUserById(id);
     }
 
+    /**
+     * Converte un oggetto User in JSON
+     */
     private static String userJson(User u) {
         return String.format(java.util.Locale.US,
-            "{\"id\":\"%s\",\"email\":\"%s\",\"username\":\"%s\",\"nome\":\"%s\",\"cognome\":\"%s\",\"balance\":%.2f,\"xp\":%d,\"level\":%d,\"gamesPlayed\":%d,\"gamesWon\":%d,\"gamesLost\":%d,\"totalGain\":%.2f,\"winRate\":%.2f}",
-            esc(u.getId()), esc(u.getEmail()), esc(u.getUsername()), esc(u.getNome()), esc(u.getCognome()),
+            "{\"id\":\"%s\",\"email\":\"%s\",\"username\":\"%s\",\"nome\":\"%s\",\"cognome\":\"%s\"," +
+            "\"balance\":%.2f,\"xp\":%d,\"level\":%d,\"gamesPlayed\":%d,\"gamesWon\":%d,\"gamesLost\":%d," +
+            "\"totalGain\":%.2f,\"winRate\":%.2f}",
+            esc(u.getId()), esc(u.getEmail()), esc(u.getUsername()), 
+            esc(u.getNome()), esc(u.getCognome()),
             u.getSaldo(), u.getXp(), u.getCurrentLevel(),
-            u.getGiociGiocati(), u.getGiociVinti(), u.getGiociPersi(), u.getGuadagnoTotale(), u.getWinRate()
+            u.getGiociGiocati(), u.getGiociVinti(), u.getGiociPersi(), 
+            u.getGuadagnoTotale(), u.getWinRate()
         );
     }
 
+    /**
+     * Converte una carta in JSON
+     */
     private static String cardJson(String rank, String suit) {
         return "{\"rank\":\"" + esc(rank) + "\",\"suit\":\"" + esc(suit) + "\"}";
     }
 
+    /**
+     * Arrotonda un double a 2 decimali
+     */
     private static double round2(double v) {
         return Math.round(v * 100.0) / 100.0;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // HEALTH
-    // ─────────────────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HEALTH CHECK ENDPOINT
+    // ═══════════════════════════════════════════════════════════════════════════
+    
     static class HealthHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
-            ok(ex, "{\"ok\":true}");
+            
+            ok(ex, "{\"ok\":true,\"status\":\"healthy\",\"timestamp\":\"" + 
+                java.time.LocalDateTime.now() + "\"}");
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // JACKPOT
-    // ─────────────────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // JACKPOT ENDPOINT
+    // ═══════════════════════════════════════════════════════════════════════════
+    
     static class JackpotHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
+            
             ok(ex, String.format("{\"ok\":true,\"jackpot\":%.2f}", State.getJackpot()));
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // AUTH — REGISTER
-    // ─────────────────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // AUTHENTICATION ENDPOINTS
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * Endpoint per la registrazione di nuovi utenti
+     */
     static class RegisterHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
-            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) { err(ex, 405, "Method not allowed"); return; }
-            Database.reload(); // Sincronizza con eventuali utenti creati da terminale
-            String body = readBody(ex);
-            String nome     = jsonStr(body, "nome");
-            String cognome  = jsonStr(body, "cognome");
-            String username = jsonStr(body, "username");
-            String email    = jsonStr(body, "email");
-            String password = jsonStr(body, "password");
-            String dob      = jsonStr(body, "dob");
-            if (nome == null || cognome == null || username == null || email == null || password == null) {
-                err(ex, 400, "Missing required fields"); return;
+            
+            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) {
+                err(ex, 405, "Method not allowed");
+                return;
             }
-            if (email.trim().isEmpty() || !email.contains("@")) { err(ex, 400, "Invalid email"); return; }
-            if (password.length() < 6) { err(ex, 400, "Password too short"); return; }
-            if (Database.userExists(email)) { err(ex, 409, "Email already registered"); return; }
-            User user = new User(nome, cognome, username, email, password, dob != null ? dob : "");
+            
+            // Sincronizza con eventuali utenti creati da terminale
+            Database.reload();
+            
+            String body = readBody(ex);
+            String nome = jsonStr(body, "nome");
+            String cognome = jsonStr(body, "cognome");
+            String username = jsonStr(body, "username");
+            String email = jsonStr(body, "email");
+            String password = jsonStr(body, "password");
+            String dob = jsonStr(body, "dob");
+            
+            // Validazione campi obbligatori
+            if (nome == null || cognome == null || username == null || 
+                email == null || password == null) {
+                err(ex, 400, "Missing required fields");
+                return;
+            }
+            
+            // Validazione email
+            if (email.trim().isEmpty() || !email.contains("@")) {
+                err(ex, 400, "Invalid email");
+                return;
+            }
+            
+            // Validazione password
+            if (password.length() < 6) {
+                err(ex, 400, "Password too short");
+                return;
+            }
+            
+            // Controllo email già esistente
+            if (Database.userExists(email)) {
+                err(ex, 409, "Email already registered");
+                return;
+            }
+            
+            // Creazione nuovo utente
+            User user = new User(nome, cognome, username, email, password, 
+                               dob != null ? dob : "");
             Database.registerUser(user);
+            
+            // Generazione token
             String token = "betcenter-" + user.getId();
-            ok(ex, "{\"ok\":true,\"user\":" + userJson(user) + ",\"token\":\"" + token + "\"}");
+            
+            ok(ex, "{\"ok\":true,\"user\":" + userJson(user) + 
+                   ",\"token\":\"" + token + "\"}");
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // AUTH — LOGIN
-    // ─────────────────────────────────────────────────────────────────────────
+    /**
+     * Endpoint per il login degli utenti
+     */
     static class LoginHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
-            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) { err(ex, 405, "Method not allowed"); return; }
-            Database.reload(); // Sincronizza con eventuali utenti creati da terminale
+            
+            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) {
+                err(ex, 405, "Method not allowed");
+                return;
+            }
+            
+            // Sincronizza con eventuali utenti creati da terminale
+            Database.reload();
+            
             String body = readBody(ex);
-            String email    = jsonStr(body, "email");
+            String email = jsonStr(body, "email");
             String password = jsonStr(body, "password");
-            if (email == null || password == null) { err(ex, 400, "Missing credentials"); return; }
+            
+            if (email == null || password == null) {
+                err(ex, 400, "Missing credentials");
+                return;
+            }
+            
             User user = Database.getUserByEmail(email);
             if (user == null || !user.getPassword().equals(password)) {
-                err(ex, 401, "Invalid credentials"); return;
+                err(ex, 401, "Invalid credentials");
+                return;
             }
+            
             String token = "betcenter-" + user.getId();
-            ok(ex, "{\"ok\":true,\"user\":" + userJson(user) + ",\"token\":\"" + token + "\"}");
+            ok(ex, "{\"ok\":true,\"user\":" + userJson(user) + 
+                   ",\"token\":\"" + token + "\"}");
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // AUTH — VERIFY
-    // ─────────────────────────────────────────────────────────────────────────
+    /**
+     * Endpoint per la verifica del token di autenticazione
+     */
     static class VerifyHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
+            
             User user = authUser(ex);
-            if (user == null) { err(ex, 401, "Unauthorized"); return; }
+            if (user == null) {
+                err(ex, 401, "Unauthorized");
+                return;
+            }
+            
             ok(ex, "{\"ok\":true,\"user\":" + userJson(user) + "}");
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // USER — PROFILE
-    // ─────────────────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // USER MANAGEMENT ENDPOINTS
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * Endpoint per ottenere il profilo utente
+     */
     static class ProfileHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
+            
             User user = authUser(ex);
-            if (user == null) { err(ex, 401, "Unauthorized"); return; }
+            if (user == null) {
+                err(ex, 401, "Unauthorized");
+                return;
+            }
+            
             ok(ex, "{\"ok\":true,\"user\":" + userJson(user) + "}");
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // WALLET — BALANCE
-    // ─────────────────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // WALLET MANAGEMENT ENDPOINTS
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * Endpoint per ottenere il saldo corrente
+     */
     static class BalanceHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
+            
             User user = authUser(ex);
-            if (user == null) { err(ex, 401, "Unauthorized"); return; }
+            if (user == null) {
+                err(ex, 401, "Unauthorized");
+                return;
+            }
+            
             ok(ex, String.format("{\"ok\":true,\"balance\":%.2f}", user.getSaldo()));
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // WALLET — DEPOSIT
-    // ─────────────────────────────────────────────────────────────────────────
+    /**
+     * Endpoint per depositare fondi nel portafoglio
+     */
     static class DepositHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
-            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) { err(ex, 405, "Method not allowed"); return; }
+            
+            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) {
+                err(ex, 405, "Method not allowed");
+                return;
+            }
+            
             User user = authUser(ex);
-            if (user == null) { err(ex, 401, "Unauthorized"); return; }
+            if (user == null) {
+                err(ex, 401, "Unauthorized");
+                return;
+            }
+            
             String body = readBody(ex);
             double amount = jsonDouble(body, "amount", 0);
-            if (amount < 1 || amount > 100000) { err(ex, 400, "Invalid amount"); return; }
+            
+            if (amount < 1 || amount > 100000) {
+                err(ex, 400, "Invalid amount");
+                return;
+            }
+            
             user.setSaldo(user.getSaldo() + amount);
             Database.saveUsers();
-            ok(ex, String.format("{\"ok\":true,\"amount\":%.2f,\"newBalance\":%.2f}", amount, user.getSaldo()));
+            
+            ok(ex, String.format("{\"ok\":true,\"amount\":%.2f,\"newBalance\":%.2f}", 
+                                amount, user.getSaldo()));
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // WALLET — DAILY BONUS
-    // ─────────────────────────────────────────────────────────────────────────
+    /**
+     * Endpoint per richiedere il bonus giornaliero
+     */
     static class DailyBonusHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
-            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) { err(ex, 405, "Method not allowed"); return; }
+            
+            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) {
+                err(ex, 405, "Method not allowed");
+                return;
+            }
+            
             User user = authUser(ex);
-            if (user == null) { err(ex, 401, "Unauthorized"); return; }
+            if (user == null) {
+                err(ex, 401, "Unauthorized");
+                return;
+            }
+            
             LocalDateTime lastBonus = user.getLastBonusDate();
             LocalDate today = LocalDate.now();
+            
             if (lastBonus != null && lastBonus.toLocalDate().equals(today)) {
-                err(ex, 400, "Bonus already claimed today"); return;
+                err(ex, 400, "Bonus already claimed today");
+                return;
             }
+            
             int streak = user.getBonusStreak();
             double bonusAmount = Math.min(50 + streak * 10, 500);
+            
             user.setSaldo(user.getSaldo() + bonusAmount);
             user.setLastBonusDate(LocalDateTime.now());
             user.setBonusStreak(streak + 1);
             Database.saveUsers();
+            
             ok(ex, String.format("{\"ok\":true,\"bonusAmount\":%.2f,\"newBalance\":%.2f,\"streak\":%d}",
-                bonusAmount, user.getSaldo(), streak + 1));
+                                bonusAmount, user.getSaldo(), streak + 1));
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // GAMES — SLOTS
-    // ─────────────────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CASINO GAMES ENDPOINTS
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * Handler per le slot machine
+     */
     static class SlotsHandler implements HttpHandler {
-        private static final String[] SYMBOLS = {"cherry","lemon","orange","grape","star","diamond","seven","bell"};
-        private static final String[] EMOJIS  = {"🍒","🍋","🍊","🍇","⭐","💎","7️⃣","🔔"};
-        private static final int[]    WEIGHTS = {20,18,16,14,10,8,6,4};
-        private static final double[] PAYOUTS = {5,8,10,15,25,50,100,200};
+        private static final String[] SYMBOLS = {
+            "cherry", "lemon", "orange", "grape", "star", "diamond", "seven", "bell"
+        };
+        private static final String[] EMOJIS = {
+            "🍒", "🍋", "🍊", "🍇", "⭐", "💎", "7️⃣", "🔔"
+        };
+        private static final int[] WEIGHTS = {20, 18, 16, 14, 10, 8, 6, 4};
+        private static final double[] PAYOUTS = {5, 8, 10, 15, 25, 50, 100, 200};
         private static final Random rand = new Random();
 
+        /**
+         * Genera un indice pesato basato sui pesi dei simboli
+         */
         private int weightedIdx() {
             int total = 0;
             for (int w : WEIGHTS) total += w;
+            
             int r = rand.nextInt(total);
             for (int i = 0; i < WEIGHTS.length; i++) {
                 r -= WEIGHTS[i];
@@ -403,42 +606,63 @@ public class WebServer {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
-            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) { err(ex, 405, "Method not allowed"); return; }
+            
+            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) {
+                err(ex, 405, "Method not allowed");
+                return;
+            }
+            
             User user = authUser(ex);
-            if (user == null) { err(ex, 401, "Unauthorized"); return; }
+            if (user == null) {
+                err(ex, 401, "Unauthorized");
+                return;
+            }
+            
             String body = readBody(ex);
             double bet = jsonDouble(body, "bet", 0);
-            if (bet < 1) { err(ex, 400, "Invalid bet"); return; }
-            if (user.getSaldo() < bet) { err(ex, 400, "Insufficient balance"); return; }
+            
+            if (bet < 1) {
+                err(ex, 400, "Invalid bet");
+                return;
+            }
+            
+            if (user.getSaldo() < bet) {
+                err(ex, 400, "Insufficient balance");
+                return;
+            }
 
-            // Use State + SlotMachine for the actual spin logic
-            State.setBalance(user.getSaldo());
-            // Spin manually to capture result (SlotMachine uses System.out and sleep)
+            // Genera i simboli per i 3 rulli
             int i0 = weightedIdx(), i1 = weightedIdx(), i2 = weightedIdx();
             String s0 = EMOJIS[i0], s1 = EMOJIS[i1], s2 = EMOJIS[i2];
 
+            // Calcola il moltiplicatore
             double multiplier = 0;
             if (i0 == i1 && i1 == i2) {
+                // Tre simboli uguali
                 multiplier = PAYOUTS[i0];
-            } else if (i0 == 0 && i1 == 0) { // two cherries left
+            } else if (i0 == 0 && i1 == 0) {
+                // Due ciliegie a sinistra
                 multiplier = 1.5;
-            } else if (i1 == 0 && i2 == 0) { // two cherries right
+            } else if (i1 == 0 && i2 == 0) {
+                // Due ciliegie a destra
                 multiplier = 1.5;
             }
 
             boolean win = multiplier > 0;
             double gain = win ? round2(bet * multiplier - bet) : -bet;
             double newBalance = round2(user.getSaldo() + gain);
+            
             user.setSaldo(newBalance);
             Database.saveUsers();
 
+            // Registra il risultato
             GameRecord rec = new GameRecord("Slot Machine", bet, gain, win);
             Database.recordGameResult(user.getId(), rec);
 
-            // Aggiorna jackpot sul server
+            // Gestione jackpot
             boolean jackpotWon = false;
             if (multiplier == 200) {
-                // Jackpot vinto! Resetta
+                // Jackpot vinto con tre "seven"!
                 jackpotWon = true;
                 State.resetJackpot();
             } else {
@@ -448,55 +672,101 @@ public class WebServer {
             double jackpot = State.getJackpot();
 
             ok(ex, String.format(
-                "{\"ok\":true,\"reels\":[\"%s\",\"%s\",\"%s\"],\"win\":%b,\"multiplier\":%.2f,\"gain\":%.2f,\"newBalance\":%.2f,\"jackpot\":%.2f,\"jackpotWon\":%b}",
-                esc(s0), esc(s1), esc(s2), win, multiplier, gain, newBalance, jackpot, jackpotWon));
+                "{\"ok\":true,\"reels\":[\"%s\",\"%s\",\"%s\"],\"win\":%b," +
+                "\"multiplier\":%.2f,\"gain\":%.2f,\"newBalance\":%.2f," +
+                "\"jackpot\":%.2f,\"jackpotWon\":%b}",
+                esc(s0), esc(s1), esc(s2), win, multiplier, gain, 
+                newBalance, jackpot, jackpotWon));
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // GAMES — BLACKJACK DEAL
-    // ─────────────────────────────────────────────────────────────────────────
+    /**
+     * Handler per la distribuzione iniziale delle carte nel Blackjack
+     */
     static class BlackjackDealHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
-            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) { err(ex, 405, "Method not allowed"); return; }
+            
+            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) {
+                err(ex, 405, "Method not allowed");
+                return;
+            }
+            
             User user = authUser(ex);
-            if (user == null) { err(ex, 401, "Unauthorized"); return; }
+            if (user == null) {
+                err(ex, 401, "Unauthorized");
+                return;
+            }
+            
             String body = readBody(ex);
             double bet = jsonDouble(body, "bet", 0);
-            if (bet < 1) { err(ex, 400, "Invalid bet"); return; }
-            if (user.getSaldo() < bet) { err(ex, 400, "Insufficient balance"); return; }
+            
+            if (bet < 1) {
+                err(ex, 400, "Invalid bet");
+                return;
+            }
+            
+            if (user.getSaldo() < bet) {
+                err(ex, 400, "Insufficient balance");
+                return;
+            }
 
+            // Crea un nuovo mazzo e distribuisce le carte
             MazzoCarte mazzo = new MazzoCarte();
-            Carta p1 = mazzo.pescaCarta();
-            Carta p2 = mazzo.pescaCarta();
-            Carta d1 = mazzo.pescaCarta();
-            Carta d2 = mazzo.pescaCarta();
+            Carta p1 = mazzo.pescaCarta();  // Prima carta giocatore
+            Carta p2 = mazzo.pescaCarta();  // Seconda carta giocatore
+            Carta d1 = mazzo.pescaCarta();  // Prima carta dealer (visibile)
+            Carta d2 = mazzo.pescaCarta();  // Seconda carta dealer (nascosta)
 
+            // Calcola il valore della mano del giocatore
             int pv = bjValue(p1) + bjValue(p2);
-            // Adjust for aces
+            // Aggiusta per gli assi
             if (p1.isAsso() && pv > 21) pv -= 10;
             if (p2.isAsso() && pv > 21) pv -= 10;
 
             String gameId = String.valueOf(System.currentTimeMillis());
 
-            String playerHand = "[" + cardJson(p1.getNome(), semeToSuit(p1.getSeme())) + "," + cardJson(p2.getNome(), semeToSuit(p2.getSeme())) + "]";
-            String dealerVisible = "[" + cardJson(d1.getNome(), semeToSuit(d1.getSeme())) + ",{\"rank\":\"?\",\"suit\":\"?\"}]";
-            String dealerFull = "[" + cardJson(d1.getNome(), semeToSuit(d1.getSeme())) + "," + cardJson(d2.getNome(), semeToSuit(d2.getSeme())) + "]";
+            // Costruisce le mani in formato JSON
+            String playerHand = "[" + 
+                cardJson(p1.getNome(), semeToSuit(p1.getSeme())) + "," + 
+                cardJson(p2.getNome(), semeToSuit(p2.getSeme())) + "]";
+                
+            String dealerVisible = "[" + 
+                cardJson(d1.getNome(), semeToSuit(d1.getSeme())) + "," + 
+                "{\"rank\":\"?\",\"suit\":\"?\"}]";
+                
+            String dealerFull = "[" + 
+                cardJson(d1.getNome(), semeToSuit(d1.getSeme())) + "," + 
+                cardJson(d2.getNome(), semeToSuit(d2.getSeme())) + "]";
 
             ok(ex, String.format(
-                "{\"ok\":true,\"playerHand\":%s,\"dealerHand\":%s,\"dealerHandFull\":%s,\"playerValue\":%d,\"gameId\":\"%s\"}",
+                "{\"ok\":true,\"playerHand\":%s,\"dealerHand\":%s," +
+                "\"dealerHandFull\":%s,\"playerValue\":%d,\"gameId\":\"%s\"}",
                 playerHand, dealerVisible, dealerFull, pv, gameId));
         }
 
+        /**
+         * Calcola il valore di una carta nel Blackjack
+         */
         private int bjValue(Carta c) {
             String n = c.getNome();
-            if (n.equals("Jack") || n.equals("Queen") || n.equals("King")) return 10;
-            if (n.equals("Asso")) return 11;
-            try { return Integer.parseInt(n); } catch (Exception e) { return 0; }
+            if (n.equals("Jack") || n.equals("Queen") || n.equals("King")) {
+                return 10;
+            }
+            if (n.equals("Asso")) {
+                return 11;
+            }
+            try {
+                return Integer.parseInt(n);
+            } catch (Exception e) {
+                return 0;
+            }
         }
 
+        /**
+         * Converte il seme italiano in simbolo Unicode
+         */
         private String semeToSuit(String seme) {
             switch (seme) {
                 case "Cuori":  return "♥";
@@ -508,94 +778,143 @@ public class WebServer {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // GAMES — BLACKJACK RESOLVE
-    // ─────────────────────────────────────────────────────────────────────────
+    /**
+     * Handler per la risoluzione finale di una mano di Blackjack
+     */
     static class BlackjackResolveHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
-            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) { err(ex, 405, "Method not allowed"); return; }
+            
+            if (!"POST".equalsIgnoreCase(ex.getRequestMethod())) {
+                err(ex, 405, "Method not allowed");
+                return;
+            }
+            
             User user = authUser(ex);
-            if (user == null) { err(ex, 401, "Unauthorized"); return; }
+            if (user == null) {
+                err(ex, 401, "Unauthorized");
+                return;
+            }
+            
             String body = readBody(ex);
             double bet = jsonDouble(body, "bet", 0);
-            if (bet < 1) { err(ex, 400, "Invalid bet"); return; }
-            if (user.getSaldo() < bet) { err(ex, 400, "Insufficient balance"); return; }
+            
+            if (bet < 1) {
+                err(ex, 400, "Invalid bet");
+                return;
+            }
+            
+            if (user.getSaldo() < bet) {
+                err(ex, 400, "Insufficient balance");
+                return;
+            }
 
             int pv = jsonInt(body, "playerValue", 0);
             int dv = jsonInt(body, "dealerValue", 0);
             boolean isBlackjack = jsonBool(body, "isBlackjack", false);
 
-            // Recalculate dealer value from dealerHand if provided
-            // (client sends final dealer hand after dealer draws)
+            // Ricalcola il valore del dealer dalla mano se fornita
             String dealerHandRaw = extractArray(body, "dealerHand");
             if (dealerHandRaw != null) {
                 dv = calcHandValueFromJson(dealerHandRaw);
             }
+            
             String playerHandRaw = extractArray(body, "playerHand");
             if (playerHandRaw != null) {
                 pv = calcHandValueFromJson(playerHandRaw);
             }
 
+            // Determina il risultato
             double gain;
             String result;
+            
             if (pv > 21) {
-                gain = -bet; result = "lose";
+                // Giocatore sballato
+                gain = -bet;
+                result = "lose";
             } else if (isBlackjack && pv == 21 && dv != 21) {
-                gain = round2(bet * 1.5); result = "win";
+                // Blackjack naturale del giocatore
+                gain = round2(bet * 1.5);
+                result = "win";
             } else if (dv > 21 || pv > dv) {
-                gain = bet; result = "win";
+                // Dealer sballato o giocatore ha valore maggiore
+                gain = bet;
+                result = "win";
             } else if (pv == dv) {
-                gain = 0; result = "push";
+                // Pareggio
+                gain = 0;
+                result = "push";
             } else {
-                gain = -bet; result = "lose";
+                // Dealer vince
+                gain = -bet;
+                result = "lose";
             }
 
             double newBalance = round2(user.getSaldo() + gain);
             user.setSaldo(newBalance);
             Database.saveUsers();
+            
             GameRecord rec = new GameRecord("Blackjack", bet, gain, gain > 0);
             Database.recordGameResult(user.getId(), rec);
 
             ok(ex, String.format(
-                "{\"ok\":true,\"result\":\"%s\",\"gain\":%.2f,\"newBalance\":%.2f,\"playerValue\":%d,\"dealerValue\":%d}",
+                "{\"ok\":true,\"result\":\"%s\",\"gain\":%.2f,\"newBalance\":%.2f," +
+                "\"playerValue\":%d,\"dealerValue\":%d}",
                 result, gain, newBalance, pv, dv));
         }
 
-        /** Extract a JSON array substring by key name. */
+        /**
+         * Estrae un array JSON da una stringa per nome chiave
+         */
         private String extractArray(String json, String key) {
             String search = "\"" + key + "\"";
             int ki = json.indexOf(search);
             if (ki < 0) return null;
+            
             int colon = json.indexOf(':', ki + search.length());
             if (colon < 0) return null;
+            
             int start = colon + 1;
             while (start < json.length() && json.charAt(start) == ' ') start++;
+            
             if (start >= json.length() || json.charAt(start) != '[') return null;
+            
             int depth = 0, end = start;
             while (end < json.length()) {
                 char c = json.charAt(end);
                 if (c == '[') depth++;
-                else if (c == ']') { depth--; if (depth == 0) { end++; break; } }
+                else if (c == ']') {
+                    depth--;
+                    if (depth == 0) {
+                        end++;
+                        break;
+                    }
+                }
                 end++;
             }
             return json.substring(start, end);
         }
 
-        /** Calculate blackjack hand value from a JSON array of {rank,suit} objects. */
+        /**
+         * Calcola il valore di una mano di blackjack da un array JSON
+         */
         private int calcHandValueFromJson(String arr) {
             int total = 0, aces = 0;
-            // Extract all rank values
+            
+            // Estrae tutti i valori rank
             int pos = 0;
             while (pos < arr.length()) {
                 int ri = arr.indexOf("\"rank\"", pos);
                 if (ri < 0) break;
+                
                 int colon = arr.indexOf(':', ri + 6);
                 if (colon < 0) break;
+                
                 int vs = colon + 1;
                 while (vs < arr.length() && arr.charAt(vs) == ' ') vs++;
                 if (vs >= arr.length()) break;
+                
                 String rank;
                 if (arr.charAt(vs) == '"') {
                     int ve = arr.indexOf('"', vs + 1);
@@ -607,19 +926,35 @@ public class WebServer {
                     rank = arr.substring(vs, ve).trim();
                     pos = ve;
                 }
-                if (rank.equals("?")) { pos++; continue; }
+                
+                if (rank.equals("?")) {
+                    pos++;
+                    continue;
+                }
+                
                 int val;
                 if (rank.equals("Jack") || rank.equals("Queen") || rank.equals("King") ||
                     rank.equals("J") || rank.equals("Q") || rank.equals("K")) {
                     val = 10;
                 } else if (rank.equals("Asso") || rank.equals("A")) {
-                    val = 11; aces++;
+                    val = 11;
+                    aces++;
                 } else {
-                    try { val = Integer.parseInt(rank); } catch (Exception e) { val = 0; }
+                    try {
+                        val = Integer.parseInt(rank);
+                    } catch (Exception e) {
+                        val = 0;
+                    }
                 }
                 total += val;
             }
-            while (total > 21 && aces > 0) { total -= 10; aces--; }
+            
+            // Aggiusta per gli assi
+            while (total > 21 && aces > 0) {
+                total -= 10;
+                aces--;
+            }
+            
             return total;
         }
     }
@@ -1415,35 +1750,47 @@ public class WebServer {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // GAMES — HISTORY
-    // ─────────────────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STATISTICS & DATA ENDPOINTS
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * Handler per lo storico delle partite
+     */
     static class HistoryHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
             if (handleOptions(ex)) return;
+            
             User user = authUser(ex);
-            if (user == null) { err(ex, 401, "Unauthorized"); return; }
+            if (user == null) {
+                err(ex, 401, "Unauthorized");
+                return;
+            }
 
             List<GameRecord> history = Database.getGameHistory(user.getId());
             StringBuilder arr = new StringBuilder("[");
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            
             for (int i = 0; i < history.size(); i++) {
                 if (i > 0) arr.append(",");
                 GameRecord r = history.get(i);
                 arr.append(String.format(
-                    "{\"id\":\"%s\",\"game\":\"%s\",\"bet\":%.2f,\"gain\":%.2f,\"win\":%b,\"timestamp\":\"%s\"}",
-                    esc(r.getId()), esc(r.getGame()), r.getBet(), r.getGain(), r.isWin(),
-                    r.getTimestamp() != null ? r.getTimestamp().format(fmt) : ""));
+                    "{\"id\":\"%s\",\"game\":\"%s\",\"bet\":%.2f,\"gain\":%.2f," +
+                    "\"win\":%b,\"timestamp\":\"%s\"}",
+                    esc(r.getId()), esc(r.getGame()), r.getBet(), r.getGain(), 
+                    r.isWin(), r.getTimestamp() != null ? 
+                    r.getTimestamp().format(fmt) : ""));
             }
             arr.append("]");
+            
             ok(ex, "{\"ok\":true,\"history\":" + arr + "}");
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // LEADERBOARD
-    // ─────────────────────────────────────────────────────────────────────────
+    /**
+     * Handler per la classifica globale
+     */
     static class LeaderboardHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             setCors(ex);
@@ -1457,21 +1804,26 @@ public class WebServer {
                 if (i > 0) arr.append(",");
                 User u = users.get(i);
                 arr.append(String.format(
-                    "{\"rank\":%d,\"username\":\"%s\",\"nome\":\"%s\",\"balance\":%.2f,\"level\":%d,\"xp\":%d,\"winRate\":%.2f,\"wins\":%d,\"gamesPlayed\":%d,\"totalGain\":%.2f}",
+                    "{\"rank\":%d,\"username\":\"%s\",\"nome\":\"%s\"," +
+                    "\"balance\":%.2f,\"level\":%d,\"xp\":%d,\"winRate\":%.2f," +
+                    "\"wins\":%d,\"gamesPlayed\":%d,\"totalGain\":%.2f}",
                     i + 1, esc(u.getUsername()), esc(u.getNome()), u.getSaldo(),
                     u.getCurrentLevel(), u.getXp(), u.getWinRate(),
                     u.getGiociVinti(), u.getGiociGiocati(), u.getGuadagnoTotale()));
             }
             arr.append("]");
+            
             ok(ex, "{\"ok\":true,\"leaderboard\":" + arr + "}");
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // SIMULATION — 100 partite per gioco (Blackjack, Dadi, Roulette)
-    // ─────────────────────────────────────────────────────────────────────────
+    /**
+     * Handler per la simulazione statistica dei giochi
+     * Esegue 100 partite per ogni gioco (Blackjack, Dadi, Roulette)
+     * per dimostrare che alla lunga il banco vince sempre
+     */
     static class SimulationHandler implements HttpHandler {
-        private static final int NUM = 100;
+        private static final int NUM_PARTITE = 100;
         private static final double BET = 10.0;
         private static final Random rand = new Random();
 
@@ -1479,6 +1831,7 @@ public class WebServer {
             setCors(ex);
             if (handleOptions(ex)) return;
 
+            // Contatori per i risultati
             int bjVinte = 0, bjPerse = 0, bjPari = 0;
             double bjGain = 0;
             int dadiVinte = 0, dadiPerse = 0;
@@ -1486,56 +1839,118 @@ public class WebServer {
             int rouVinte = 0, rouPerse = 0;
             double rouGain = 0;
 
-            // Blackjack — strategia base: stai su 17+
-            for (int i = 0; i < NUM; i++) {
+            // ═══════════════════════════════════════════════════════════════
+            // SIMULAZIONE BLACKJACK — Strategia base: stai su 17+
+            // ═══════════════════════════════════════════════════════════════
+            for (int i = 0; i < NUM_PARTITE; i++) {
                 MazzoCarte mazzo = new MazzoCarte();
-                games.BlackJack.giocatori.GiocatoreUmano g =
+                games.BlackJack.giocatori.GiocatoreUmano giocatore =
                     new games.BlackJack.giocatori.GiocatoreUmano("Sim", 100000);
-                games.BlackJack.giocatori.Banco b = new games.BlackJack.giocatori.Banco();
-                g.aggiungiCarta(mazzo.pescaCarta()); b.aggiungiCarta(mazzo.pescaCarta());
-                g.aggiungiCarta(mazzo.pescaCarta()); b.aggiungiCarta(mazzo.pescaCarta());
-                int pv0 = g.valoreMano(), dv0 = b.valoreMano();
-                if (pv0 == 21 && dv0 == 21) { bjPari++; continue; }
-                if (pv0 == 21) { bjVinte++; bjGain += BET * 1.5; continue; }
-                if (dv0 == 21) { bjPerse++; bjGain -= BET; continue; }
-                while (g.valoreMano() < 17 && !g.haSballato()) g.aggiungiCarta(mazzo.pescaCarta());
-                if (g.haSballato()) { bjPerse++; bjGain -= BET; continue; }
-                while (b.devePescare()) b.aggiungiCarta(mazzo.pescaCarta());
-                int pv = g.valoreMano(), dv = b.valoreMano();
-                if (dv > 21 || pv > dv) { bjVinte++; bjGain += BET; }
-                else if (pv < dv)        { bjPerse++; bjGain -= BET; }
-                else                     { bjPari++; }
+                games.BlackJack.giocatori.Banco banco = 
+                    new games.BlackJack.giocatori.Banco();
+                
+                // Distribuisci carte iniziali
+                giocatore.aggiungiCarta(mazzo.pescaCarta());
+                banco.aggiungiCarta(mazzo.pescaCarta());
+                giocatore.aggiungiCarta(mazzo.pescaCarta());
+                banco.aggiungiCarta(mazzo.pescaCarta());
+                
+                int pv0 = giocatore.valoreMano();
+                int dv0 = banco.valoreMano();
+                
+                // Controlla blackjack naturali
+                if (pv0 == 21 && dv0 == 21) {
+                    bjPari++;
+                    continue;
+                }
+                if (pv0 == 21) {
+                    bjVinte++;
+                    bjGain += BET * 1.5;
+                    continue;
+                }
+                if (dv0 == 21) {
+                    bjPerse++;
+                    bjGain -= BET;
+                    continue;
+                }
+                
+                // Giocatore pesca fino a 17
+                while (giocatore.valoreMano() < 17 && !giocatore.haSballato()) {
+                    giocatore.aggiungiCarta(mazzo.pescaCarta());
+                }
+                
+                if (giocatore.haSballato()) {
+                    bjPerse++;
+                    bjGain -= BET;
+                    continue;
+                }
+                
+                // Banco pesca secondo le regole
+                while (banco.devePescare()) {
+                    banco.aggiungiCarta(mazzo.pescaCarta());
+                }
+                
+                int pv = giocatore.valoreMano();
+                int dv = banco.valoreMano();
+                
+                if (dv > 21 || pv > dv) {
+                    bjVinte++;
+                    bjGain += BET;
+                } else if (pv < dv) {
+                    bjPerse++;
+                    bjGain -= BET;
+                } else {
+                    bjPari++;
+                }
             }
 
-            // Dadi — Pass Line
-            for (int i = 0; i < NUM; i++) {
+            // ═══════════════════════════════════════════════════════════════
+            // SIMULAZIONE DADI — Pass Line (vinci con 7 o 11)
+            // ═══════════════════════════════════════════════════════════════
+            for (int i = 0; i < NUM_PARTITE; i++) {
                 int sum = (1 + rand.nextInt(6)) + (1 + rand.nextInt(6));
-                if (sum == 7 || sum == 11) { dadiVinte++; dadiGain += BET; }
-                else                       { dadiPerse++; dadiGain -= BET; }
+                if (sum == 7 || sum == 11) {
+                    dadiVinte++;
+                    dadiGain += BET;
+                } else {
+                    dadiPerse++;
+                    dadiGain -= BET;
+                }
             }
 
-            // Roulette — sempre sul rosso, payout 1.9x
+            // ═══════════════════════════════════════════════════════════════
+            // SIMULAZIONE ROULETTE — Sempre sul rosso, payout 1.9x
+            // ═══════════════════════════════════════════════════════════════
             ruotaRoulette wheel = new ruotaRoulette();
-            for (int i = 0; i < NUM; i++) {
+            for (int i = 0; i < NUM_PARTITE; i++) {
                 int n = wheel.spin();
                 String color = wheel.getColor(n);
-                if ("red".equals(color)) { rouVinte++; rouGain += BET * 0.9; }
-                else                     { rouPerse++; rouGain -= BET; }
+                if ("red".equals(color)) {
+                    rouVinte++;
+                    rouGain += BET * 0.9;
+                } else {
+                    rouPerse++;
+                    rouGain -= BET;
+                }
             }
 
+            // Calcola statistiche finali
             double totGain = round2(bjGain + dadiGain + rouGain);
-            double investito = NUM * BET * 3;
+            double investito = NUM_PARTITE * BET * 3;
             double roi = round2((totGain / investito) * 100);
 
             ok(ex, String.format(
                 "{\"ok\":true,\"numPartite\":%d,\"bet\":%.0f," +
                 "\"giochi\":{" +
-                  "\"blackjack\":{\"vinte\":%d,\"perse\":%d,\"pari\":%d,\"gain\":%.2f,\"nome\":\"Blackjack\",\"strategia\":\"Strategia base: stai su 17+\"}," +
-                  "\"dadi\":{\"vinte\":%d,\"perse\":%d,\"gain\":%.2f,\"nome\":\"Dadi (Pass Line)\",\"strategia\":\"Vinci con 7 o 11\"}," +
-                  "\"roulette\":{\"vinte\":%d,\"perse\":%d,\"gain\":%.2f,\"nome\":\"Roulette (rosso)\",\"strategia\":\"Payout 1.9x, prob. ~48.6%%\"}" +
+                  "\"blackjack\":{\"vinte\":%d,\"perse\":%d,\"pari\":%d,\"gain\":%.2f," +
+                    "\"nome\":\"Blackjack\",\"strategia\":\"Strategia base: stai su 17+\"}," +
+                  "\"dadi\":{\"vinte\":%d,\"perse\":%d,\"gain\":%.2f," +
+                    "\"nome\":\"Dadi (Pass Line)\",\"strategia\":\"Vinci con 7 o 11\"}," +
+                  "\"roulette\":{\"vinte\":%d,\"perse\":%d,\"gain\":%.2f," +
+                    "\"nome\":\"Roulette (rosso)\",\"strategia\":\"Payout 1.9x, prob. ~48.6%%\"}" +
                 "}," +
                 "\"totale\":{\"investito\":%.2f,\"gain\":%.2f,\"roi\":%.2f}}",
-                NUM, BET,
+                NUM_PARTITE, BET,
                 bjVinte, bjPerse, bjPari, round2(bjGain),
                 dadiVinte, dadiPerse, round2(dadiGain),
                 rouVinte, rouPerse, round2(rouGain),
