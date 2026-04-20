@@ -1,0 +1,26 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build output
+out/
+BackEnd/out/
+*.class
+
+# Database files
+data/
+BackEnd/data/*.dat
+BackEnd/data/*.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*~

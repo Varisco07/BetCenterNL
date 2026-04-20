@@ -27,7 +27,32 @@ Centro scommesse virtuale con backend Java, frontend web e gioco da terminale.
 
 ### Avvio normale
 
-#### Backend Java (porta 8080)
+#### 🚀 Avvio Rapido (Consigliato)
+Dalla cartella principale del progetto, esegui:
+```powershell
+.\start.bat
+```
+
+Questo script:
+1. ✅ Verifica che Java e Node.js siano installati
+2. 🔨 Compila automaticamente il backend Java
+3. 🚀 Avvia il backend Java (porta 8080) in una nuova finestra
+4. 🌐 Avvia il frontend Node.js (porta 3000) in una nuova finestra
+5. 🌍 Apre automaticamente il browser su http://localhost:3000
+
+**Due finestre si apriranno:**
+- `BetCenterNL - Backend Java` (porta 8080)
+- `BetCenterNL - Frontend` (porta 3000)
+
+**Non chiudere queste finestre** mentre usi l'applicazione!
+
+---
+
+#### Avvio Manuale (Alternativo)
+
+Se preferisci avviare i server separatamente:
+
+**Backend Java (porta 8080)**
 ```powershell
 cd BackEnd
 .\start-java-server.bat
@@ -41,13 +66,60 @@ Deve apparire:
 ╚════════════════════════════════════════╝
 ```
 
-#### Frontend Web (porta 3000)
+**Frontend Web (porta 3000)**
 ```powershell
 cd FrontEnd
 node server.js
 ```
 
 Apri il browser su **http://localhost:3000**
+
+---
+
+#### Gioco da Terminale (Senza Web)
+Per giocare direttamente da terminale senza interfaccia web:
+```powershell
+cd BackEnd
+javac -d out -sourcepath src src/Main.java
+java -cp out Main
+```
+
+---
+
+## Sistema di Autenticazione
+
+### Registrazione
+Il sistema di registrazione valida ogni campo in tempo reale:
+
+- **Nome/Cognome**: minimo 3 caratteri
+- **Username**: non può essere vuoto
+- **Email**: 
+  - Deve contenere `@`
+  - Deve avere un dominio con `.`
+  - Verifica se è già registrata
+  - Messaggi specifici per ogni errore (es. "manca il simbolo '@'")
+- **Password**: 
+  - Minimo 8 caratteri
+  - Mostra quanti caratteri mancano se troppo corta
+- **Data di nascita**: 
+  - Formato YYYY-MM-DD
+  - Verifica età minima 18 anni
+
+Se sbagli un campo, puoi correggerlo immediatamente senza dover ricominciare da capo.
+
+### Login
+Il sistema di login offre 3 tentativi con messaggi di errore specifici:
+
+- **Email non trovata**: "Email non trovata! Verifica di aver inserito l'email corretta o registrati"
+- **Password errata**: "Password errata! Controlla che il CAPS LOCK non sia attivo"
+- Dopo ogni errore puoi scegliere se riprovare o tornare al menu
+- Mostra i tentativi rimanenti
+
+### Modalità Demo
+Puoi provare il sistema senza registrarti usando la modalità demo:
+- Email: `demo@betcenter.nl`
+- Password: `demo123`
+- Saldo iniziale: €1.000
 
 ### Errori comuni
 

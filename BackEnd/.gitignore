@@ -1,11 +1,29 @@
+# Node.js (non usato nel backend Java)
 node_modules/
+package-lock.json
+
+# Environment
 .env
 .env.local
 .env.*.local
+
+# Build
 dist/
 build/
+out/
+*.class
+
+# Logs
 *.log
+
+# OS
 .DS_Store
+
+# IDE
 .idea/
 *.iml
-data/
+
+# Database e backup
+data/*.dat
+data/*.bak
+*.bak
